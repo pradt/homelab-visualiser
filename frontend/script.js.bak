@@ -1,0 +1,947 @@
+function generateId() {
+    return 'xxxxxx-xxxx-4xxx'.replace(/[x]/g, c =>
+      (Math.random() * 16 | 0).toString(16)
+    );
+  }
+
+let containers = [];
+let currentView = 'box'; // 'box' or 'tree'
+let fontAwesomeIcons = []; // Cache for FontAwesome icons
+let materialIcons = []; // Cache for Material Icons
+let emojiIcons = []; // Cache for Emoji icons
+let simpleIcons = []; // Cache for Simple Icons
+let homelabIcons = []; // Cache for HomeLab Icons
+
+window.onload = () => {
+  fetch('/api/containers')
+    .then(res => res.json())
+    .then(data => {
+      containers = data;
+      renderContainers();
+    });
+
+  // Track which icon sets have been loaded
+  let iconsLoaded = { fontawesome: false, material: false, emoji: false, simpleicons: false, homelab: false };
+
+  function checkAndInitializeIcons() {
+    if (iconsLoaded.fontawesome && iconsLoaded.material && iconsLoaded.emoji && iconsLoaded.simpleicons && iconsLoaded.homelab) {
+      initializeIconLists();
+    }
+  }
+
+  // Fetch FontAwesome icons from API
+  fetch('/api/icons/fontawesome')
+    .then(res => res.json())
+    .then(data => {
+      fontAwesomeIcons = data;
+      iconsLoaded.fontawesome = true;
+      checkAndInitializeIcons();
+    })
+    .catch(err => {
+      console.error('Failed to load FontAwesome icons:', err);
+      // Fallback to basic icons if API fails
+      fontAwesomeIcons = [
+        { class: 'fas fa-server', name: 'Server' },
+        { class: 'fas fa-desktop', name: 'Desktop' },
+        { class: 'fas fa-home', name: 'Home' },
+        { class: 'fas fa-cog', name: 'Settings' }
+      ];
+      iconsLoaded.fontawesome = true;
+      checkAndInitializeIcons();
+    });
+
+  // Fetch Material Icons from API
+  fetch('/api/icons/material')
+    .then(res => res.json())
+    .then(data => {
+      materialIcons = data;
+      iconsLoaded.material = true;
+      checkAndInitializeIcons();
+    })
+    .catch(err => {
+      console.error('Failed to load Material icons:', err);
+      // Fallback to basic icons if API fails
+      materialIcons = [
+        { class: 'server', name: 'Server' },
+        { class: 'home', name: 'Home' },
+        { class: 'cog', name: 'Settings' },
+        { class: 'desktop-classic', name: 'Desktop' }
+      ];
+      iconsLoaded.material = true;
+      checkAndInitializeIcons();
+    });
+
+  // Fetch Emoji icons from API
+  fetch('/api/icons/emoji')
+    .then(res => res.json())
+    .then(data => {
+      emojiIcons = data;
+      iconsLoaded.emoji = true;
+      checkAndInitializeIcons();
+    })
+    .catch(err => {
+      console.error('Failed to load Emoji icons:', err);
+      // Fallback to basic emojis if API fails
+      emojiIcons = [
+        { emoji: '💻', name: 'Laptop' },
+        { emoji: '🖥️', name: 'Desktop Computer' },
+        { emoji: '🏠', name: 'House' },
+        { emoji: '⚙️', name: 'Gear' }
+      ];
+      iconsLoaded.emoji = true;
+      checkAndInitializeIcons();
+    });
+
+  // Fetch Simple Icons from API
+  fetch('/api/icons/simpleicons')
+    .then(res => res.json())
+    .then(data => {
+      simpleIcons = data;
+      iconsLoaded.simpleicons = true;
+      checkAndInitializeIcons();
+    })
+    .catch(err => {
+      console.error('Failed to load Simple Icons:', err);
+      // Fallback to basic icons if API fails
+      simpleIcons = [
+        { icon: 'docker', name: 'Docker' },
+        { icon: 'nginx', name: 'Nginx' },
+        { icon: 'mysql', name: 'MySQL' },
+        { icon: 'grafana', name: 'Grafana' }
+      ];
+      iconsLoaded.simpleicons = true;
+      checkAndInitializeIcons();
+    });
+
+  // Fetch HomeLab Icons from API
+  fetch('/api/icons/homelab')
+    .then(res => res.json())
+    .then(data => {
+      homelabIcons = data;
+      iconsLoaded.homelab = true;
+      checkAndInitializeIcons();
+    })
+    .catch(err => {
+      console.error('Failed to load HomeLab Icons:', err);
+      // Fallback to basic icons if API fails
+      homelabIcons = [
+        { icon: 'docker', name: 'Docker' },
+        { icon: 'nginx', name: 'Nginx' },
+        { icon: 'grafana', name: 'Grafana' },
+        { icon: 'portainer', name: 'Portainer' }
+      ];
+      iconsLoaded.homelab = true;
+      checkAndInitializeIcons();
+    });
+
+  document.getElementById('container-form').onsubmit = saveContainer;
+  document.getElementById('search').oninput = () => renderContainers();
+  
+  // Add width slider functionality
+  const widthSlider = document.getElementById('width-slider');
+  const widthValue = document.getElementById('width-value');
+  
+  widthSlider.oninput = () => {
+    const width = widthSlider.value;
+    widthValue.textContent = width + '%';
+    updateContainerWidth(width);
+  };
+
+  // Add icon picker functionality - moved to after icon loading
+  setupIconPicker();
+};
+
+function setupIconPicker() {
+  const iconType = document.getElementById('icon-type');
+  
+  // Set initial selector
+  updateIconSelector();
+  
+  // Icon lists will be initialized after API call completes
+}
+
+function updateIconSelector() {
+  const iconType = document.getElementById('icon-type');
+  const iconPreview = document.getElementById('icon-preview');
+  
+  // Hide all selectors
+  document.querySelectorAll('.icon-selector').forEach(selector => {
+    selector.classList.add('hidden');
+  });
+  
+  // Clear preview
+  iconPreview.innerHTML = '';
+  
+  switch(iconType.value) {
+    case 'emoji':
+      document.getElementById('emoji-selector').classList.remove('hidden');
+      break;
+    case 'favicon':
+    case 'url':
+    case 'generative':
+      document.getElementById('custom-input').classList.remove('hidden');
+      const iconInput = document.getElementById('icon-input');
+      if (iconType.value === 'favicon') {
+        iconInput.placeholder = 'Enter URL (e.g., https://example.com)';
+      } else if (iconType.value === 'generative') {
+        iconInput.placeholder = 'Enter text for generation (e.g., server1, app)';
+      } else {
+        iconInput.placeholder = 'Enter image URL (e.g., https://example.com/icon.png)';
+      }
+      iconInput.addEventListener('input', updateIconPreview);
+      break;
+    case 'fontawesome':
+      document.getElementById('fontawesome-selector').classList.remove('hidden');
+      break;
+    case 'simpleicons':
+      document.getElementById('simpleicons-selector').classList.remove('hidden');
+      break;
+    case 'material':
+      document.getElementById('material-selector').classList.remove('hidden');
+      break;
+    case 'homelab':
+      document.getElementById('homelab-selector').classList.remove('hidden');
+      break;
+    case 'none':
+      // No selector needed
+      break;
+  }
+}
+
+function initializeIconLists() {
+  // Initialize emoji list
+  initializeEmojiList();
+  
+  // Initialize Font Awesome list
+  initializeFontAwesomeList();
+  
+  // Initialize Simple Icons list
+  initializeSimpleIconsList();
+  
+  // Initialize Material Icons list
+  initializeMaterialIconsList();
+  
+  // Initialize Home-Lab Icons list
+  initializeHomeLabIconsList();
+}
+
+function initializeEmojiList() {
+  const emojiList = document.getElementById('emoji-list');
+  
+  // Clear existing emojis
+  emojiList.innerHTML = '';
+  
+  // Use cached emojis from API
+  emojiIcons.forEach(icon => {
+    const item = document.createElement('div');
+    item.className = 'icon-item';
+    item.textContent = icon.emoji;
+    item.title = icon.name;
+    item.onclick = () => selectIcon('emoji', icon.emoji);
+    emojiList.appendChild(item);
+  });
+}
+
+function initializeFontAwesomeList() {
+  const faList = document.getElementById('fa-list');
+  
+  // Clear existing icons
+  faList.innerHTML = '';
+  
+  // Use cached icons from API
+  fontAwesomeIcons.forEach(icon => {
+    const item = document.createElement('div');
+    item.className = 'icon-item';
+    item.innerHTML = `<i class="${icon.class}"></i>`;
+    item.title = icon.name;
+    item.onclick = () => selectIcon('fontawesome', icon.class);
+    faList.appendChild(item);
+  });
+}
+
+function initializeSimpleIconsList() {
+  const siList = document.getElementById('si-list');
+  
+  // Clear existing icons
+  siList.innerHTML = '';
+  
+  // Use cached icons from API
+  simpleIcons.forEach(icon => {
+    const item = document.createElement('div');
+    item.className = 'icon-item';
+    const img = document.createElement('img');
+    img.src = `https://cdn.simpleicons.org/${icon.icon}`;
+    img.className = 'si';
+    img.onerror = () => item.remove();
+    item.appendChild(img);
+    item.title = icon.name;
+    item.onclick = () => selectIcon('simpleicons', icon.icon);
+    siList.appendChild(item);
+  });
+}
+
+function initializeMaterialIconsList() {
+  const mdiList = document.getElementById('mdi-list');
+  
+  // Clear existing icons
+  mdiList.innerHTML = '';
+  
+  // Use cached icons from API
+  materialIcons.forEach(icon => {
+    const item = document.createElement('div');
+    item.className = 'icon-item';
+    // Extract the icon name from the full class (remove 'mdi-' prefix)
+    const iconName = icon.class.replace('mdi-', '');
+    item.innerHTML = `<i class="mdi mdi-${iconName}"></i>`;
+    item.title = icon.name;
+    item.onclick = () => selectIcon('material', iconName);
+    mdiList.appendChild(item);
+  });
+}
+
+function initializeHomeLabIconsList() {
+  const hlList = document.getElementById('hl-list');
+  
+  // Clear existing icons
+  hlList.innerHTML = '';
+  
+  // Use cached icons from API
+  homelabIcons.forEach(icon => {
+    const item = document.createElement('div');
+    item.className = 'icon-item';
+    const img = document.createElement('img');
+    img.src = `https://raw.githubusercontent.com/WalkxCode/dashboard-icons/master/png/${icon.icon}.png`;
+    img.className = 'hl';
+    img.onerror = () => item.remove();
+    item.appendChild(img);
+    item.title = icon.name;
+    item.onclick = () => selectIcon('homelab', icon.icon);
+    hlList.appendChild(item);
+  });
+}
+
+function selectIcon(type, value) {
+  // Update the hidden input for form submission
+  const iconInput = document.getElementById('icon-input');
+  iconInput.value = value;
+  
+  // Update preview
+  updateIconPreview();
+  
+  // Remove selected class from all items
+  document.querySelectorAll('.icon-item').forEach(item => {
+    item.classList.remove('selected');
+  });
+  
+  // Add selected class to clicked item
+  event.target.closest('.icon-item').classList.add('selected');
+}
+
+function filterEmojis() {
+  const searchTerm = document.getElementById('emoji-search').value.toLowerCase();
+  const items = document.querySelectorAll('#emoji-list .icon-item');
+  
+  items.forEach(item => {
+    const emoji = item.textContent;
+    const title = item.title.toLowerCase();
+    if (emoji.includes(searchTerm) || title.includes(searchTerm) || searchTerm === '') {
+      item.style.display = 'flex';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+function filterFontAwesome() {
+  const searchTerm = document.getElementById('fa-search').value.toLowerCase();
+  const items = document.querySelectorAll('#fa-list .icon-item');
+  
+  items.forEach(item => {
+    const title = item.title.toLowerCase();
+    if (title.includes(searchTerm) || searchTerm === '') {
+      item.style.display = 'flex';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+function filterSimpleIcons() {
+  const searchTerm = document.getElementById('si-search').value.toLowerCase();
+  const items = document.querySelectorAll('#si-list .icon-item');
+  
+  items.forEach(item => {
+    const title = item.title.toLowerCase();
+    if (title.includes(searchTerm) || searchTerm === '') {
+      item.style.display = 'flex';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+function filterMaterialIcons() {
+  const searchTerm = document.getElementById('mdi-search').value.toLowerCase();
+  const items = document.querySelectorAll('#mdi-list .icon-item');
+  
+  items.forEach(item => {
+    const title = item.title.toLowerCase();
+    if (title.includes(searchTerm) || searchTerm === '') {
+      item.style.display = 'flex';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+function filterHomeLabIcons() {
+  const searchTerm = document.getElementById('hl-search').value.toLowerCase();
+  const items = document.querySelectorAll('#hl-list .icon-item');
+  
+  items.forEach(item => {
+    const title = item.title.toLowerCase();
+    if (title.includes(searchTerm) || searchTerm === '') {
+      item.style.display = 'flex';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+function updateIconPreview() {
+  const iconType = document.getElementById('icon-type');
+  const iconInput = document.getElementById('icon-input');
+  const iconPreview = document.getElementById('icon-preview');
+  const iconSizeSlider = document.getElementById('icon-size-slider');
+  const iconColorPicker = document.getElementById('icon-color-picker');
+  
+  const value = iconInput.value.trim();
+  const iconSize = iconSizeSlider ? iconSizeSlider.value : 30;
+  const iconColor = iconColorPicker ? iconColorPicker.value : '#000000';
+  
+  if (!value) {
+    iconPreview.innerHTML = '';
+    return;
+  }
+  
+  iconPreview.innerHTML = '';
+  
+  switch(iconType.value) {
+    case 'emoji':
+      // Handle emoji (direct, unicode, or shortcode)
+      let emoji = value;
+      if (value.startsWith(':')) {
+        // Convert shortcode to emoji (basic conversion)
+        emoji = convertShortcodeToEmoji(value);
+      } else if (value.startsWith('U+')) {
+        // Convert unicode to emoji
+        emoji = convertUnicodeToEmoji(value);
+      }
+      iconPreview.textContent = emoji;
+      iconPreview.style.fontSize = iconSize + 'px';
+      break;
+      
+    case 'favicon':
+      if (value) {
+        const faviconUrl = getFaviconUrl(value);
+        const img = document.createElement('img');
+        img.src = faviconUrl;
+        img.style.width = iconSize + 'px';
+        img.style.height = iconSize + 'px';
+        img.onerror = () => {
+          iconPreview.innerHTML = '❌';
+        };
+        iconPreview.appendChild(img);
+      }
+      break;
+      
+    case 'fontawesome':
+      const faIcon = document.createElement('i');
+      faIcon.className = value;
+      faIcon.style.fontSize = iconSize + 'px';
+      faIcon.style.color = iconColor;
+      iconPreview.appendChild(faIcon);
+      break;
+      
+    case 'simpleicons':
+      const siIcon = document.createElement('img');
+      siIcon.src = `https://cdn.simpleicons.org/${value}`;
+      siIcon.className = 'si';
+      siIcon.style.width = iconSize + 'px';
+      siIcon.style.height = iconSize + 'px';
+      siIcon.onerror = () => {
+        iconPreview.innerHTML = '❌';
+      };
+      iconPreview.appendChild(siIcon);
+      break;
+      
+    case 'material':
+      const mdiIcon = document.createElement('i');
+      mdiIcon.className = `mdi mdi-${value}`;
+      mdiIcon.style.fontSize = iconSize + 'px';
+      mdiIcon.style.color = iconColor;
+      iconPreview.appendChild(mdiIcon);
+      break;
+      
+    case 'homelab':
+      const hlIcon = document.createElement('img');
+      hlIcon.src = `https://raw.githubusercontent.com/WalkxCode/dashboard-icons/master/png/${value}.png`;
+      hlIcon.className = 'hl';
+      hlIcon.style.width = iconSize + 'px';
+      hlIcon.style.height = iconSize + 'px';
+      hlIcon.onerror = () => {
+        iconPreview.innerHTML = '❌';
+      };
+      iconPreview.appendChild(hlIcon);
+      break;
+      
+    case 'generative':
+      const genIcon = document.createElement('img');
+      genIcon.src = `https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(value)}`;
+      genIcon.className = 'hl';
+      genIcon.style.width = iconSize + 'px';
+      genIcon.style.height = iconSize + 'px';
+      iconPreview.appendChild(genIcon);
+      break;
+      
+    case 'url':
+      const urlIcon = document.createElement('img');
+      urlIcon.src = value;
+      urlIcon.style.width = iconSize + 'px';
+      urlIcon.style.height = iconSize + 'px';
+      urlIcon.onerror = () => {
+        iconPreview.innerHTML = '❌';
+      };
+      iconPreview.appendChild(urlIcon);
+      break;
+  }
+}
+
+function convertShortcodeToEmoji(shortcode) {
+  // Basic shortcode to emoji conversion
+  const emojiMap = {
+    ':rocket:': '🚀',
+    ':computer:': '💻',
+    ':server:': '🖥️',
+    ':house:': '🏠',
+    ':gear:': '⚙️',
+    ':wrench:': '🔧',
+    ':shield:': '🛡️',
+    ':lock:': '🔒',
+    ':key:': '🔑',
+    ':database:': '🗄️',
+    ':network:': '🌐',
+    ':cloud:': '☁️',
+    ':fire:': '🔥',
+    ':star:': '⭐',
+    ':heart:': '❤️',
+    ':check:': '✅',
+    ':x:': '❌',
+    ':warning:': '⚠️',
+    ':info:': 'ℹ️',
+    ':question:': '❓'
+  };
+  return emojiMap[shortcode] || shortcode;
+}
+
+function convertUnicodeToEmoji(unicode) {
+  try {
+    return String.fromCodePoint(parseInt(unicode.replace('U+', ''), 16));
+  } catch {
+    return unicode;
+  }
+}
+
+function getFaviconUrl(url) {
+  // Use Google's favicon service as default
+  const domain = new URL(url.startsWith('http') ? url : `https://${url}`).hostname;
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+}
+
+function updateContainerWidth(width) {
+  const containerBoxes = document.querySelectorAll('.container-box');
+  containerBoxes.forEach(box => {
+    box.style.width = width + '%';
+  });
+}
+
+function updateIconSize(size) {
+  // Update all existing icons in containers
+  const iconElements = document.querySelectorAll('.container-box img, .container-box i, .tree-item img, .tree-item i');
+  iconElements.forEach(icon => {
+    if (icon.tagName === 'IMG') {
+      icon.style.width = size + 'px';
+      icon.style.height = size + 'px';
+    } else if (icon.tagName === 'I') {
+      icon.style.fontSize = size + 'px';
+    }
+  });
+}
+
+function updateIconSizePreview() {
+  const iconSizeSlider = document.getElementById('icon-size-slider');
+  const iconSizeValue = document.getElementById('icon-size-value');
+  const iconPreview = document.getElementById('icon-preview');
+  
+  const size = iconSizeSlider.value;
+  iconSizeValue.textContent = size + 'px';
+  
+  // Update the preview with new size
+  updateIconPreview();
+}
+
+function updateIconColorPreview() {
+  const iconColorPicker = document.getElementById('icon-color-picker');
+  const iconColorValue = document.getElementById('icon-color-value');
+  
+  const color = iconColorPicker.value;
+  iconColorValue.textContent = color;
+  
+  // Update the preview with new color
+  updateIconPreview();
+}
+
+function renderIcon(iconData) {
+  if (!iconData || !iconData.type || !iconData.value) {
+    return '';
+  }
+  
+  // Get icon size and color from container data, default to 30px and black
+  const iconSize = iconData.size || 30;
+  const iconColor = iconData.color || '#000000';
+  
+  switch(iconData.type) {
+    case 'emoji':
+      let emoji = iconData.value;
+      if (iconData.value.startsWith(':')) {
+        emoji = convertShortcodeToEmoji(iconData.value);
+      } else if (iconData.value.startsWith('U+')) {
+        emoji = convertUnicodeToEmoji(iconData.value);
+      }
+      return emoji;
+      
+    case 'favicon':
+      return `<img src="${getFaviconUrl(iconData.value)}" style="width: ${iconSize}px; height: ${iconSize}px; vertical-align: middle;" onerror="this.style.display='none'">`;
+      
+    case 'fontawesome':
+      return `<i class="${iconData.value}" style="font-size: ${iconSize}px; color: ${iconColor};"></i>`;
+      
+    case 'simpleicons':
+      return `<img src="https://cdn.simpleicons.org/${iconData.value}" style="width: ${iconSize}px; height: ${iconSize}px; vertical-align: middle;" onerror="this.style.display='none'">`;
+      
+    case 'material':
+      return `<i class="mdi mdi-${iconData.value}" style="font-size: ${iconSize}px; color: ${iconColor};"></i>`;
+      
+    case 'homelab':
+      return `<img src="https://raw.githubusercontent.com/WalkxCode/dashboard-icons/master/png/${iconData.value}.png" style="width: ${iconSize}px; height: ${iconSize}px; vertical-align: middle;" onerror="this.style.display='none'">`;
+      
+    case 'generative':
+      return `<img src="https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(iconData.value)}" style="width: ${iconSize}px; height: ${iconSize}px; vertical-align: middle;">`;
+      
+    case 'url':
+      return `<img src="${iconData.value}" style="width: ${iconSize}px; height: ${iconSize}px; vertical-align: middle;" onerror="this.style.display='none'">`;
+      
+    default:
+      return iconData.value || '';
+  }
+}
+
+function switchView(view) {
+  currentView = view;
+  
+  // Update button states
+  document.getElementById('box-view-btn').classList.toggle('active', view === 'box');
+  document.getElementById('tree-view-btn').classList.toggle('active', view === 'tree');
+  
+  renderContainers();
+}
+
+function renderContainers() {
+  const root = document.getElementById('container-root');
+  root.innerHTML = '';
+  const term = document.getElementById('search').value.toLowerCase();
+  
+  if (currentView === 'box') {
+    renderBoxView(root, term);
+  } else {
+    renderTreeView(root, term);
+  }
+}
+
+function renderBoxView(root, term) {
+  containers.forEach(c => {
+    if (matchesSearch(c, term) || hasMatchingChild(c, term)) {
+      root.appendChild(renderBox(c, term));
+    }
+  });
+}
+
+function renderTreeView(root, term) {
+  root.className = 'tree-view';
+  containers.forEach(c => {
+    if (matchesSearch(c, term) || hasMatchingChild(c, term)) {
+      root.appendChild(renderTreeItem(c, term));
+    }
+  });
+}
+
+function renderTreeItem(container, term) {
+  const item = document.createElement('div');
+  item.className = 'tree-item';
+
+  const header = document.createElement('div');
+  header.className = 'tree-item-header';
+  
+  const hasChildren = (container.children || []).length > 0;
+  const toggleIcon = hasChildren ? '🔽' : '';
+  
+  header.innerHTML = `
+    <span class="tree-toggle" onclick="toggleTreeItem(this)">${toggleIcon}</span>
+    <div class="tree-item-content-wrapper">
+      <span class="tree-item-left">${renderIcon(container.icon)} <strong>${container.name}</strong></span>
+      <span class="tree-item-right">
+        <button onclick="showCreateModal('${container.id}')">➕</button>
+        <button onclick="showEditModal('${container.id}')">✏️</button>
+      </span>
+    </div>
+  `;
+
+  if (container.url) {
+    header.style.cursor = 'pointer';
+    header.onclick = (e) => {
+      if (!e.target.closest('button')) {
+        window.open(container.url, '_blank');
+      }
+    };
+  }
+
+  item.appendChild(header);
+
+  if (hasChildren) {
+    const content = document.createElement('div');
+    content.className = 'tree-item-content';
+    
+    (container.children || []).forEach(c => {
+      if (matchesSearch(c, term) || hasMatchingChild(c, term)) {
+        content.appendChild(renderTreeItem(c, term));
+      }
+    });
+    
+    item.appendChild(content);
+  }
+
+  return item;
+}
+
+function toggleTreeItem(toggleBtn) {
+  const content = toggleBtn.parentElement.nextSibling;
+  if (content && content.classList.contains('tree-item-content')) {
+    content.classList.toggle('hidden');
+    toggleBtn.textContent = content.classList.contains('hidden') ? '▶️' : '🔽';
+  }
+}
+
+function matchesSearch(container, term) {
+  return container.name.toLowerCase().includes(term) || (container.ip || '').toLowerCase().includes(term);
+}
+
+function hasMatchingChild(container, term) {
+  return (container.children || []).some(c => matchesSearch(c, term) || hasMatchingChild(c, term));
+}
+
+function renderBox(container, term) {
+  const box = document.createElement('div');
+  box.className = 'container-box';
+  box.style.borderColor = container.color;
+  
+  // Apply current width setting
+  const widthSlider = document.getElementById('width-slider');
+  if (widthSlider) {
+    box.style.width = widthSlider.value + '%';
+  }
+
+  const header = document.createElement('div');
+  header.className = 'container-header';
+  
+  // Left side: icon and name
+  const leftSide = document.createElement('div');
+  leftSide.className = 'header-left';
+  
+  // Render icon using new system
+  const iconHtml = renderIcon(container.icon);
+  leftSide.innerHTML = `${iconHtml} <strong>${container.name}</strong>`;
+
+  // Right side: action buttons
+  const rightSide = document.createElement('div');
+  rightSide.className = 'header-right';
+  rightSide.innerHTML = `
+    <button onclick="showCreateModal('${container.id}')">➕</button>
+    <button onclick="showEditModal('${container.id}')">✏️</button>
+    <button onclick="toggleChildren(this)">🔽</button>
+  `;
+
+  header.appendChild(leftSide);
+  header.appendChild(rightSide);
+
+  box.appendChild(header);
+
+  if (container.url) {
+    leftSide.style.cursor = 'pointer';
+    leftSide.onclick = () => window.open(container.url, '_blank');
+  }
+
+  const childBox = document.createElement('div');
+  childBox.className = 'container-children';
+
+  (container.children || []).forEach(c => {
+    if (matchesSearch(c, term) || hasMatchingChild(c, term)) {
+      childBox.appendChild(renderBox(c, term));
+    }
+  });
+
+  box.appendChild(childBox);
+  return box;
+}
+
+function toggleChildren(btn) {
+  const childBox = btn.parentElement.parentElement.nextSibling;
+  if (childBox.style.display === 'none') {
+    childBox.style.display = '';
+    btn.textContent = '🔽';
+  } else {
+    childBox.style.display = 'none';
+    btn.textContent = '▶️';
+  }
+}
+
+function showCreateModal(parentId) {
+  const form = document.getElementById('container-form');
+  form.reset();
+  form.parentId.value = parentId || '';
+  form.containerId.value = '';
+  document.getElementById('container-modal').classList.remove('hidden');
+}
+
+function showEditModal(id) {
+  const form = document.getElementById('container-form');
+  const container = findContainerById(containers, id);
+  if (!container) return;
+
+  form.name.value = container.name;
+  form.type.value = container.type;
+  
+  // Handle icon data
+  if (container.icon && typeof container.icon === 'object') {
+    // New icon format with type and value
+    document.getElementById('icon-type').value = container.icon.type || 'emoji';
+    document.getElementById('icon-input').value = container.icon.value || '';
+    document.getElementById('icon-size-slider').value = container.icon.size || 30;
+    document.getElementById('icon-color-picker').value = container.icon.color || '#000000';
+  } else {
+    // Legacy icon format (just string)
+    document.getElementById('icon-type').value = 'emoji';
+    document.getElementById('icon-input').value = container.icon || '';
+    document.getElementById('icon-size-slider').value = 30;
+    document.getElementById('icon-color-picker').value = '#000000';
+  }
+  updateIconSelector();
+  updateIconSizePreview();
+  updateIconColorPreview();
+  
+  form.ip.value = container.ip;
+  form.url.value = container.url;
+  form.color.value = container.color;
+  form.notes.value = container.notes;
+  form.autosize.checked = container.autosize;
+  form.containerId.value = container.id;
+  form.parentId.value = findParentId(containers, id);
+  document.getElementById('container-modal').classList.remove('hidden');
+}
+
+function hideModal() {
+  document.getElementById('container-modal').classList.add('hidden');
+}
+
+function saveContainer(event) {
+  event.preventDefault();
+  const form = event.target;
+  
+  // Get icon data
+  const iconType = document.getElementById('icon-type').value;
+  const iconValue = document.getElementById('icon-input').value.trim();
+  const iconSize = parseInt(document.getElementById('icon-size-slider').value) || 30;
+  const iconColor = document.getElementById('icon-color-picker').value || '#000000';
+  let iconData = null;
+  
+  if (iconType !== 'none' && iconValue) {
+    iconData = {
+      type: iconType,
+      value: iconValue,
+      size: iconSize,
+      color: iconColor
+    };
+  }
+  
+  const newContainer = {
+    id: form.containerId.value || generateId(),
+    name: form.name.value,
+    type: form.type.value,
+    icon: iconData,
+    ip: form.ip.value,
+    url: form.url.value,
+    color: form.color.value,
+    notes: form.notes.value,
+    autosize: form.autosize.checked,
+    children: []
+  };
+
+  if (form.containerId.value) {
+    updateContainer(containers, newContainer);
+  } else {
+    const parent = form.parentId.value ? findContainerById(containers, form.parentId.value) : null;
+    if (parent) {
+      parent.children = parent.children || [];
+      parent.children.push(newContainer);
+    } else {
+      containers.push(newContainer);
+    }
+  }
+
+  fetch('/api/containers', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(containers)
+  }).then(() => {
+    hideModal();
+    renderContainers();
+  });
+}
+
+function findContainerById(list, id) {
+  for (const item of list) {
+    if (item.id === id) return item;
+    const found = findContainerById(item.children || [], id);
+    if (found) return found;
+  }
+  return null;
+}
+
+function findParentId(list, id, parentId = null) {
+  for (const item of list) {
+    if (item.id === id) return parentId;
+    const found = findParentId(item.children || [], id, item.id);
+    if (found) return found;
+  }
+  return null;
+}
+
+function updateContainer(list, updated) {
+  for (let i = 0; i < list.length; i++) {
+    if (list[i].id === updated.id) {
+      updated.children = list[i].children || [];
+      list[i] = updated;
+      return;
+    }
+    updateContainer(list[i].children || [], updated);
+  }
+}

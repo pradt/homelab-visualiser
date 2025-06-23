@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  homelab-visualiser:
+    # Option 1: Use published image (uncomment and replace with your image)
+    # image: yourusername/homelab-visualiser:latest
+    
+    # Option 2: Build locally (default)
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    
+    container_name: homelab-visualiser
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/backend/storage
+    environment:
+      - PORT=3000
+    restart: unless-stopped
+    networks:
+      - homelab-network
+
+networks:
+  homelab-network:
+    driver: bridge 

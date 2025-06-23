@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@material-icons/svg": "^1.0.33",
+    "express": "^5.1.0",
+    "node-fetch": "^3.3.2",
+    "simple-icons": "^15.3.0"
+  }
+}
