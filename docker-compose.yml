@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  homelab-visualiser:
+    image: ghcr.io/pradt/homelab-visualiser/homelab-visualiser:latest
+    container_name: homelab-visualiser
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/backend/storage
+    environment:
+      - PORT=3000
+    restart: unless-stopped
+    networks:
+      - homelab-network
+
+networks:
+  homelab-network:
+    driver: bridge 

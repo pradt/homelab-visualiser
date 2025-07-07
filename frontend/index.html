@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Container Visualizer</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Material Design Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" />
+  <!-- Simple Icons -->
+  <link rel="stylesheet" href="https://cdn.simpleicons.org/" />
+  <script defer src="script.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div id="toolbar">
+    <input type="text" id="search" placeholder="Search by name or IP..." />
+    <button onclick="showCreateModal(null)">➕ Add Container</button>
+    <div class="width-control">
+      <label for="width-slider">Width: <span id="width-value">100%</span></label>
+      <input type="range" id="width-slider" min="10" max="100" value="100" step="5" />
+    </div>
+    <div class="view-toggle">
+      <button id="box-view-btn" class="view-btn active" onclick="switchView('box')">📦 Box View</button>
+      <button id="tree-view-btn" class="view-btn" onclick="switchView('tree')">🌳 Tree View</button>
+      <button id="settings-btn" class="view-btn" onclick="showPageSettings()">⚙️ Settings</button>
+    </div>
+  </div>
+  <div id="container-root"></div>
+
+  <div id="container-modal" class="modal hidden">
+    <div class="modal-header">
+      <h3>Container Configuration</h3>
+      <button class="close-btn" onclick="hideModal()">×</button>
+    </div>
+    <div class="modal-tabs">
+      <button class="tab-btn active" onclick="switchTab('details')">Details</button>
+      <button class="tab-btn" onclick="switchTab('style')">Style</button>
+    </div>
+    <form id="container-form">
+      <input type="hidden" name="parentId" />
+      <input type="hidden" name="containerId" />
+      
+      <!-- Details Tab -->
+      <div id="details-tab" class="tab-content active">
+        <div class="style-section">
+          <h4>Basic Information</h4>
+          <label>Name: <input type="text" name="name" required /></label>
+          <label>Type: 
+            <select name="type" onchange="toggleAgentConfig()">
+              <option>Computer</option>
+              <option>VM</option>
+              <option>Docker Container</option>
+              <option>LXC Container</option>
+              <option>Application</option>
+            </select>
+          </label>
+          <label>IP Address: <input type="text" name="ip" /></label>
+          <label>URL: <input type="text" name="url" /></label>
+          <label>Notes: <textarea name="notes"></textarea></label>
+          <label><input type="checkbox" name="autosize" /> Auto-size</label>
+        </div>
+        
+        <!-- Agent Configuration Section -->
+        <div id="agent-config-section" class="style-section hidden">
+          <h4>Agent Configuration</h4>
+          <p class="help-text">Configure monitoring agent for real-time system metrics</p>
+          <label>Agent IP Address: <input type="text" name="agentIp" placeholder="192.168.1.100" /></label>
+          <label>Agent Port: <input type="number" name="agentPort" placeholder="9000" min="1" max="65535" /></label>
+          <label>API Key: <input type="text" name="agentApiKey" placeholder="Enter agent API key" /></label>
+          <div id="agent-status" class="agent-status hidden">
+            <span class="status-indicator"></span>
+            <span class="status-text">Checking connection...</span>
+          </div>
+        </div>
+        
+        <div class="style-section">
+          <h4>Icon Configuration</h4>
+          <label>Icon Type: 
+            <select id="icon-type" onchange="updateIconSelector()">
+              <option value="emoji">Emoji</option>
+              <option value="favicon">Favicon (Auto)</option>
+              <option value="fontawesome">Font Awesome</option>
+              <option value="simpleicons">Simple Icons</option>
+              <option value="material">Material Icons</option>
+              <option value="homelab">Home-Lab Icons</option>
+              <option value="generative">Generative</option>
+              <option value="url">Custom URL</option>
+              <option value="none">No Icon</option>
+            </select>
+          </label>
+          
+          <!-- Emoji Selector -->
+          <div id="emoji-selector" class="icon-selector">
+            <label>Search Emojis: <input type="text" id="emoji-search" placeholder="Search emojis..." /></label>
+            <div id="emoji-list" class="icon-list"></div>
+          </div>
+          
+          <!-- Font Awesome Selector -->
+          <div id="fontawesome-selector" class="icon-selector hidden">
+            <label>Search Font Awesome Icons: <input type="text" id="fa-search" placeholder="Search Font Awesome icons..." /></label>
+            <div id="fa-list" class="icon-list"></div>
+          </div>
+          
+          <!-- Simple Icons Selector -->
+          <div id="simpleicons-selector" class="icon-selector hidden">
+            <label>Search Simple Icons: <input type="text" id="si-search" placeholder="Search Simple Icons..." /></label>
+            <div id="si-list" class="icon-list"></div>
+          </div>
+          
+          <!-- Material Icons Selector -->
+          <div id="material-selector" class="icon-selector hidden">
+            <label>Search Material Icons: <input type="text" id="mdi-search" placeholder="Search Material Icons..." /></label>
+            <div id="mdi-list" class="icon-list"></div>
+          </div>
+          
+          <!-- Home-Lab Icons Selector -->
+          <div id="homelab-selector" class="icon-selector hidden">
+            <label>Search Home-Lab Icons: <input type="text" id="hl-search" placeholder="Search Home-Lab Icons..." /></label>
+            <div id="hl-list" class="icon-list"></div>
+          </div>
+          
+          <!-- Favicon/URL/Generative Input -->
+          <div id="custom-input" class="icon-selector hidden">
+            <label>Icon Value: <input type="text" id="icon-input" name="icon" placeholder="Enter value..." /></label>
+          </div>
+          
+          <div id="icon-preview" class="icon-preview"></div>
+        </div>
+        
+        <div class="style-section">
+          <h4>Icon Styling</h4>
+          <label>Icon Size: 
+            <div class="icon-size-control">
+              <span id="icon-size-value">30px</span>
+              <input type="range" id="icon-size-slider" min="12" max="60" value="30" step="2" oninput="updateIconSizePreview()" />
+            </div>
+          </label>
+          <label>Icon Color: 
+            <div class="icon-color-control">
+              <input type="color" id="icon-color-picker" value="#000000" onchange="updateIconColorPreview()" />
+              <span id="icon-color-value">#000000</span>
+            </div>
+          </label>
+        </div>
+      </div>
+      
+      <!-- Style Tab -->
+      <div id="style-tab" class="tab-content">
+        <div class="style-section">
+          <h4>Container Background</h4>
+          <label>Background Type: 
+            <select name="bgType" onchange="updateBackgroundOptions()">
+              <option value="color">Solid Color</option>
+              <option value="gradient">Gradient</option>
+              <option value="css">Custom CSS</option>
+            </select>
+          </label>
+          <div id="bg-color-option">
+            <label>Background Color: <input type="color" name="backgroundColor" value="#ffffff" /></label>
+          </div>
+          <div id="bg-gradient-option" class="hidden">
+            <label>Gradient: <input type="text" name="backgroundGradient" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
+          </div>
+          <div id="bg-css-option" class="hidden">
+            <label>Custom CSS: <textarea name="backgroundCSS" placeholder="background: url('image.jpg') center/cover;"></textarea></label>
+          </div>
+          <label>Background Image URL: <input type="text" name="backgroundImage" placeholder="https://example.com/image.jpg" /></label>
+          <label>Background Transparency: 
+            <input type="range" name="backgroundOpacity" min="0" max="100" value="100" step="5" />
+            <span id="opacity-value">100%</span>
+          </label>
+        </div>
+        
+        <div class="style-section">
+          <h4>Container Border</h4>
+          <label>Border Color: <input type="color" name="borderColor" value="#000000" /></label>
+          <label>Border Size: <input type="number" name="borderSize" min="0" max="20" value="2" step="1" />px</label>
+          <label>Border Style: 
+            <select name="borderStyle">
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+              <option value="double">Double</option>
+              <option value="groove">Groove</option>
+              <option value="ridge">Ridge</option>
+              <option value="inset">Inset</option>
+              <option value="outset">Outset</option>
+            </select>
+          </label>
+          <label>Custom Border CSS: <textarea name="borderCSS" placeholder="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></textarea></label>
+        </div>
+        
+        <div class="style-section">
+          <h4>Title Bar Background</h4>
+          <label>Title Background Type: 
+            <select name="titleBgType" onchange="updateTitleBackgroundOptions()">
+              <option value="color">Solid Color</option>
+              <option value="gradient">Gradient</option>
+              <option value="css">Custom CSS</option>
+            </select>
+          </label>
+          <div id="title-bg-color-option">
+            <label>Title Background Color: <input type="color" name="titleBackgroundColor" value="#f0f0f0" /></label>
+          </div>
+          <div id="title-bg-gradient-option" class="hidden">
+            <label>Title Gradient: <input type="text" name="titleBackgroundGradient" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
+          </div>
+          <div id="title-bg-css-option" class="hidden">
+            <label>Title Custom CSS: <textarea name="titleBackgroundCSS" placeholder="background: url('image.jpg') center/cover;"></textarea></label>
+          </div>
+          <label>Title Background Image URL: <input type="text" name="titleBackgroundImage" placeholder="https://example.com/image.jpg" /></label>
+          <label>Title Background Transparency: 
+            <input type="range" name="titleBackgroundOpacity" min="0" max="100" value="100" step="5" />
+            <span id="title-opacity-value">100%</span>
+          </label>
+        </div>
+        
+        <div class="style-section">
+          <h4>Additional Styles</h4>
+          <label>Custom CSS: <textarea name="customCSS" placeholder="Add any additional CSS styles here..."></textarea></label>
+          <label>Border Radius: <input type="number" name="borderRadius" min="0" max="50" value="0" step="1" />px</label>
+          <label>Box Shadow: <input type="text" name="boxShadow" placeholder="0 2px 4px rgba(0,0,0,0.1)" /></label>
+          <label>Padding: <input type="number" name="padding" min="0" max="50" value="10" step="1" />px</label>
+          <label>Margin: <input type="number" name="margin" min="0" max="50" value="10" step="1" />px</label>
+        </div>
+      </div>
+      
+      <div class="modal-buttons">
+        <button type="submit">Save</button>
+        <button type="button" onclick="hideModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Page Settings Modal -->
+  <div id="page-settings-modal" class="modal hidden">
+    <div class="modal-header">
+      <h3>Page Settings</h3>
+      <button class="close-btn" onclick="hidePageSettings()">×</button>
+    </div>
+    <form id="page-settings-form">
+      <div class="style-section">
+        <h4>Page Background</h4>
+        <label>Background Type: 
+          <select name="pageBgType" onchange="updatePageBackgroundOptions()">
+            <option value="color">Solid Color</option>
+            <option value="gradient">Gradient</option>
+            <option value="css">Custom CSS</option>
+          </select>
+        </label>
+        <div id="page-bg-color-option">
+          <label>Background Color: <input type="color" name="pageBackgroundColor" value="#ffffff" /></label>
+        </div>
+        <div id="page-bg-gradient-option" class="hidden">
+          <label>Gradient: <input type="text" name="pageBackgroundGradient" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
+        </div>
+        <div id="page-bg-css-option" class="hidden">
+          <label>Custom CSS: <textarea name="pageBackgroundCSS" placeholder="background: url('image.jpg') center/cover;"></textarea></label>
+        </div>
+        <label>Background Image URL: <input type="text" name="pageBackgroundImage" placeholder="https://example.com/image.jpg" /></label>
+        <label>Background Transparency: 
+          <input type="range" name="pageBackgroundOpacity" min="0" max="100" value="100" step="5" />
+          <span id="page-opacity-value">100%</span>
+        </label>
+      </div>
+      
+      <div class="style-section">
+        <h4>Page Layout</h4>
+        <label>Container Spacing: <input type="number" name="containerSpacing" min="0" max="50" value="10" step="1" />px</label>
+        <label>Default Container Width: <input type="range" name="defaultContainerWidth" min="10" max="100" value="100" step="5" /> <span id="default-width-value">100%</span></label>
+        <label>Page Padding: <input type="number" name="pagePadding" min="0" max="100" value="10" step="1" />px</label>
+      </div>
+      
+      <div class="style-section">
+        <h4>Theme</h4>
+        <label>Theme: 
+          <select name="theme">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="auto">Auto (System)</option>
+          </select>
+        </label>
+        <label>Font Family: 
+          <select name="fontFamily">
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="Helvetica, sans-serif">Helvetica</option>
+            <option value="Times New Roman, serif">Times New Roman</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="Courier New, monospace">Courier New</option>
+            <option value="Verdana, sans-serif">Verdana</option>
+          </select>
+        </label>
+        <label>Font Size: <input type="number" name="fontSize" min="8" max="24" value="14" step="1" />px</label>
+      </div>
+      
+      <div class="modal-buttons">
+        <button type="submit">Save Settings</button>
+        <button type="button" onclick="hidePageSettings()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

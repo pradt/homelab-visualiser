@@ -1,0 +1,531 @@
+[
+  {
+    "id": "2c0b8b-3904-4808",
+    "name": "Voyager",
+    "type": "Computer",
+    "icon": {
+      "type": "fontawesome",
+      "value": "homelab-adguard",
+      "size": 30,
+      "color": "#000000"
+    },
+    "ip": "192.168.1.233",
+    "url": "",
+    "color": "#258e44",
+    "notes": "",
+    "autosize": false,
+    "styling": {
+      "backgroundColor": "#1bf384",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": "100",
+      "bgType": "color",
+      "borderColor": "#258e44",
+      "borderSize": "2",
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "titleBackgroundColor": "#21de7c",
+      "titleBackgroundGradient": "",
+      "titleBackgroundCSS": "",
+      "titleBackgroundImage": "",
+      "titleBackgroundOpacity": "100",
+      "titleBgType": "color",
+      "customCSS": "",
+      "borderRadius": "0",
+      "boxShadow": "",
+      "padding": "10",
+      "margin": "10"
+    },
+    "agent": {
+      "ip": "192.168.1.233",
+      "port": 9000,
+      "apiKey": "test-api-key"
+    },
+    "children": [
+      {
+        "id": "9283f7-1831-434e",
+        "name": "Vessel 1",
+        "type": "VM",
+        "icon": {
+          "type": "material",
+          "value": "help-circle",
+          "size": 34,
+          "color": "#ef1515"
+        },
+        "ip": "192.168.1.234",
+        "url": "",
+        "color": "#094977",
+        "notes": "",
+        "autosize": false,
+        "styling": {
+          "backgroundColor": "#ffffff",
+          "backgroundGradient": "",
+          "backgroundCSS": "",
+          "backgroundImage": "",
+          "backgroundOpacity": "100",
+          "bgType": "color",
+          "borderColor": "#094977",
+          "borderSize": "2",
+          "borderStyle": "solid",
+          "borderCSS": "",
+          "titleBackgroundColor": "#b1aaaa",
+          "titleBackgroundGradient": "",
+          "titleBackgroundCSS": "",
+          "titleBackgroundImage": "",
+          "titleBackgroundOpacity": "100",
+          "titleBgType": "color",
+          "customCSS": "",
+          "borderRadius": "0",
+          "boxShadow": "",
+          "padding": "10",
+          "margin": "10"
+        },
+        "agent": null,
+        "children": [
+          {
+            "id": "c2c746-b405-4a4d",
+            "name": "Savings Account",
+            "type": "Computer",
+            "icon": {
+              "type": "fontawesome",
+              "value": "fab fa-github",
+              "size": 56
+            },
+            "ip": "192.168.1.233",
+            "url": "",
+            "color": "#0077cc",
+            "notes": "",
+            "autosize": false,
+            "children": [
+              {
+                "id": "12fe1f-dfde-4d85",
+                "name": "development",
+                "type": "LXC Container",
+                "icon": {
+                  "type": "emoji",
+                  "value": "🏠",
+                  "size": 38
+                },
+                "ip": "",
+                "url": "",
+                "color": "#0077cc",
+                "notes": "",
+                "autosize": false,
+                "children": [
+                  {
+                    "id": "045490-823b-4916",
+                    "name": "Example",
+                    "type": "Docker Container",
+                    "icon": {
+                      "type": "emoji",
+                      "value": "🌩️",
+                      "size": 44,
+                      "color": "#000000"
+                    },
+                    "ip": "",
+                    "url": "",
+                    "color": "#0077cc",
+                    "notes": "",
+                    "autosize": true,
+                    "styling": {
+                      "backgroundColor": "#ffffff",
+                      "backgroundGradient": "",
+                      "backgroundCSS": "",
+                      "backgroundImage": "",
+                      "backgroundOpacity": "100",
+                      "bgType": "color",
+                      "borderColor": "#0077cc",
+                      "borderSize": "2",
+                      "borderStyle": "solid",
+                      "borderCSS": "",
+                      "titleBackgroundColor": "#f0f0f0",
+                      "titleBackgroundGradient": "",
+                      "titleBackgroundCSS": "",
+                      "titleBackgroundImage": "",
+                      "titleBackgroundOpacity": "100",
+                      "titleBgType": "color",
+                      "customCSS": "",
+                      "borderRadius": "0",
+                      "boxShadow": "",
+                      "padding": "10",
+                      "margin": "10"
+                    },
+                    "agent": null,
+                    "children": [
+                      {
+                        "id": "b1671b-cf44-44b9",
+                        "name": "Example 2",
+                        "type": "Docker Container",
+                        "icon": {
+                          "type": "homelab",
+                          "value": "sphinx",
+                          "size": 30,
+                          "color": "#000000"
+                        },
+                        "ip": "",
+                        "url": "",
+                        "color": "#0077cc",
+                        "notes": "",
+                        "autosize": false,
+                        "styling": {
+                          "backgroundColor": "#ffffff",
+                          "backgroundGradient": "",
+                          "backgroundCSS": "",
+                          "backgroundImage": "",
+                          "backgroundOpacity": "100",
+                          "bgType": "color",
+                          "borderColor": "#0077cc",
+                          "borderSize": "2",
+                          "borderStyle": "solid",
+                          "borderCSS": "",
+                          "titleBackgroundColor": "#f0f0f0",
+                          "titleBackgroundGradient": "",
+                          "titleBackgroundCSS": "",
+                          "titleBackgroundImage": "",
+                          "titleBackgroundOpacity": "100",
+                          "titleBgType": "color",
+                          "customCSS": "",
+                          "borderRadius": "0",
+                          "boxShadow": "",
+                          "padding": "10",
+                          "margin": "10"
+                        },
+                        "agent": null,
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "ef11a7-c3be-4a8b",
+                    "name": "Example 3 - Application ",
+                    "type": "Application",
+                    "icon": {
+                      "type": "generative",
+                      "value": "Example 3",
+                      "size": 30,
+                      "color": "#000000"
+                    },
+                    "ip": "",
+                    "url": "",
+                    "color": "#0077cc",
+                    "notes": "",
+                    "autosize": false,
+                    "styling": {
+                      "backgroundColor": "#ffffff",
+                      "backgroundGradient": "",
+                      "backgroundCSS": "",
+                      "backgroundImage": "",
+                      "backgroundOpacity": "100",
+                      "bgType": "color",
+                      "borderColor": "#0077cc",
+                      "borderSize": "2",
+                      "borderStyle": "solid",
+                      "borderCSS": "",
+                      "titleBackgroundColor": "#a39f9f",
+                      "titleBackgroundGradient": "",
+                      "titleBackgroundCSS": "",
+                      "titleBackgroundImage": "",
+                      "titleBackgroundOpacity": "100",
+                      "titleBgType": "color",
+                      "customCSS": "",
+                      "borderRadius": "10",
+                      "boxShadow": "",
+                      "padding": "10",
+                      "margin": "0"
+                    },
+                    "agent": null,
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "7a222b-53ce-4851",
+        "name": "Example 4",
+        "type": "VM",
+        "icon": {
+          "type": "homelab",
+          "value": "hubzilla",
+          "size": 30,
+          "color": "#000000"
+        },
+        "ip": "",
+        "url": "",
+        "color": "#0077cc",
+        "notes": "",
+        "autosize": false,
+        "styling": {
+          "backgroundColor": "#ffffff",
+          "backgroundGradient": "",
+          "backgroundCSS": "",
+          "backgroundImage": "",
+          "backgroundOpacity": "100",
+          "bgType": "color",
+          "borderColor": "#0077cc",
+          "borderSize": "2",
+          "borderStyle": "solid",
+          "borderCSS": "",
+          "titleBackgroundColor": "#f0f0f0",
+          "titleBackgroundGradient": "",
+          "titleBackgroundCSS": "",
+          "titleBackgroundImage": "",
+          "titleBackgroundOpacity": "100",
+          "titleBgType": "color",
+          "customCSS": "",
+          "borderRadius": "0",
+          "boxShadow": "",
+          "padding": "10",
+          "margin": "0"
+        },
+        "agent": null,
+        "children": []
+      },
+      {
+        "id": "762984-42a5-422f",
+        "name": "Development",
+        "type": "VM",
+        "icon": {
+          "type": "material",
+          "value": "account-box-multiple-outline",
+          "size": 30,
+          "color": "#19d77e"
+        },
+        "ip": "192.168.1.55",
+        "url": "",
+        "color": "#0077cc",
+        "notes": "",
+        "autosize": false,
+        "styling": {
+          "backgroundColor": "#ffffff",
+          "backgroundGradient": "",
+          "backgroundCSS": "",
+          "backgroundImage": "",
+          "backgroundOpacity": "100",
+          "bgType": "color",
+          "borderColor": "#0077cc",
+          "borderSize": "2",
+          "borderStyle": "solid",
+          "borderCSS": "",
+          "titleBackgroundColor": "#f0f0f0",
+          "titleBackgroundGradient": "",
+          "titleBackgroundCSS": "",
+          "titleBackgroundImage": "",
+          "titleBackgroundOpacity": "100",
+          "titleBgType": "color",
+          "customCSS": "",
+          "borderRadius": "0",
+          "boxShadow": "",
+          "padding": "10",
+          "margin": "10"
+        },
+        "agent": null,
+        "children": []
+      }
+    ]
+  },
+  {
+    "id": "0bec7e-a6ad-4ffe",
+    "name": "vessel",
+    "type": "Computer",
+    "icon": {
+      "type": "url",
+      "value": "https://static.dezeen.com/uploads/2025/05/sq-google-g-logo-update_dezeen_2364_col_0-852x852.jpg",
+      "size": 30,
+      "color": "#000000"
+    },
+    "ip": "192.168.1.233",
+    "url": "",
+    "color": "#0077cc",
+    "notes": "",
+    "autosize": false,
+    "styling": {
+      "backgroundColor": "#ffffff",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": "100",
+      "bgType": "color",
+      "borderColor": "#0077cc",
+      "borderSize": "2",
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "titleBackgroundColor": "#f0f0f0",
+      "titleBackgroundGradient": "",
+      "titleBackgroundCSS": "",
+      "titleBackgroundImage": "",
+      "titleBackgroundOpacity": "100",
+      "titleBgType": "color",
+      "customCSS": "",
+      "borderRadius": "0",
+      "boxShadow": "",
+      "padding": "10",
+      "margin": "10"
+    },
+    "agent": null,
+    "children": [
+      {
+        "id": "971f56-b835-4ad9",
+        "name": "Pratheepan Thevadasan",
+        "type": "Computer",
+        "icon": "",
+        "ip": "",
+        "url": "",
+        "color": "#0077cc",
+        "notes": "",
+        "autosize": false,
+        "children": [
+          {
+            "id": "bb67c7-dfbb-46f3",
+            "name": "prad",
+            "type": "Computer",
+            "icon": "",
+            "ip": "",
+            "url": "http://www.google.com",
+            "color": "#0077cc",
+            "notes": "",
+            "autosize": false,
+            "children": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "1e4c31-6d55-4a18",
+    "name": "Clambake",
+    "type": "Computer",
+    "icon": {
+      "type": "material",
+      "value": "server",
+      "size": 30,
+      "color": "#000000"
+    },
+    "ip": "192.168.1.10",
+    "url": "",
+    "color": "#0077cc",
+    "notes": "",
+    "autosize": false,
+    "children": [
+      {
+        "id": "a9ed55-2e7a-469c",
+        "name": "Clambake-Unraid",
+        "type": "VM",
+        "icon": {
+          "type": "material",
+          "value": "monitor-dashboard",
+          "size": 30,
+          "color": "#40e811"
+        },
+        "ip": "192.168.1.50",
+        "url": "",
+        "color": "#0077cc",
+        "notes": "",
+        "autosize": false,
+        "children": [
+          {
+            "id": "3d3d30-bf0c-4f9f",
+            "name": "Sonnarr",
+            "type": "Docker Container",
+            "icon": {
+              "type": "homelab",
+              "value": "infomaniak-k",
+              "size": 30,
+              "color": "#000000"
+            },
+            "ip": "192.168.1.50:50",
+            "url": "",
+            "color": "#0077cc",
+            "notes": "",
+            "autosize": false,
+            "children": [
+              {
+                "id": "7bed7f-6d55-43c0",
+                "name": "asdasd",
+                "type": "Computer",
+                "icon": {
+                  "type": "fontawesome",
+                  "value": "fas fa-database",
+                  "size": 30,
+                  "color": "#000000"
+                },
+                "ip": "",
+                "url": "",
+                "color": "#0077cc",
+                "notes": "",
+                "autosize": false,
+                "styling": {
+                  "backgroundColor": "#3dc4e6",
+                  "backgroundGradient": "",
+                  "backgroundCSS": "",
+                  "backgroundImage": "",
+                  "backgroundOpacity": "100",
+                  "bgType": "color",
+                  "borderColor": "#0077cc",
+                  "borderSize": "2",
+                  "borderStyle": "solid",
+                  "borderCSS": "",
+                  "titleBackgroundColor": "#f0f0f0",
+                  "titleBackgroundGradient": "",
+                  "titleBackgroundCSS": "",
+                  "titleBackgroundImage": "",
+                  "titleBackgroundOpacity": "100",
+                  "titleBgType": "color",
+                  "customCSS": "",
+                  "borderRadius": "0",
+                  "boxShadow": "",
+                  "padding": "10",
+                  "margin": "10"
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "8826a9-e7d6-4b3d",
+            "name": "Radarr",
+            "type": "Docker Container",
+            "icon": {
+              "type": "homelab",
+              "value": "boinc",
+              "size": 30,
+              "color": "#000000"
+            },
+            "ip": "192.168.1.50",
+            "url": "",
+            "color": "#0077cc",
+            "notes": "",
+            "autosize": false,
+            "styling": {
+              "backgroundColor": "#0ffbff",
+              "backgroundGradient": "",
+              "backgroundCSS": "",
+              "backgroundImage": "",
+              "backgroundOpacity": "100",
+              "bgType": "color",
+              "borderColor": "#0077cc",
+              "borderSize": "2",
+              "borderStyle": "solid",
+              "borderCSS": "",
+              "titleBackgroundColor": "#f0f0f0",
+              "titleBackgroundGradient": "",
+              "titleBackgroundCSS": "",
+              "titleBackgroundImage": "",
+              "titleBackgroundOpacity": "100",
+              "titleBgType": "color",
+              "customCSS": "",
+              "borderRadius": "0",
+              "boxShadow": "",
+              "padding": "10",
+              "margin": "10"
+            },
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+]

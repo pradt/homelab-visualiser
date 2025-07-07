@@ -1,0 +1,32 @@
+# syntax=docker/dockerfile:1
+
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
+COPY . .
+RUN go build -o sys-agent ./cmd/main.go
+
+# Final image
+FROM alpine:latest
+
+WORKDIR /root/
+
+COPY --from=builder /app/sys-agent .
+
+RUN apk --no-cache add ca-certificates
+
+ENV API_KEY=changeme
+ENV TLS_ENABLED=false
+ENV WHITELISTED_CLIENTS=
+ENV SOCKET_PORT=9000
+ENV TLS_CERT_FILE=/certs/cert.pem
+ENV TLS_KEY_FILE=/certs/key.pem
+
+EXPOSE 9000
+
+ENTRYPOINT ["./sys-agent"]

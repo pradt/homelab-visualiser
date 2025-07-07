@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  sys-agent:
+    build: .
+    container_name: go-sys-agent
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      API_KEY: ${API_KEY}
+      TLS_ENABLED: ${TLS_ENABLED}
+      WHITELISTED_CLIENTS: ${WHITELISTED_CLIENTS}
+      SOCKET_PORT: ${SOCKET_PORT}
+      TLS_CERT_FILE: ${TLS_CERT_FILE}
+      TLS_KEY_FILE: ${TLS_KEY_FILE}
+    volumes:
+      - ./certs:/certs:ro
+    networks:
+      - sys-agent-net
+
+networks:
+  sys-agent-net:
+    driver: bridge

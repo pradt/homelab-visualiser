@@ -1,0 +1,75 @@
+{
+  "timestamp": "2025-07-07T03:42:32.691Z",
+  "status": "ok",
+  "system": {
+    "cpu_percent": [
+      25.403535903896035
+    ],
+    "memory_used": 7077.604598432888,
+    "memory_total": 16384,
+    "disk_used": 190.63261965698675,
+    "disk_total": 500,
+    "uptime": 445182,
+    "load_avg": {
+      "1m": 1.001672059075689,
+      "5m": 1.3772254246634104,
+      "15m": 0.19862131129164995
+    },
+    "network": [
+      {
+        "name": "eth0",
+        "bytes_sent": 35560,
+        "bytes_recv": 1624150,
+        "packets_sent": 507,
+        "packets_recv": 341
+      }
+    ],
+    "top_processes": [
+      {
+        "name": "nginx",
+        "cpu": 6.023419128646097,
+        "mem": 1.1966345012382829,
+        "pid": 1494
+      }
+    ]
+  },
+  "containers": [
+    {
+      "id": "test-container-1",
+      "name": "/test-nginx",
+      "image": "nginx:latest",
+      "status": "running",
+      "cpu_percent": 2.844840611476255,
+      "memory_usage": 29113757.476429213,
+      "memory_limit": 1073741824,
+      "memory_percent": 3.056677083373547,
+      "network": {
+        "eth0": {
+          "rx_bytes": 713791,
+          "tx_bytes": 199229,
+          "rx_packets": 808,
+          "tx_packets": 409
+        }
+      }
+    }
+  ],
+  "docker_meta": [
+    {
+      "id": "test-container-1",
+      "names": [
+        "/test-nginx"
+      ],
+      "image": "nginx:latest",
+      "status": "running",
+      "state": "running",
+      "ports": [],
+      "created": 1751773352
+    }
+  ],
+  "logs": {
+    "test-nginx": [
+      "2025-07-07T03:42:32.691Z [INFO] Server started",
+      "2025-07-07T03:42:32.691Z [INFO] Listening on port 80"
+    ]
+  }
+}

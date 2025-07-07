@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  homelab-visualiser:
+    image: ghcr.io/pradt/homelab-visualiser/homelab-visualiser:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - homelab_data:/app/backend/storage
+    environment:
+      - PORT=3000
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+    networks:
+      - homelab-network
+
+volumes:
+  homelab_data:
+    driver: local
+
+networks:
+  homelab-network:
+    driver: overlay 
