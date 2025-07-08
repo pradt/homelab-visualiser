@@ -1,6 +1,6 @@
 {
   "name": "homelab-visualiser-backend",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "server.js",
   "dependencies": {
     "@material-icons/svg": "^1.0.33",

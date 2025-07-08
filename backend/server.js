@@ -94,6 +94,27 @@ app.post('/api/containers', (req, res) => {
   res.status(200).json({ status: 'saved' });
 });
 
+app.delete('/api/containers/:id', (req, res) => {
+  const id = req.params.id;
+  let containers = loadContainersAndConnectAgents();
+
+  function deleteRecursively(list, id) {
+    return list.filter(container => {
+      if (container.id === id) {
+        // Disconnect agent if needed
+        agentManager.disconnectAgent(container.id);
+        return false;
+      }
+      container.children = deleteRecursively(container.children || [], id);
+      return true;
+    });
+  }
+
+  containers = deleteRecursively(containers, id);
+  fs.writeFileSync(DATA_FILE, JSON.stringify(containers, null, 2));
+  res.status(200).json({ status: 'deleted' });
+});
+
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);

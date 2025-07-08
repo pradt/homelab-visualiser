@@ -38,6 +38,7 @@
     <div class="modal-tabs">
       <button class="tab-btn active" onclick="switchTab('details')">Details</button>
       <button class="tab-btn" onclick="switchTab('style')">Style</button>
+      <button class="tab-btn" onclick="switchTab('maintenance')">Maintenance</button>
     </div>
     <form id="container-form">
       <input type="hidden" name="parentId" />
@@ -225,6 +226,18 @@
           <label>Box Shadow: <input type="text" name="boxShadow" placeholder="0 2px 4px rgba(0,0,0,0.1)" /></label>
           <label>Padding: <input type="number" name="padding" min="0" max="50" value="10" step="1" />px</label>
           <label>Margin: <input type="number" name="margin" min="0" max="50" value="10" step="1" />px</label>
+        </div>
+      </div>
+      
+      <!-- Maintenance Tab -->
+      <div id="maintenance-tab" class="tab-content">
+        <div class="style-section">
+          <h4>Delete Container</h4>
+          <div id="delete-warning" class="warning-text">
+            <p>This will delete the container and all its children:</p>
+            <ul id="delete-list"></ul>
+          </div>
+          <button type="button" class="danger-btn" onclick="confirmDeleteContainer()">Delete</button>
         </div>
       </div>
       

@@ -934,3 +934,25 @@ body {
     background-color: #6c757d;
   }
   
+  .danger-btn {
+    background: #d32f2f;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  .danger-btn:hover {
+    background: #b71c1c;
+  }
+  .warning-text {
+    color: #b71c1c;
+    background: #ffebee;
+    border: 1px solid #d32f2f;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+  }
+  

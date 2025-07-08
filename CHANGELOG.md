@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - Container Delete Functionality
+
 ### Added
+- Container deletion functionality with recursive child deletion
+  - New "Maintenance" tab in Container Configuration modal
+  - Visual list of container and all children to be deleted
+  - Confirmation dialog before deletion
+  - Backend API endpoint DELETE /api/containers/:id
+  - Automatic modal closure and view refresh after deletion
 - Console logging with timestamps for all API routes
   - GET /api/containers - logs when retrieving containers data
   - GET /api/icons/fontawesome - logs when serving FontAwesome icons
@@ -16,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - GET /api/icons/simpleicons - logs when serving Simple Icons
   - GET /api/icons/homelab - logs when serving Homelab icons
   - POST /api/containers - logs when saving containers data
+  - DELETE /api/containers/:id - logs when deleting containers
   - Server startup - logs when server starts listening
 
 ### Changed

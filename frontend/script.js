@@ -810,6 +810,50 @@ function debounce(func, delay) {
     }
     
     document.getElementById('container-modal').classList.remove('hidden');
+    populateDeleteList(container);
+  }
+  
+  function populateDeleteList(container) {
+    const deleteList = document.getElementById('delete-list');
+    if (!deleteList) return;
+    deleteList.innerHTML = '';
+    function addItem(item, depth = 0) {
+      const li = document.createElement('li');
+      li.textContent = `${'— '.repeat(depth)}${item.name}`;
+      deleteList.appendChild(li);
+      (item.children || []).forEach(child => addItem(child, depth + 1));
+    }
+    addItem(container);
+  }
+  
+  function confirmDeleteContainer() {
+    const form = document.getElementById('container-form');
+    const containerId = form.containerId.value;
+    if (!containerId) return;
+    if (confirm('Are you sure you want to delete this container and all its children? This action cannot be undone.')) {
+      deleteContainer(containerId);
+    }
+  }
+  
+  function deleteContainer(containerId) {
+    fetch(`/api/containers/${containerId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' }
+    })
+      .then(res => {
+        if (res.ok) {
+          hideModal();
+          // Refresh containers from backend
+          fetch('/api/containers')
+            .then(r => r.json())
+            .then(data => {
+              containers = data;
+              renderContainers();
+            });
+        } else {
+          alert('Failed to delete container.');
+        }
+      });
   }
   
   function hideModal() {
