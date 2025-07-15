@@ -132,7 +132,7 @@ docker-compose up -d
 mkdir -p /path/to/your/data
 
 # Pull the latest image
-docker pull ghcr.io/pradt/homelab-visualiser/homelab-visualiser:latest
+docker pull ghcr.io/pradt/homelab-visualiser:latest
 
 # Run the container
 docker run -d \
@@ -140,7 +140,7 @@ docker run -d \
   -p 3000:3000 \
   -v /path/to/your/data:/app/backend/storage \
   --restart unless-stopped \
-  ghcr.io/pradt/homelab-visualiser/homelab-visualiser:latest
+  ghcr.io/pradt/homelab-visualiser:latest
 ```
 
 ##### Running with Docker Swarm
@@ -162,10 +162,10 @@ docker service ls
 If you prefer to pull the image manually:
 ```bash
 # Pull the latest version
-docker pull ghcr.io/pradt/homelab-visualiser/homelab-visualiser:latest
+docker pull ghcr.io/pradt/homelab-visualiser:latest
 
 # Or pull a specific version
-docker pull ghcr.io/pradt/homelab-visualiser/homelab-visualiser:v1.0.0
+docker pull ghcr.io/pradt/homelab-visualiser:v1.0.0
 ```
 
 
@@ -174,7 +174,7 @@ docker pull ghcr.io/pradt/homelab-visualiser/homelab-visualiser:v1.0.0
 
 ### Image Source
 The application uses a pre-built Docker image from GitHub Container Registry:
-- **Image**: `ghcr.io/pradt/homelab-visualiser/homelab-visualiser:latest`
+- **Image**: `ghcr.io/pradt/homelab-visualiser:latest`
 - **Registry**: GitHub Container Registry (ghcr.io)
 - **Automatic Updates**: Pull the latest image to get updates
 
@@ -320,7 +320,7 @@ docker run -d \
   -p 3000:3000 \
   -v /path/to/your/data:/app/backend/storage \
   --restart unless-stopped \
-  ghcr.io/pradt/homelab-visualiser/homelab-visualiser:latest
+  ghcr.io/pradt/homelab-visualiser:latest
 ```
 
 ## Troubleshooting
