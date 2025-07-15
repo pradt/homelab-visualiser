@@ -299,7 +299,7 @@ To update to the latest version:
 docker-compose down
 
 # Pull the latest image
-docker pull ghcr.io/pradt/homelab-visualiser/homelab-visualiser:latest
+docker pull ghcr.io/pradt/homelab-visualiser:latest
 
 # Start with the new image
 docker-compose up -d
@@ -312,7 +312,7 @@ docker stop homelab-visualiser
 docker rm homelab-visualiser
 
 # Pull the latest image
-docker pull ghcr.io/pradt/homelab-visualiser/homelab-visualiser:latest
+docker pull ghcr.io/pradt/homelab-visualiser:latest
 
 # Run with the new image (use your original run command)
 docker run -d \
