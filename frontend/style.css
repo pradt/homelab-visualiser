@@ -934,3 +934,684 @@ body {
     background-color: #6c757d;
   }
   
+  /* Custom View Styles */
+#custom-view-toolbar {
+  background-color: #e8f4fd;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Columns Layout */
+.columns-container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  overflow-x: auto;
+  min-height: 500px;
+}
+
+.column {
+  flex: 1;
+  min-width: 280px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f9f9f9;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* Fallback for browsers without :has() support - columns auto-size by default */
+/* Single column takes full width - this will be overridden by JavaScript if needed */
+
+/* Columns auto-size and share space equally by default */
+
+/* Multiple columns share space equally - auto-sizing by default */
+
+.column-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-bottom: 1px solid #ddd;
+  border-radius: 8px 8px 0 0;
+}
+
+.column-title {
+  font-weight: bold;
+  font-size: 16px;
+  color: #333;
+  padding: 4px 0;
+}
+
+.column-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Column Hamburger Menu */
+.column-hamburger-menu {
+  position: relative;
+  /*display: none !important;*/
+}
+
+.edit-mode-active .column-hamburger-menu {
+  display: inline-block !important;
+}
+
+.column-hamburger-btn {
+  background: #0077cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 8px 12px;
+  transition: all 0.2s;
+  font-weight: bold;
+}
+
+.column-hamburger-btn:hover {
+  background: #005fa3;
+  transform: translateY(-1px);
+}
+
+.column-hamburger-actions {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 2px solid #0077cc;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 119, 204, 0.3);
+  z-index: 1000;
+  min-width: 150px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  overflow: hidden;
+}
+
+.column-hamburger-menu.show .column-hamburger-actions {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.column-hamburger-actions button {
+  background: white;
+  border: none;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.2s;
+  flex: 1;
+  text-align: center;
+  border-right: 1px solid #e0e0e0;
+}
+
+.column-hamburger-actions button:last-child {
+  border-right: none;
+}
+
+.column-hamburger-actions button:hover {
+  background: #f8f9fa;
+  color: #0077cc;
+}
+
+.column-drag-handle {
+  cursor: grab !important;
+  padding: 8px 12px;
+  color: white;
+  font-size: 16px;
+  background: linear-gradient(135deg, #0077cc 0%, #005fa3 100%);
+  border: 2px solid #0077cc;
+  border-radius: 6px;
+  font-weight: bold;
+  transition: all 0.2s ease;
+  user-select: none;
+  box-shadow: 0 2px 6px rgba(0, 119, 204, 0.3);
+  min-width: 40px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+ /*opacity: 0 !important;
+  visibility: hidden !important;*/
+}
+
+.edit-mode-active .column-drag-handle {
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: flex !important;
+}
+
+
+
+.column-categories {
+  padding: 15px;
+  min-height: 200px;
+  overflow-y: visible;
+}
+
+.category-drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  color: #999;
+  margin: 10px 0;
+  transition: all 0.3s ease;
+  display: none;
+}
+
+.edit-mode-active .category-drop-zone {
+  display: block;
+}
+
+.category-drop-zone.drag-over {
+  border-color: #0077cc;
+  background: rgba(0, 119, 204, 0.1);
+  color: #0077cc;
+}
+
+.drop-zone-content {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Column placeholder for reordering */
+.column-placeholder {
+  margin: 0 20px;
+  padding: 20px;
+  border: 2px dashed #28a745;
+  border-radius: 8px;
+  background: rgba(40, 167, 69, 0.1);
+  min-width: 300px;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: #28a745;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+.column-placeholder::after {
+  content: "📁 Drop column here";
+}
+
+/* Enhanced drop zone styling */
+.column-categories.drop-zone-active {
+  border: 2px dashed #0077cc;
+  background: rgba(0, 119, 204, 0.05);
+  border-radius: 8px;
+}
+
+.column-categories.drag-over {
+  border-color: #28a745;
+  background: rgba(40, 167, 69, 0.1);
+  box-shadow: inset 0 0 10px rgba(40, 167, 69, 0.2);
+}
+
+/* Category group adjustments in columns */
+.column .category-group {
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.edit-mode-active .column .category-group {
+  margin: 8px 0;
+  padding: 8px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 1px dashed #0077cc;
+}
+
+/* Column title editing */
+.column-title {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.edit-mode-active .column-title:hover {
+  background-color: rgba(0, 119, 204, 0.1);
+}
+
+.edit-mode-active .column-title:hover::after {
+  content: " ✏️";
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Add Column Button */
+#add-column-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: 2px solid #28a745;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.edit-mode-active #add-column-btn {
+  opacity: 1;
+  visibility: visible;
+}
+
+#add-column-btn:hover {
+  background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+  border-color: #20c997;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+/* Edit mode adjustments for columns */
+.edit-mode-active .column {
+  border: 2px dashed #0077cc;
+  background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+  transition: none !important;
+}
+
+.edit-mode-active .column-header {
+  background: linear-gradient(135deg, #e8f4fd 0%, #d1e7ff 100%);
+  border: 2px solid #0077cc;
+  transition: none !important;
+}
+  
+  /* Edit mode visual feedback */
+  .edit-mode-active .category-group {
+    border: 2px dashed #0077cc;
+    background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+    /* Disable transitions during edit mode to prevent conflicts */
+    transition: none !important;
+  }
+  
+  .edit-mode-active .category-header {
+    background: linear-gradient(135deg, #e8f4fd 0%, #d1e7ff 100%);
+    border: 2px solid #0077cc;
+    position: relative;
+    /* Disable transitions during edit mode */
+    transition: none !important;
+  }
+  
+  /* Make category groups more compact in edit mode */
+  .edit-mode-active .category-group {
+    margin: 10px 0;
+    padding: 0;
+    min-height: 60px;
+  }
+  
+  .edit-mode-active .category-header {
+    margin-bottom: 0;
+    border-radius: 8px;
+    padding: 12px 20px;
+  }
+  
+
+  
+  /* Disable all transitions on drag elements to prevent conflicts */
+  .edit-mode-active .category-group,
+  .edit-mode-active .category-header,
+  .edit-mode-active .category-title,
+  .edit-mode-active .category-drag-handle,
+  .edit-mode-active .container-box {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  /* Re-enable smooth transitions only for drag handle interactions */
+  .edit-mode-active .category-drag-handle {
+    transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+  }
+  
+  .edit-mode-active .category-drag-handle:hover {
+    transition: all 0.15s ease !important;
+  }
+  
+  /* Style adjustments for header-only mode */
+  .edit-mode-active .category-title {
+    font-size: 20px;
+    font-weight: 600;
+  }
+  
+  .edit-mode-active .category-title span {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  /* Improved drag handle visibility in edit mode */
+.edit-mode-active .category-drag-handle {
+  opacity: 1;
+  visibility: visible;
+  /* Remove the pulse animation - it conflicts with dragging */
+  animation: none !important;
+  min-width: 80px;
+  padding: 12px 18px;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+#edit-mode-btn {
+  padding: 8px 12px;
+  border: 1px solid #0077cc;
+  background: #0077cc;
+  color: white;
+  cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+#edit-mode-btn:hover {
+  background: #005fa3;
+}
+
+#edit-mode-btn.edit-active {
+  background: #dc3545;
+  border-color: #dc3545;
+}
+
+#edit-mode-btn.edit-active:hover {
+  background: #c82333;
+}
+
+#edit-mode-status {
+  font-size: 14px;
+  color: #666;
+  margin-left: 10px;
+}
+  
+  /* Category Groups */
+.category-group {
+  margin: 20px 0;
+  padding: 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f9f9f9;
+  /* Disable transition during edit mode to prevent drag conflicts */
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+/* Disable transitions when dragging */
+.edit-mode-active .category-group {
+  transition: none !important;
+}
+  
+  .category-group.dragging {
+    opacity: 0.3;
+    transform: rotate(3deg) scale(0.95);
+    box-shadow: 0 8px 25px rgba(0, 119, 204, 0.3);
+    z-index: 1000;
+  }
+  
+  .category-group.drag-over {
+    border-color: #0077cc;
+    border-width: 3px;
+    background: linear-gradient(135deg, #e8f4fd 0%, #d1e7ff 100%);
+    box-shadow: 0 4px 15px rgba(0, 119, 204, 0.2);
+    transform: scale(1.02);
+    margin: 25px 0;
+  }
+  
+  .category-group.drag-over::before {
+    content: "Drop here";
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #0077cc;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 1001;
+    box-shadow: 0 4px 12px rgba(0, 119, 204, 0.3);
+  }
+  
+  /* Placeholder for dragged item */
+.category-placeholder {
+  margin: 10px 0;
+  padding: 15px;
+  border: 2px dashed #0077cc;
+  border-radius: 8px;
+  background: rgba(0, 119, 204, 0.1);
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #0077cc;
+  font-weight: bold;
+  /* Remove transition to prevent conflicts during drag */
+  transition: none !important;
+}
+
+.category-placeholder .placeholder-content {
+  padding: 10px 20px;
+  background: rgba(0, 119, 204, 0.2);
+  border-radius: 4px;
+  border: 1px solid #0077cc;
+}
+
+/* Drag helper styling */
+.category-drag-helper {
+  /* Ensure proper rendering */
+  pointer-events: none !important;
+  transform-origin: center center;
+}
+
+/* Disable all transitions during dragging operations */
+.ui-sortable-helper,
+.ui-sortable-helper *,
+.ui-sortable-placeholder,
+.ui-sortable-placeholder * {
+  transition: none !important;
+  animation: none !important;
+}
+  
+  .category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px 8px 0 0;
+  }
+  
+  .category-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .category-drag-handle {
+    cursor: grab !important;
+    padding: 10px 16px;
+    color: white;
+    font-size: 16px;
+    background: linear-gradient(135deg, #0077cc 0%, #005fa3 100%);
+    border: 2px solid #0077cc;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    user-select: none;
+    box-shadow: 0 2px 8px rgba(0, 119, 204, 0.3);
+    position: relative;
+    min-width: 50px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: auto !important;
+    opacity: 0;
+    visibility: hidden;
+  }
+  
+  /* Show drag handles only in edit mode */
+  .edit-mode-active .category-drag-handle {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+  
+  .category-drag-handle:hover {
+    background: linear-gradient(135deg, #005fa3 0%, #004080 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 119, 204, 0.4);
+    border-color: #004080;
+    cursor: grabbing !important;
+  }
+  
+  .category-drag-handle:active {
+    cursor: grabbing;
+    transform: translateY(0) scale(0.95);
+  }
+  
+  /* Pulse animation removed for edit mode since it conflicts with dragging */
+  
+  .category-containers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  /* Hide container content in edit mode - show only headers */
+  .edit-mode-active .category-containers,
+  .edit-mode-active .category-group .category-containers,
+  .edit-mode-active .column .category-group .category-containers {
+    display: none !important;
+  }
+  
+  /* Sortable styles */
+  .category-group.dragging {
+    opacity: 0.5;
+  }
+  
+  /* Categories in container form */
+  #categories-label {
+    margin-top: 10px;
+  }
+  
+  #categories-label input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  /* Category tags display */
+  .category-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+  }
+  
+  .category-tag {
+    background: #0077cc;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  /* Editable column title styling */
+  .edit-mode-active .column-title-text {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .edit-mode-active .column-title-text:hover {
+    background-color: rgba(0, 119, 204, 0.1);
+    border: 1px dashed #0077cc;
+  }
+  
+  .edit-mode-active .column-title-text:hover::after {
+    content: ' ✏️';
+    font-size: 12px;
+    opacity: 0.7;
+  }
+  
+  /* Additional styling for always-editable titles */
+  .column-title-text.editable {
+    background-color: rgba(0, 119, 204, 0.05);
+    border: 1px solid rgba(0, 119, 204, 0.2);
+    border-radius: 4px;
+    padding: 4px 8px;
+  }
+
+  .column-title-text.editable:hover {
+    background-color: rgba(0, 119, 204, 0.15);
+    border-color: #0077cc;
+  }
+  
+  .column-title-input {
+    font-family: inherit !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    background: white !important;
+    border: 2px solid #0077cc !important;
+    border-radius: 4px !important;
+    padding: 4px 8px !important;
+    width: 150px !important;
+    box-shadow: 0 2px 8px rgba(0, 119, 204, 0.3) !important;
+    z-index: 1000 !important;
+    outline: none !important;
+  }
+  
+  .column-title-input:focus {
+    border-color: #005fa3 !important;
+    box-shadow: 0 4px 12px rgba(0, 119, 204, 0.5) !important;
+  }
+  

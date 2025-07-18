@@ -11,13 +11,17 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.2.96/css/materialdesignicons.min.css" />
   <!-- Simple Icons -->
   <link rel="stylesheet" href="https://cdn.simpleicons.org/" />
+  <!-- jQuery and jQuery UI -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" />
   <script defer src="script.js"></script>
   <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
   <div id="toolbar">
     <input type="text" id="search" placeholder="Search by name or IP..." />
-    <button onclick="showCreateModal(null)">➕ Add Container</button>
+    <button id="add-container-btn" onclick="showCreateModal(null)">➕ Add Container</button>
     <div class="width-control">
       <label for="width-slider">Width: <span id="width-value">100%</span></label>
       <input type="range" id="width-slider" min="10" max="100" value="100" step="5" />
@@ -25,8 +29,16 @@
     <div class="view-toggle">
       <button id="box-view-btn" class="view-btn active" onclick="switchView('box')">📦 Box View</button>
       <button id="tree-view-btn" class="view-btn" onclick="switchView('tree')">🌳 Tree View</button>
+      <button id="custom-view-btn" class="view-btn" onclick="switchView('custom')">🏷️ Custom View</button>
       <button id="settings-btn" class="view-btn" onclick="showPageSettings()">⚙️ Settings</button>
     </div>
+  </div>
+  
+  <!-- Custom View Toolbar -->
+  <div id="custom-view-toolbar" class="hidden">
+    <button id="edit-mode-btn" onclick="toggleEditMode()">✏️ Edit Mode</button>
+    <button id="add-column-btn" onclick="addNewColumn()">➕ Add Column</button>
+    <span id="edit-mode-status">Drag categories to reorder</span>
   </div>
   <div id="container-root"></div>
 
@@ -61,6 +73,7 @@
           <label>URL: <input type="text" name="url" /></label>
           <label>Notes: <textarea name="notes"></textarea></label>
           <label><input type="checkbox" name="autosize" /> Auto-size</label>
+          <label id="categories-label" class="hidden">Categories: <input type="text" name="categories" placeholder="Enter categories separated by commas (e.g., web, database, monitoring)" /></label>
         </div>
         
         <!-- Agent Configuration Section -->
@@ -299,6 +312,80 @@
       <div class="modal-buttons">
         <button type="submit">Save Settings</button>
         <button type="button" onclick="hidePageSettings()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Column Styling Modal -->
+  <div id="column-styling-modal" class="modal hidden">
+    <div class="modal-header">
+      <h3>Column Styling</h3>
+      <button class="close-btn" onclick="hideColumnStyleModal()">×</button>
+    </div>
+    <form id="column-styling-form">
+      <input type="hidden" name="columnId" />
+      
+      <div class="style-section">
+        <h4>Column Visibility</h4>
+        <label><input type="checkbox" name="hideHeader" /> Hide column header</label>
+      </div>
+      
+      <div class="style-section">
+        <h4>Column Background</h4>
+        <label>Background Type: 
+          <select name="bgType" onchange="updateColumnBackgroundOptions()">
+            <option value="color">Solid Color</option>
+            <option value="gradient">Gradient</option>
+            <option value="css">Custom CSS</option>
+          </select>
+        </label>
+        <div id="column-bg-color-option">
+          <label>Background Color: <input type="color" name="backgroundColor" value="#f9f9f9" /></label>
+        </div>
+        <div id="column-bg-gradient-option" class="hidden">
+          <label>Gradient: <input type="text" name="backgroundGradient" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
+        </div>
+        <div id="column-bg-css-option" class="hidden">
+          <label>Custom CSS: <textarea name="backgroundCSS" placeholder="background: url('image.jpg') center/cover;"></textarea></label>
+        </div>
+        <label>Background Image URL: <input type="text" name="backgroundImage" placeholder="https://example.com/image.jpg" /></label>
+        <label>Background Transparency: 
+          <input type="range" name="backgroundOpacity" min="0" max="100" value="100" step="5" />
+          <span id="column-opacity-value">100%</span>
+        </label>
+      </div>
+      
+      <div class="style-section">
+        <h4>Column Border</h4>
+        <label>Border Color: <input type="color" name="borderColor" value="#e0e0e0" /></label>
+        <label>Border Size: <input type="number" name="borderSize" min="0" max="20" value="2" step="1" />px</label>
+        <label>Border Style: 
+          <select name="borderStyle">
+            <option value="solid">Solid</option>
+            <option value="dashed">Dashed</option>
+            <option value="dotted">Dotted</option>
+            <option value="double">Double</option>
+            <option value="groove">Groove</option>
+            <option value="ridge">Ridge</option>
+            <option value="inset">Inset</option>
+            <option value="outset">Outset</option>
+          </select>
+        </label>
+        <label>Custom Border CSS: <textarea name="borderCSS" placeholder="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></textarea></label>
+      </div>
+      
+      <div class="style-section">
+        <h4>Additional Styles</h4>
+        <label>Custom CSS: <textarea name="customCSS" placeholder="Add any additional CSS styles here..."></textarea></label>
+        <label>Border Radius: <input type="number" name="borderRadius" min="0" max="50" value="8" step="1" />px</label>
+        <label>Box Shadow: <input type="text" name="boxShadow" placeholder="0 2px 4px rgba(0,0,0,0.1)" /></label>
+        <label>Padding: <input type="number" name="padding" min="0" max="50" value="15" step="1" />px</label>
+        <label>Margin: <input type="number" name="margin" min="0" max="50" value="10" step="1" />px</label>
+      </div>
+      
+      <div class="modal-buttons">
+        <button type="submit">Save Styling</button>
+        <button type="button" onclick="hideColumnStyleModal()">Cancel</button>
       </div>
     </form>
   </div>

@@ -105,13 +105,41 @@
                 "icon": {
                   "type": "emoji",
                   "value": "🏠",
-                  "size": 38
+                  "size": 38,
+                  "color": "#000000"
                 },
                 "ip": "",
                 "url": "",
                 "color": "#0077cc",
                 "notes": "",
                 "autosize": false,
+                "styling": {
+                  "backgroundColor": "#ffffff",
+                  "backgroundGradient": "",
+                  "backgroundCSS": "",
+                  "backgroundImage": "",
+                  "backgroundOpacity": "100",
+                  "bgType": "color",
+                  "borderColor": "#0077cc",
+                  "borderSize": "2",
+                  "borderStyle": "solid",
+                  "borderCSS": "",
+                  "titleBackgroundColor": "#f0f0f0",
+                  "titleBackgroundGradient": "",
+                  "titleBackgroundCSS": "",
+                  "titleBackgroundImage": "",
+                  "titleBackgroundOpacity": "100",
+                  "titleBgType": "color",
+                  "customCSS": "",
+                  "borderRadius": "0",
+                  "boxShadow": "",
+                  "padding": "10",
+                  "margin": "10"
+                },
+                "agent": null,
+                "categories": [
+                  "cat6"
+                ],
                 "children": [
                   {
                     "id": "045490-823b-4916",
@@ -152,6 +180,9 @@
                       "margin": "10"
                     },
                     "agent": null,
+                    "categories": [
+                      "Meeker Maker"
+                    ],
                     "children": [
                       {
                         "id": "b1671b-cf44-44b9",
@@ -192,6 +223,10 @@
                           "margin": "10"
                         },
                         "agent": null,
+                        "categories": [
+                          "cat1",
+                          "cat2"
+                        ],
                         "children": []
                       }
                     ]
@@ -235,6 +270,10 @@
                       "margin": "0"
                     },
                     "agent": null,
+                    "categories": [
+                      "cat2",
+                      "cat3"
+                    ],
                     "children": []
                   }
                 ]

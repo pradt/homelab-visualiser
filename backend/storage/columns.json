@@ -1,0 +1,82 @@
+[
+  {
+    "id": "24c476-9181-4ad9",
+    "name": "Column 2",
+    "order": 1,
+    "styling": {
+      "hideHeader": true,
+      "bgType": "color",
+      "backgroundColor": "#f9f9f9",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": "100",
+      "borderColor": "#e0e0e0",
+      "borderSize": "2",
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "customCSS": "",
+      "borderRadius": "8",
+      "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+      "padding": "15",
+      "margin": "10"
+    },
+    "categories": [
+      "cat2",
+      "cat3"
+    ]
+  },
+  {
+    "id": "a9f84d-66f9-4a78",
+    "name": "Column 3",
+    "order": 2,
+    "styling": {
+      "hideHeader": false,
+      "bgType": "color",
+      "backgroundColor": "#16a252",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": "100",
+      "borderColor": "#e0e0e0",
+      "borderSize": "2",
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "customCSS": "",
+      "borderRadius": "8",
+      "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+      "padding": "15",
+      "margin": "10"
+    },
+    "categories": [
+      "Uncategorized"
+    ]
+  },
+  {
+    "id": "8a3053-34f1-4863",
+    "name": "Column 3",
+    "order": 2,
+    "styling": {
+      "bgType": "color",
+      "backgroundColor": "#f9f9f9",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": 100,
+      "borderColor": "#e0e0e0",
+      "borderSize": 2,
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "borderRadius": 8,
+      "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+      "padding": 15,
+      "margin": 10,
+      "customCSS": ""
+    },
+    "categories": [
+      "Meeker Maker",
+      "cat1",
+      "cat6"
+    ]
+  }
+]

@@ -19,6 +19,7 @@ const DATA_FILE = path.join(__dirname, 'storage', 'containers.json');
 
 const storageDir = path.join(__dirname, 'storage');
 const dataFile = path.join(storageDir, 'containers.json');
+const columnsFile = path.join(storageDir, 'columns.json');
 
 // Initialize agent manager
 const agentManager = new AgentManager(io);
@@ -29,6 +30,9 @@ if (!fs.existsSync(storageDir)) {
 }
 if (!fs.existsSync(dataFile)) {
   fs.writeFileSync(dataFile, '[]'); // initialize with empty list
+}
+if (!fs.existsSync(columnsFile)) {
+  fs.writeFileSync(columnsFile, '[]'); // initialize with empty columns list
 }
 
 app.use(express.json());
@@ -92,6 +96,48 @@ app.post('/api/containers', (req, res) => {
   
   fs.writeFileSync(DATA_FILE, JSON.stringify(containers, null, 2));
   res.status(200).json({ status: 'saved' });
+});
+
+// Column configuration endpoints
+app.get('/api/columns', (req, res) => {
+  console.log(`[${new Date().toISOString()}] GET /api/columns - Retrieving column configurations`);
+  
+  if (!fs.existsSync(columnsFile)) {
+    console.log(`[${new Date().toISOString()}] Columns file does not exist, returning empty array`);
+    fs.writeFileSync(columnsFile, '[]');
+    return res.json([]);
+  }
+  
+  try {
+    const data = fs.readFileSync(columnsFile, 'utf-8');
+    const columns = JSON.parse(data);
+    console.log(`[${new Date().toISOString()}] Successfully retrieved ${columns.length} columns`);
+    res.json(columns);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error reading columns file:`, error);
+    res.status(500).json({ error: 'Failed to read columns configuration' });
+  }
+});
+
+app.post('/api/columns', (req, res) => {
+  console.log(`[${new Date().toISOString()}] POST /api/columns - Saving column configurations`);
+  
+  try {
+    const columns = req.body;
+    
+    // Validate that it's an array
+    if (!Array.isArray(columns)) {
+      return res.status(400).json({ error: 'Columns data must be an array' });
+    }
+    
+    // Save to file
+    fs.writeFileSync(columnsFile, JSON.stringify(columns, null, 2));
+    console.log(`[${new Date().toISOString()}] Successfully saved ${columns.length} columns`);
+    res.status(200).json({ status: 'saved' });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error saving columns:`, error);
+    res.status(500).json({ error: 'Failed to save columns configuration' });
+  }
 });
 
 // Socket.IO connection handling
