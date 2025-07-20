@@ -225,7 +225,8 @@
                         "agent": null,
                         "categories": [
                           "cat1",
-                          "cat2"
+                          "cat2",
+                          "new category"
                         ],
                         "children": []
                       }

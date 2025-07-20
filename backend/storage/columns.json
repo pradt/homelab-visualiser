@@ -10,20 +10,25 @@
       "backgroundGradient": "",
       "backgroundCSS": "",
       "backgroundImage": "",
-      "backgroundOpacity": "100",
+      "backgroundOpacity": 100,
       "borderColor": "#e0e0e0",
-      "borderSize": "2",
+      "borderSize": 2,
       "borderStyle": "solid",
       "borderCSS": "",
       "customCSS": "",
-      "borderRadius": "8",
+      "borderRadius": 8,
       "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
-      "padding": "15",
-      "margin": "10"
+      "padding": 15,
+      "margin": 10
     },
     "categories": [
-      "cat2",
+      "cat6",
+      "new category",
       "cat3"
+    ],
+    "role": "row",
+    "children": [
+      "701584-897f-40d3"
     ]
   },
   {
@@ -37,20 +42,23 @@
       "backgroundGradient": "",
       "backgroundCSS": "",
       "backgroundImage": "",
-      "backgroundOpacity": "100",
+      "backgroundOpacity": 100,
       "borderColor": "#e0e0e0",
-      "borderSize": "2",
+      "borderSize": 2,
       "borderStyle": "solid",
       "borderCSS": "",
       "customCSS": "",
-      "borderRadius": "8",
+      "borderRadius": 8,
       "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
-      "padding": "15",
-      "margin": "10"
+      "padding": 15,
+      "margin": 10
     },
     "categories": [
-      "Uncategorized"
-    ]
+      "cat1",
+      "Uncategorized",
+      "cat2"
+    ],
+    "role": "column"
   },
   {
     "id": "8a3053-34f1-4863",
@@ -73,10 +81,86 @@
       "margin": 10,
       "customCSS": ""
     },
+    "categories": []
+  },
+  {
+    "id": "701584-897f-40d3",
+    "name": "Column 4",
+    "role": "column",
+    "order": 3,
+    "styling": {
+      "hideHeader": false,
+      "bgType": "color",
+      "backgroundColor": "#f9f9f9",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": 100,
+      "borderColor": "#e0e0e0",
+      "borderSize": 2,
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "borderRadius": 8,
+      "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+      "padding": 15,
+      "margin": 10,
+      "customCSS": ""
+    },
+    "categories": [],
+    "children": []
+  },
+  {
+    "id": "eb1a5c-ad14-46da",
+    "name": "Column 5",
+    "role": "column",
+    "order": 4,
+    "styling": {
+      "hideHeader": false,
+      "bgType": "color",
+      "backgroundColor": "#f9f9f9",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": 100,
+      "borderColor": "#e0e0e0",
+      "borderSize": 2,
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "borderRadius": 8,
+      "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+      "padding": 15,
+      "margin": 10,
+      "customCSS": ""
+    },
+    "categories": [],
+    "children": []
+  },
+  {
+    "id": "c949f8-dfce-4126",
+    "name": "Row 6",
+    "role": "row",
+    "order": 5,
+    "styling": {
+      "hideHeader": false,
+      "bgType": "color",
+      "backgroundColor": "#f9f9f9",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": 100,
+      "borderColor": "#e0e0e0",
+      "borderSize": 2,
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "borderRadius": 8,
+      "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+      "padding": 15,
+      "margin": 10,
+      "customCSS": ""
+    },
     "categories": [
-      "Meeker Maker",
-      "cat1",
-      "cat6"
-    ]
+      "Meeker Maker"
+    ],
+    "children": []
   }
 ]

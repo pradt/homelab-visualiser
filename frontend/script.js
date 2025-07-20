@@ -25,23 +25,25 @@
   }
 
   // Column management functions
-  function initializeColumns(columnsData) {
-    if (columnsData && Array.isArray(columnsData) && columnsData.length > 0) {
-      columns = columnsData;
-      columnOrder = columnsData.map(col => col.id);
+  function initializeCustomViewContainers(containersData) {
+    if (containersData && Array.isArray(containersData) && containersData.length > 0) {
+      customViewContainers = containersData;
+      customViewContainerOrder = containersData.map(container => container.id);
     } else {
-      // Create default column if none exist
-      createDefaultColumn();
+      // Create default container if none exist
+      createDefaultContainer();
     }
-    console.log('Columns initialized:', columns);
+    console.log('Custom view containers initialized:', customViewContainers);
   }
 
-  function createDefaultColumn() {
-    const defaultColumn = {
+  function createDefaultContainer() {
+    const defaultContainer = {
       id: generateId(),
       name: 'Default Categories',
+      role: 'column',
       order: 0,
       styling: {
+        hideHeader: false,
         bgType: 'color',
         backgroundColor: '#f9f9f9',
         backgroundGradient: '',
@@ -58,24 +60,25 @@
         margin: 10,
         customCSS: ''
       },
-      categories: [] // Will be populated based on existing categoryOrder
+      categories: [], // Empty by default - categories will be in available categories
+      children: []
     };
     
-    columns = [defaultColumn];
-    columnOrder = [defaultColumn.id];
+    customViewContainers = [defaultContainer];
+    customViewContainerOrder = [defaultContainer.id];
     
-    // Assign existing categories to default column
-    if (categoryOrder.length > 0) {
-      defaultColumn.categories = [...categoryOrder];
-    }
+    // Don't automatically assign categories to default container - let them stay in available categories
+    // This allows users to manually drag categories from available to containers
   }
 
-  function createNewColumn(name = 'New Column') {
-    const newColumn = {
+  function createNewContainer(name = 'New Container', role = 'column') {
+    const newContainer = {
       id: generateId(),
       name: name,
-      order: columns.length,
+      role: role, // 'column' or 'row'
+      order: customViewContainers.length,
       styling: {
+        hideHeader: false,
         bgType: 'color',
         backgroundColor: '#f9f9f9',
         backgroundGradient: '',
@@ -92,52 +95,53 @@
         margin: 10,
         customCSS: ''
       },
-      categories: []
+      categories: [],
+      children: []
     };
     
-    columns.push(newColumn);
-    columnOrder.push(newColumn.id);
-    return newColumn;
+    customViewContainers.push(newContainer);
+    customViewContainerOrder.push(newContainer.id);
+    return newContainer;
   }
 
-  function getColumnById(columnId) {
-    return columns.find(col => col.id === columnId);
+  function getContainerById(containerId) {
+    return customViewContainers.find(container => container.id === containerId);
   }
 
-  function getCategoryColumn(categoryName) {
-    return columns.find(col => col.categories.includes(categoryName));
+  function getCategoryContainer(categoryName) {
+    return customViewContainers.find(container => container.categories.includes(categoryName));
   }
 
-  function moveCategoryToColumn(categoryName, fromColumnId, toColumnId) {
-    const fromColumn = getColumnById(fromColumnId);
-    const toColumn = getColumnById(toColumnId);
+  function moveCategoryToContainer(categoryName, fromContainerId, toContainerId) {
+    const fromContainer = getContainerById(fromContainerId);
+    const toContainer = getContainerById(toContainerId);
     
-    if (fromColumn && toColumn && fromColumnId !== toColumnId) {
-      // Remove from source column
-      const categoryIndex = fromColumn.categories.indexOf(categoryName);
+    if (fromContainer && toContainer && fromContainerId !== toContainerId) {
+      // Remove from source container
+      const categoryIndex = fromContainer.categories.indexOf(categoryName);
       if (categoryIndex > -1) {
-        fromColumn.categories.splice(categoryIndex, 1);
+        fromContainer.categories.splice(categoryIndex, 1);
       }
       
-      // Add to target column
-      if (!toColumn.categories.includes(categoryName)) {
-        toColumn.categories.push(categoryName);
+      // Add to target container
+      if (!toContainer.categories.includes(categoryName)) {
+        toContainer.categories.push(categoryName);
       }
       
-      console.log(`Moved category "${categoryName}" from column "${fromColumn.name}" to "${toColumn.name}"`);
+      console.log(`Moved category "${categoryName}" from container "${fromContainer.name}" to "${toContainer.name}"`);
       return true;
     }
     return false;
   }
 
-  function saveColumnsToBackend() {
-    return fetch('/api/columns', {
+  function saveCustomViewContainersToBackend() {
+    return fetch('/api/custom-view-containers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(columns)
+      body: JSON.stringify(customViewContainers)
     }).then(response => {
       if (!response.ok) {
-        throw new Error('Failed to save columns');
+        throw new Error('Failed to save custom view containers');
       }
       return response.json();
     });
@@ -150,10 +154,10 @@ let categoryOrder = [];
 let draggedCategory = null;
 let draggedPlaceholder = null;
 
-// Column management for custom view
-let columns = [];
-let columnOrder = [];
-let selectedColumnId = null; // For styling modal
+// Custom view container management
+let customViewContainers = [];
+let customViewContainerOrder = [];
+let selectedCustomViewContainerId = null; // For styling modal
   let fontAwesomeIcons = [];
   let materialIcons = [];
   let emojiIcons = [];
@@ -207,14 +211,24 @@ let selectedColumnId = null; // For styling modal
     }
     console.log('jQuery UI loaded successfully:', $.ui.version);
     
-    // Load containers and columns
+    // Load containers and custom view containers
     Promise.all([
       fetch('/api/containers').then(res => res.json()),
-      fetch('/api/columns').then(res => res.json()).catch(() => null) // Graceful fallback
-    ]).then(([containersData, columnsData]) => {
+      fetch('/api/custom-view-containers').then(res => res.json()).catch(() => null) // Graceful fallback
+    ]).then(([containersData, customViewContainersData]) => {
       containers = containersData;
-      initializeColumns(columnsData);
+      initializeCustomViewContainers(customViewContainersData);
       renderContainers();
+    });
+    
+    // Add click handler to close hamburger menus when clicking outside
+    document.addEventListener('click', (event) => {
+      if (!event.target.closest('.container-hamburger-menu')) {
+        // Close all hamburger menus
+        document.querySelectorAll('.container-hamburger-actions').forEach(actions => {
+          actions.classList.remove('show');
+        });
+      }
     });
   
     fetch('/api/icons/fontawesome')
@@ -263,6 +277,7 @@ let selectedColumnId = null; // For styling modal
       });
   
     document.getElementById('container-form').onsubmit = saveContainer;
+    document.getElementById('container-styling-form').onsubmit = saveContainerStyling;
     document.getElementById('search').oninput = () => renderContainers();
     
     // Add event listener for type change to show/hide categories
@@ -1179,21 +1194,21 @@ let selectedColumnId = null; // For styling modal
   }
   
   function renderCustomView(root, term) {
-    console.log('renderCustomView called - isEditMode:', isEditMode, 'columns count:', columns.length);
+    console.log('renderCustomView called - isEditMode:', isEditMode, 'customViewContainers count:', customViewContainers.length);
     
     // Clear any existing sortable instances before re-rendering
     try {
-      // Destroy column sortable
-      if ($.fn.sortable && $('#columns-container').length && $('#columns-container').hasClass('ui-sortable')) {
-        $('#columns-container').sortable('destroy');
-        console.log('Destroyed columns-container sortable');
+      // Destroy container sortable
+      if ($.fn.sortable && $('#containers-container').length && $('#containers-container').hasClass('ui-sortable')) {
+        $('#containers-container').sortable('destroy');
+        console.log('Destroyed containers-container sortable');
       }
       
       // Destroy all category sortables
-      $('.column-categories').each(function() {
+      $('.container-categories').each(function() {
         if ($(this).hasClass('ui-sortable')) {
           $(this).sortable('destroy');
-          console.log('Destroyed column-categories sortable');
+          console.log('Destroyed container-categories sortable');
         }
       });
       
@@ -1243,41 +1258,45 @@ let selectedColumnId = null; // For styling modal
       }
     });
 
-    // Ensure uncategorized items are in the first column if no columns exist
-    if (columns.length === 0) {
-      createDefaultColumn();
+    // Ensure uncategorized items are in the first container if no containers exist
+    if (customViewContainers.length === 0) {
+      createDefaultContainer();
     }
 
-    // Migrate existing categoryOrder to first column if columns are new
-    if (columns[0] && columns[0].categories.length === 0 && categoryOrder.length > 0) {
-      columns[0].categories = [...categoryOrder];
-    }
+    // Don't automatically migrate categoryOrder to containers - let categories stay in available categories
+    // This allows users to manually drag categories from available to containers
 
-    // Add any new categories that aren't assigned to any column to the first column
-    Object.keys(categoryGroups).forEach(category => {
-      const assignedColumn = getCategoryColumn(category);
-      if (!assignedColumn && columns.length > 0) {
-        columns[0].categories.push(category);
+    // Don't automatically assign new categories to containers - let them stay in available categories
+    // This allows users to manually drag categories from available to containers
+    
+    // Create containers container
+    const containersContainer = document.createElement('div');
+    containersContainer.className = 'containers-container';
+    containersContainer.id = 'containers-container';
+    
+    // Apply layout based on container roles
+    const hasRows = customViewContainers.some(container => container.role === 'row');
+    if (hasRows) {
+      containersContainer.classList.add('container-row');
+    } else {
+      containersContainer.classList.add('container-column');
+    }
+    
+    // Render each container
+    console.log('About to render containers - customViewContainerOrder:', customViewContainerOrder, 'customViewContainers data available:', customViewContainers.length);
+    customViewContainerOrder.forEach(containerId => {
+      const container = getContainerById(containerId);
+      console.log('Processing container ID:', containerId, 'found container:', container?.name);
+      if (container) {
+        const containerElement = createContainerElement(container, categoryGroups, term);
+        containersContainer.appendChild(containerElement);
       }
     });
     
-    // Create columns container
-    const columnsContainer = document.createElement('div');
-    columnsContainer.className = 'columns-container';
-    columnsContainer.id = 'columns-container';
+    root.appendChild(containersContainer);
     
-    // Render each column
-    console.log('About to render columns - columnOrder:', columnOrder, 'columns data available:', columns.length);
-    columnOrder.forEach(columnId => {
-      const column = getColumnById(columnId);
-      console.log('Processing column ID:', columnId, 'found column:', column?.name);
-      if (column) {
-        const columnElement = createColumnElement(column, categoryGroups, term);
-        columnsContainer.appendChild(columnElement);
-      }
-    });
-    
-    root.appendChild(columnsContainer);
+    // Update available categories zone
+    updateAvailableCategoriesZone();
     
     // Initialize sortable if in edit mode - do this only once after DOM is ready
     if (isEditMode) {
@@ -1285,40 +1304,48 @@ let selectedColumnId = null; // For styling modal
       requestAnimationFrame(() => {
         setTimeout(() => {
           console.log('Setting up sortable after DOM render...');
-          setupColumnSortable();
+          setupContainerSortable();
         }, 50);
       });
     }
   }
   
-  function createColumnElement(column, categoryGroups, term) {
-    console.log('createColumnElement called for column:', column.name, 'hideHeader:', column.styling?.hideHeader, 'isEditMode:', isEditMode);
+  function createContainerElement(container, categoryGroups, term) {
+    console.log('createContainerElement called for container:', container.name, 'role:', container.role, 'hideHeader:', container.styling?.hideHeader, 'isEditMode:', isEditMode);
     
-    const columnElement = document.createElement('div');
-    columnElement.className = 'column';
-    columnElement.setAttribute('data-column-id', column.id);
+    const containerElement = document.createElement('div');
+    containerElement.className = 'container';
+    containerElement.setAttribute('data-container-id', container.id);
     
-    // Column header
-    const columnHeader = document.createElement('div');
-    columnHeader.className = 'column-header';
+    // Apply role-specific styling
+    if (container.role === 'row') {
+      containerElement.classList.add('container-row');
+    } else {
+      containerElement.classList.add('container-column');
+    }
     
-    const columnTitle = document.createElement('div');
-    columnTitle.className = 'column-title';
+    // Container header
+    const containerHeader = document.createElement('div');
+    containerHeader.className = 'container-header';
+    
+    const containerTitle = document.createElement('div');
+    containerTitle.className = 'container-title';
     
     // Create editable title span
     const titleSpan = document.createElement('span');
-    titleSpan.className = 'column-title-text';
-    titleSpan.textContent = `📁 ${column.name}`;
-    titleSpan.setAttribute('data-column-id', column.id);
+    titleSpan.className = 'container-title-text';
+    const roleIcon = container.role === 'column' ? '📁' : '➡️';
+    titleSpan.textContent = `${roleIcon} ${container.name}`;
+    titleSpan.setAttribute('data-container-id', container.id);
     
     // Always make title editable (will check edit mode in the function)
     titleSpan.style.cursor = 'pointer';
-    titleSpan.title = 'Click to edit column name (Edit Mode required)';
+    titleSpan.title = 'Click to edit container name (Edit Mode required)';
     titleSpan.onclick = (e) => {
-      console.log('Column title clicked:', column.name, 'Edit mode:', isEditMode);
+      console.log('Container title clicked:', container.name, 'Edit mode:', isEditMode);
       e.stopPropagation();
       e.preventDefault();
-      makeColumnTitleEditable(titleSpan, column.id);
+      makeContainerTitleEditable(titleSpan, container.id);
     };
     
     // Visual indicator in edit mode
@@ -1326,70 +1353,89 @@ let selectedColumnId = null; // For styling modal
       titleSpan.classList.add('editable');
     }
     
-    columnTitle.appendChild(titleSpan);
+    containerTitle.appendChild(titleSpan);
     
-    const columnActions = document.createElement('div');
-    columnActions.className = 'column-actions';
+    const containerActions = document.createElement('div');
+    containerActions.className = 'container-actions';
     
+    // Always create hamburger menu and drag handle, but control visibility with CSS
+    const hamburgerMenu = document.createElement('div');
+    hamburgerMenu.className = 'container-hamburger-menu';
+    
+    // Show opposite role button based on current role
+    const oppositeRole = container.role === 'column' ? 'row' : 'column';
+    const oppositeRoleName = container.role === 'column' ? 'Row' : 'Column';
+    const oppositeRoleIcon = container.role === 'column' ? '➡️' : '📁';
+    
+    hamburgerMenu.innerHTML = `
+      <div class="container-hamburger-actions">
+        <button onclick="showContainerStyleModal('${container.id}')" title="Style Container">🎨 Style</button>
+        <button onclick="addNewContainer('${oppositeRole}', '${container.id}')" title="Add ${oppositeRoleName}">${oppositeRoleIcon} Add ${oppositeRoleName}</button>
+        <button onclick="deleteContainer('${container.id}')" title="Delete Container">🗑️ Delete</button>
+      </div>
+      <button class="container-hamburger-btn" onclick="toggleContainerHamburgerMenu(this, event)">☰</button>
+    `;
+    
+    const dragHandle = document.createElement('div');
+    dragHandle.className = 'container-drag-handle';
+    dragHandle.title = 'Drag to reorder container';
+    dragHandle.innerHTML = `⋮⋮⋮`;
+    
+    containerActions.appendChild(hamburgerMenu);
+    containerActions.appendChild(dragHandle);
+    
+    // Debug: Log hamburger menu creation
+    console.log('Created hamburger menu for container:', container.name, 'isEditMode:', isEditMode);
+    console.log('Hamburger menu element:', hamburgerMenu);
+    console.log('Hamburger menu display style:', window.getComputedStyle(hamburgerMenu).display);
+    console.log('Container root has edit-mode-active:', document.getElementById('container-root')?.classList.contains('edit-mode-active'));
+    
+    // Test: Force show hamburger menu for debugging
     if (isEditMode) {
-      // Create hamburger menu for column actions
-      const hamburgerMenu = document.createElement('div');
-      hamburgerMenu.className = 'column-hamburger-menu';
-      hamburgerMenu.innerHTML = `
-        <div class="column-hamburger-actions">
-          <button onclick="showColumnStyleModal('${column.id}')" title="Style Column">🎨 Style</button>
-          <button onclick="deleteColumn('${column.id}')" title="Delete Column">🗑️ Delete</button>
-        </div>
-        <button class="column-hamburger-btn" onclick="toggleColumnHamburgerMenu(this, event)">☰</button>
-      `;
-      
-      const dragHandle = document.createElement('div');
-      dragHandle.className = 'column-drag-handle';
-      dragHandle.title = 'Drag to reorder column';
-      dragHandle.innerHTML = `⋮⋮⋮`;
-      
-      columnActions.appendChild(hamburgerMenu);
-      columnActions.appendChild(dragHandle);
+      hamburgerMenu.style.display = 'inline-block';
+      console.log('Forced hamburger menu to show for debugging');
     }
     
-    columnHeader.appendChild(columnTitle);
-    columnHeader.appendChild(columnActions);
+    containerHeader.appendChild(containerTitle);
+    containerHeader.appendChild(containerActions);
     
-    // Categories container for this column
+    // Categories container for this container
     const categoriesContainer = document.createElement('div');
-    categoriesContainer.className = 'column-categories';
-    categoriesContainer.setAttribute('data-column-id', column.id);
+    categoriesContainer.className = 'container-categories';
+    categoriesContainer.setAttribute('data-container-id', container.id);
     
-    // Render categories assigned to this column
-    column.categories.forEach(categoryName => {
+    // Render categories assigned to this container
+    container.categories.forEach(categoryName => {
       if (categoryGroups[categoryName]) {
-        const categoryGroup = createCategoryGroup(categoryName, categoryGroups[categoryName], column.id);
+        const categoryGroup = createCategoryGroup(categoryName, categoryGroups[categoryName], container.id);
         categoriesContainer.appendChild(categoryGroup);
       }
     });
     
-    // Add drop zone for empty columns (visibility controlled by CSS)
-    if (column.categories.length === 0) {
+    // Add drop zone for empty containers (visibility controlled by CSS)
+    if (container.categories.length === 0) {
       const dropZone = document.createElement('div');
       dropZone.className = 'category-drop-zone';
       dropZone.innerHTML = '<div class="drop-zone-content">📦 Drop categories here</div>';
       categoriesContainer.appendChild(dropZone);
     }
     
-    columnElement.appendChild(columnHeader);
-    columnElement.appendChild(categoriesContainer);
+    containerElement.appendChild(containerHeader);
+    containerElement.appendChild(categoriesContainer);
     
-    // Apply column styling AFTER all elements are created and added to the DOM
-    applyColumnStyling(columnElement, column);
+    // Apply container styling AFTER all elements are created and added to the DOM
+    applyContainerStyling(containerElement, container);
     
-    return columnElement;
+
+    
+    return containerElement;
   }
 
-  function createCategoryGroup(category, containers, columnId) {
+  function createCategoryGroup(category, containers, containerId) {
     const group = document.createElement('div');
     group.className = 'category-group';
     group.setAttribute('data-category', category);
-    group.setAttribute('data-column-id', columnId);
+    group.setAttribute('data-container-id', containerId);
     
     const header = document.createElement('div');
     header.className = 'category-header';
@@ -1402,7 +1448,7 @@ let selectedColumnId = null; // For styling modal
     const dragHandle = document.createElement('div');
     dragHandle.className = 'category-drag-handle';
     dragHandle.innerHTML = '⋮⋮⋮';
-    dragHandle.title = 'Drag to reorder category or move to another column';
+    dragHandle.title = 'Drag to reorder category or move to another container';
     
     header.appendChild(title);
     header.appendChild(dragHandle);
@@ -1421,83 +1467,83 @@ let selectedColumnId = null; // For styling modal
     return group;
   }
 
-  function applyColumnStyling(columnElement, column) {
-    console.log('applyColumnStyling called for column:', column.name, 'has styling:', !!column.styling);
-    if (!column.styling) {
+  function applyContainerStyling(containerElement, container) {
+    console.log('applyContainerStyling called for container:', container.name, 'has styling:', !!container.styling);
+    if (!container.styling) {
       console.log('No styling found, returning early');
       return;
     }
     
-    const style = column.styling;
-    console.log('Column styling object:', style);
+    const style = container.styling;
+    console.log('Container styling object:', style);
     
     // Apply header visibility - only hide when NOT in edit mode
     // In edit mode, we need to keep headers visible so users can access menus
-    const columnHeader = columnElement.querySelector('.column-header');
-    console.log('Found columnHeader element:', !!columnHeader);
-    if (columnHeader) {
-      console.log('applyColumnStyling - hideHeader:', style.hideHeader, 'isEditMode:', isEditMode, 'will hide:', style.hideHeader && !isEditMode);
+    const containerHeader = containerElement.querySelector('.container-header');
+    console.log('Found containerHeader element:', !!containerHeader);
+    if (containerHeader) {
+      console.log('applyContainerStyling - hideHeader:', style.hideHeader, 'isEditMode:', isEditMode, 'will hide:', style.hideHeader && !isEditMode);
       if (style.hideHeader && !isEditMode) {
-        columnHeader.style.display = 'none';
-        console.log('Hiding column header');
+        containerHeader.style.display = 'none';
+        console.log('Hiding container header');
       } else {
-        columnHeader.style.display = '';
-        console.log('Showing column header');
+        containerHeader.style.display = '';
+        console.log('Showing container header');
       }
     } else {
-      console.log('columnHeader element not found!');
+      console.log('containerHeader element not found!');
     }
     
     // Apply background
     if (style.bgType === 'color' && style.backgroundColor) {
-      columnElement.style.backgroundColor = style.backgroundColor;
+      containerElement.style.backgroundColor = style.backgroundColor;
     } else if (style.bgType === 'gradient' && style.backgroundGradient) {
-      columnElement.style.background = style.backgroundGradient;
+      containerElement.style.background = style.backgroundGradient;
     } else if (style.bgType === 'css' && style.backgroundCSS) {
-      columnElement.style.cssText += style.backgroundCSS;
+      containerElement.style.cssText += style.backgroundCSS;
     }
     
     // Apply background image
     if (style.backgroundImage) {
-      columnElement.style.backgroundImage = `url('${style.backgroundImage}')`;
-      columnElement.style.backgroundSize = 'cover';
-      columnElement.style.backgroundPosition = 'center';
+      containerElement.style.backgroundImage = `url('${style.backgroundImage}')`;
+      containerElement.style.backgroundSize = 'cover';
+      containerElement.style.backgroundPosition = 'center';
     }
     
     // Apply background opacity
     if (style.backgroundOpacity && style.backgroundOpacity !== 100) {
-      columnElement.style.opacity = style.backgroundOpacity / 100;
+      containerElement.style.opacity = style.backgroundOpacity / 100;
     }
     
     // Apply border
     if (style.borderColor) {
-      columnElement.style.borderColor = style.borderColor;
+      containerElement.style.borderColor = style.borderColor;
     }
     if (style.borderSize) {
-      columnElement.style.borderWidth = style.borderSize + 'px';
+      containerElement.style.borderWidth = style.borderSize + 'px';
     }
     if (style.borderStyle) {
-      columnElement.style.borderStyle = style.borderStyle;
+      containerElement.style.borderStyle = style.borderStyle;
     }
     if (style.borderCSS) {
-      columnElement.style.cssText += style.borderCSS;
+      containerElement.style.cssText += style.borderCSS;
     }
     
     // Apply additional styles
     if (style.borderRadius) {
-      columnElement.style.borderRadius = style.borderRadius + 'px';
+      containerElement.style.borderRadius = style.borderRadius + 'px';
     }
     if (style.boxShadow) {
-      columnElement.style.boxShadow = style.boxShadow;
+      containerElement.style.boxShadow = style.boxShadow;
     }
     if (style.padding) {
-      columnElement.style.padding = style.padding + 'px';
+      containerElement.style.padding = style.padding + 'px';
     }
     if (style.margin) {
-      columnElement.style.margin = style.margin + 'px';
+      containerElement.style.margin = style.margin + 'px';
     }
     if (style.customCSS) {
-      columnElement.style.cssText += style.customCSS;
+      containerElement.style.cssText += style.customCSS;
     }
   }
   
@@ -1798,7 +1844,7 @@ let selectedColumnId = null; // For styling modal
     if (isEditMode) {
       editBtn.textContent = '💾 Exit Edit Mode';
       editBtn.classList.add('edit-active');
-      status.textContent = '📝 Edit Mode: Drag categories between columns, reorder columns, and style them. Container content is hidden for better performance.';
+      status.textContent = '📝 Edit Mode: Drag categories between containers, reorder containers, and style them. Container content is hidden for better performance.';
       
       // Force add the edit-mode-active class
       containerRoot.classList.add('edit-mode-active');
@@ -1827,24 +1873,27 @@ let selectedColumnId = null; // For styling modal
           console.log('Re-added edit-mode-active class after renderContainers');
         }
         
+        // Update available categories zone
+        updateAvailableCategoriesZone();
+        
         // Show immediate feedback
-        showReorderFeedback('Edit mode activated - drag categories between columns!', 'success');
+        showReorderFeedback('Edit mode activated - drag categories between containers!', 'success');
         
         // Better timing to ensure DOM is ready and feedback is shown
         requestAnimationFrame(() => {
           setTimeout(() => {
             console.log('Setting up sortable from toggleEditMode...');
             console.log('Edit mode class present before setup:', containerRoot.classList.contains('edit-mode-active'));
-            setupColumnSortable();
+            setupContainerSortable();
           }, 150);
         });
       }
       
-      console.log('Edit mode activated - multi-column editing enabled');
+      console.log('Edit mode activated - container editing enabled');
     } else {
       editBtn.textContent = '✏️ Edit Mode';
       editBtn.classList.remove('edit-active');
-      status.textContent = 'Click Edit Mode to manage columns and categories';
+      status.textContent = 'Click Edit Mode to manage containers and categories';
       containerRoot.classList.remove('edit-mode-active');
       
       // Remove from toolbar too
@@ -1852,16 +1901,25 @@ let selectedColumnId = null; // For styling modal
         customToolbar.classList.remove('edit-mode-active');
       }
       
+      // Hide available categories zone
+      const availableZone = document.getElementById('available-categories-zone');
+      if (availableZone) {
+        availableZone.classList.add('hidden');
+      }
+      
       // Destroy sortable instances
       try {
-        if ($('#columns-container').hasClass('ui-sortable')) {
-          $('#columns-container').sortable('destroy');
+        if ($('#containers-container').hasClass('ui-sortable')) {
+          $('#containers-container').sortable('destroy');
         }
-        $('.column-categories').each(function() {
+        $('.container-categories').each(function() {
           if ($(this).hasClass('ui-sortable')) {
             $(this).sortable('destroy');
           }
         });
+        if ($('#available-categories-list').hasClass('ui-sortable')) {
+          $('#available-categories-list').sortable('destroy');
+        }
         console.log('All sortable instances destroyed successfully');
       } catch (e) {
         console.warn('Failed to destroy sortable instances:', e);
@@ -1872,17 +1930,17 @@ let selectedColumnId = null; // For styling modal
         renderContainers();
       }
       
-      // Save columns to backend when exiting edit mode
-      saveColumnsToBackend()
+      // Save containers to backend when exiting edit mode
+      saveCustomViewContainersToBackend()
         .then(() => {
-          showReorderFeedback('Column configuration saved successfully! 💾', 'success');
+          showReorderFeedback('Container configuration saved successfully! 💾', 'success');
         })
         .catch((error) => {
-          console.error('Failed to save columns:', error);
-          showReorderFeedback('Failed to save column configuration', 'error');
+          console.error('Failed to save containers:', error);
+          showReorderFeedback('Failed to save container configuration', 'error');
         });
       
-      console.log('Edit mode deactivated - columns saved to backend');
+      console.log('Edit mode deactivated - containers saved to backend');
     }
   }
 
@@ -3134,5 +3192,946 @@ let selectedColumnId = null; // For styling modal
     } else {
       return `${minutes}m`;
     }
+  }
+  
+  // Save container styling
+  function saveContainerStyling(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const containerId = form.querySelector('input[name="containerId"]').value;
+    const container = getContainerById(containerId);
+    
+    if (!container) {
+      showReorderFeedback('Container not found', 'error');
+      return;
+    }
+    
+    // Update container name and role
+    container.name = form.querySelector('input[name="headingText"]').value;
+    container.role = form.querySelector('select[name="role"]').value;
+    
+    // Update styling
+    if (!container.styling) {
+      container.styling = {};
+    }
+    
+    container.styling.hideHeader = form.querySelector('input[name="hideHeader"]').checked;
+    container.styling.bgType = form.querySelector('select[name="bgType"]').value;
+    container.styling.backgroundColor = form.querySelector('input[name="backgroundColor"]').value;
+    container.styling.backgroundGradient = form.querySelector('input[name="backgroundGradient"]').value;
+    container.styling.backgroundCSS = form.querySelector('textarea[name="backgroundCSS"]').value;
+    container.styling.backgroundImage = form.querySelector('input[name="backgroundImage"]').value;
+    container.styling.backgroundOpacity = parseInt(form.querySelector('input[name="backgroundOpacity"]').value);
+    container.styling.borderColor = form.querySelector('input[name="borderColor"]').value;
+    container.styling.borderSize = parseInt(form.querySelector('input[name="borderSize"]').value);
+    container.styling.borderStyle = form.querySelector('select[name="borderStyle"]').value;
+    container.styling.borderCSS = form.querySelector('textarea[name="borderCSS"]').value;
+    container.styling.customCSS = form.querySelector('textarea[name="customCSS"]').value;
+    container.styling.borderRadius = parseInt(form.querySelector('input[name="borderRadius"]').value);
+    container.styling.boxShadow = form.querySelector('input[name="boxShadow"]').value;
+    container.styling.padding = parseInt(form.querySelector('input[name="padding"]').value);
+    container.styling.margin = parseInt(form.querySelector('input[name="margin"]').value);
+    
+    // Save to backend
+    saveCustomViewContainersToBackend()
+      .then(() => {
+        hideContainerStyleModal();
+        renderContainers();
+        showReorderFeedback(`Container "${container.name}" styling saved successfully! 🎨`, 'success');
+      })
+      .catch((error) => {
+        console.error('Failed to save container styling:', error);
+        showReorderFeedback('Failed to save container styling', 'error');
+      });
+  }
+
+  // Enhanced Custom View Functions
+  
+  // Add new container (column or row)
+  function addNewContainer(role = 'column', parentContainerId = null) {
+    if (!isEditMode) {
+      showReorderFeedback('Please enable Edit Mode first', 'error');
+      return;
+    }
+    
+    const containerNumber = customViewContainers.length + 1;
+    const defaultName = role === 'column' ? `Column ${containerNumber}` : `Row ${containerNumber}`;
+    const newContainer = createNewContainer(defaultName, role);
+    
+    // If parent container is specified, add as child
+    if (parentContainerId) {
+      const parentContainer = getContainerById(parentContainerId);
+      if (parentContainer) {
+        if (!parentContainer.children) {
+          parentContainer.children = [];
+        }
+        parentContainer.children.push(newContainer.id);
+        showReorderFeedback(`${role === 'column' ? 'Column' : 'Row'} "${newContainer.name}" added to container "${parentContainer.name}"! 🎉`, 'success');
+      }
+    } else {
+      showReorderFeedback(`${role === 'column' ? 'Column' : 'Row'} "${newContainer.name}" created! Click the name to edit it. 🎉`, 'success');
+    }
+    
+    // Re-render to show new container and maintain edit mode
+    renderContainers();
+    
+    // Ensure edit mode styling is maintained after render
+    if (isEditMode && currentView === 'custom') {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          console.log('Setting up sortable from addNewContainer...');
+          setupContainerSortable();
+        }, 150);
+      });
+    }
+  }
+
+  // Toggle container hamburger menu
+  function toggleContainerHamburgerMenu(btn, event) {
+    event.stopPropagation();
+    
+    const hamburgerMenu = btn.closest('.container-hamburger-menu');
+    const isVisible = hamburgerMenu.classList.contains('show');
+    
+    console.log('Container hamburger menu element:', hamburgerMenu);
+    console.log('Is visible:', isVisible);
+    
+    if (isVisible) {
+      // Hide menu
+      console.log('Hiding container hamburger menu');
+      hamburgerMenu.classList.remove('show');
+    } else {
+      // Show menu
+      console.log('Showing container hamburger menu');
+      hamburgerMenu.classList.add('show');
+      console.log('Added show class, menu classes:', hamburgerMenu.className);
+    }
+  }
+
+  // Setup container sortable for drag-and-drop
+  function setupContainerSortable() {
+    if (!isEditMode) {
+      console.log('Not in edit mode, skipping container sortable setup');
+      return;
+    }
+    
+    const containersContainer = $('#containers-container');
+    const categoryContainers = $('.container-categories');
+    
+    // Check if jQuery UI is available
+    if (typeof $.ui === 'undefined' || typeof $.fn.sortable === 'undefined') {
+      console.error('jQuery UI sortable is not available');
+      showReorderFeedback('Error: jQuery UI not loaded', 'error');
+      return;
+    }
+    
+    // Verify DOM elements exist
+    if (containersContainer.length === 0) {
+      console.error('Containers container not found in DOM');
+      showReorderFeedback('Error: Containers container not found', 'error');
+      return;
+    }
+    
+    if (categoryContainers.length === 0) {
+      console.warn('No category containers found in DOM');
+    }
+    
+    console.log('Setting up container and category sortable');
+    console.log('Containers container:', containersContainer.length);
+    console.log('Category containers:', categoryContainers.length);
+    console.log('Category groups found:', $('.category-group').length);
+    console.log('Edit mode active class present:', $('#container-root').hasClass('edit-mode-active'));
+    console.log('Drag handles in DOM:', $('.category-drag-handle').length);
+    console.log('Visible drag handles:', $('.category-drag-handle:visible').length);
+    
+    try {
+      // Setup container reordering
+      containersContainer.sortable({
+        items: '.container',
+        handle: '.container-drag-handle',
+        placeholder: 'container-placeholder',
+        tolerance: 'pointer',
+        cursor: 'grabbing',
+        opacity: 0.9,
+        distance: 8,
+        helper: function(event, item) {
+          const containerName = item.find('.container-title-text').text();
+          const helper = $('<div class="container-drag-helper"></div>');
+          helper.css({
+            'width': '250px',
+            'height': '60px',
+            'background': 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+            'color': 'white',
+            'border': '2px solid #1e7e34',
+            'border-radius': '8px',
+            'padding': '10px 15px',
+            'font-size': '14px',
+            'font-weight': 'bold',
+            'text-align': 'center',
+            'box-shadow': '0 8px 25px rgba(40, 167, 69, 0.5)',
+            'z-index': '10000',
+            'display': 'flex',
+            'align-items': 'center',
+            'justify-content': 'center',
+            'cursor': 'grabbing',
+            'user-select': 'none',
+            'position': 'absolute'
+          });
+          helper.text(containerName);
+          return helper;
+        },
+        cursorAt: { top: 30, left: 125 },
+        start: function(event, ui) {
+          console.log('Container sort started');
+          ui.item.addClass('dragging');
+          $('*').css('transition', 'none');
+        },
+        stop: function(event, ui) {
+          console.log('Container sort stopped');
+          ui.item.removeClass('dragging');
+          $('*').css('transition', '');
+          
+          // Update container order
+          const newOrder = [];
+          containersContainer.find('.container').each(function() {
+            const containerId = $(this).attr('data-container-id');
+            if (containerId) {
+              newOrder.push(containerId);
+            }
+          });
+          
+          customViewContainerOrder = newOrder;
+          showReorderFeedback('Containers reordered successfully! 📁', 'success');
+        }
+      });
+
+      // Setup inter-container category dragging
+      const categoryElements = $('.container-categories');
+      console.log('Setting up category sortable on elements:', categoryElements.length);
+      
+      categoryElements.sortable({
+        items: '.category-group',
+        handle: '.category-drag-handle',
+        placeholder: 'category-placeholder',
+        tolerance: 'pointer',
+        cursor: 'grabbing',
+        opacity: 0.9,
+        distance: 8,
+        connectWith: '.container-categories, #available-categories-list', // Enable dragging between containers and available zone
+        disabled: false, // Ensure it's enabled
+        helper: function(event, item) {
+          const categoryName = item.attr('data-category');
+          const helper = $('<div class="category-drag-helper"></div>');
+          helper.css({
+            'width': '250px',
+            'height': '50px',
+            'background': 'linear-gradient(135deg, #0077cc 0%, #005fa3 100%)',
+            'color': 'white',
+            'border': '2px solid #004080',
+            'border-radius': '8px',
+            'padding': '10px 15px',
+            'font-size': '14px',
+            'font-weight': 'bold',
+            'text-align': 'center',
+            'box-shadow': '0 8px 25px rgba(0, 119, 204, 0.5)',
+            'z-index': '10001',
+            'display': 'flex',
+            'align-items': 'center',
+            'justify-content': 'center',
+            'cursor': 'grabbing',
+            'user-select': 'none',
+            'position': 'absolute'
+          });
+          helper.text(`🏷️ ${categoryName}`);
+          return helper;
+        },
+        cursorAt: { top: 25, left: 125 },
+        start: function(event, ui) {
+          console.log('Category sort started:', ui.item.attr('data-category'));
+          ui.item.addClass('dragging');
+          
+          // Highlight drop zones
+          $('.container-categories').addClass('drop-zone-active');
+          $('.category-drop-zone').addClass('drag-over');
+          
+          $('*').css('transition', 'none');
+        },
+        stop: function(event, ui) {
+          const categoryName = ui.item.attr('data-category');
+          const newContainerId = ui.item.closest('.container-categories').attr('data-container-id');
+          const oldContainerId = ui.item.attr('data-container-id');
+          
+          console.log('Category sort stopped:', categoryName, 'moved to container:', newContainerId);
+          
+          ui.item.removeClass('dragging');
+          $('.container-categories').removeClass('drop-zone-active');
+          $('.category-drop-zone').removeClass('drag-over');
+          $('*').css('transition', '');
+          
+          // Check if dropped in available categories zone
+          if (ui.item.closest('#available-categories-list').length > 0) {
+            console.log('Category dropped in available categories zone:', categoryName);
+            // Remove from container
+            if (oldContainerId) {
+              const oldContainer = getContainerById(oldContainerId);
+              if (oldContainer) {
+                const categoryIndex = oldContainer.categories.indexOf(categoryName);
+                if (categoryIndex > -1) {
+                  oldContainer.categories.splice(categoryIndex, 1);
+                  console.log(`Removed category "${categoryName}" from container "${oldContainer.name}"`);
+                  console.log('Container categories after removal:', oldContainer.categories);
+                  showReorderFeedback(`Category "${categoryName}" removed from container! 📦`, 'success');
+                }
+              }
+            }
+            // Force update available categories zone after a short delay to ensure DOM is updated
+            setTimeout(() => {
+              console.log('Updating available categories zone after drop...');
+              updateAvailableCategoriesZone();
+              // Also re-render containers to update the display
+              renderContainers();
+              // Save changes to backend
+              saveCustomViewContainersToBackend();
+            }, 100);
+          } else if (newContainerId !== oldContainerId) {
+            // Update category's container assignment
+            moveCategoryToContainer(categoryName, oldContainerId, newContainerId);
+            ui.item.attr('data-container-id', newContainerId);
+            showReorderFeedback(`Category "${categoryName}" moved to new container! 🚀`, 'success');
+            // Update available categories zone after moving
+            updateAvailableCategoriesZone();
+          } else {
+            // Update category order within the same container
+            const newContainer = getContainerById(newContainerId);
+            if (newContainer) {
+              const newOrder = [];
+              $(ui.item).closest('.container-categories').find('.category-group').each(function() {
+                const cat = $(this).attr('data-category');
+                if (cat) newOrder.push(cat);
+              });
+              newContainer.categories = newOrder;
+              showReorderFeedback('Categories reordered within container! 📝', 'success');
+            }
+          }
+        },
+        over: function(event, ui) {
+          $(ui.placeholder).closest('.container-categories').addClass('drag-over');
+        },
+        out: function(event, ui) {
+          $('.container-categories').removeClass('drag-over');
+        }
+      });
+      
+      // Available categories sortable is now handled in updateAvailableCategoriesZone()
+      // to ensure it's properly initialized after the accordion structure is created
+      
+      // Disable text selection during sorting
+      containersContainer.disableSelection();
+      categoryElements.disableSelection();
+      
+      // Disable text selection for available categories list if it exists
+      const availableCategoriesList = $('#available-categories-list');
+      if (availableCategoriesList.length > 0) {
+        availableCategoriesList.disableSelection();
+      }
+      
+      console.log('Container and category sortable setup complete');
+      console.log('Sortable instances created:');
+      console.log('- Containers container sortable:', $('#containers-container').hasClass('ui-sortable'));
+      console.log('- Category containers sortable:', $('.container-categories.ui-sortable').length);
+      console.log('- Available categories sortable:', $('#available-categories-list').hasClass('ui-sortable'));
+      console.log('- Category drag handles visible:', $('.category-drag-handle:visible').length);
+      
+      // Verify drag handles are visible in edit mode
+      if ($('.category-drag-handle:visible').length === 0) {
+        console.warn('No category drag handles are visible - check CSS edit-mode-active class');
+      }
+      
+    } catch (error) {
+      console.error('Failed to setup container sortable:', error);
+      showReorderFeedback('Failed to setup drag and drop', 'error');
+    }
+  }
+
+  // Update available categories zone
+  function updateAvailableCategoriesZone() {
+    console.log('updateAvailableCategoriesZone() called');
+    const availableZone = document.getElementById('available-categories-zone');
+    const availableList = document.getElementById('available-categories-list');
+    const availableCount = document.getElementById('available-categories-count');
+    
+    if (!availableZone || !availableList || !availableCount) {
+      console.warn('Available categories zone elements not found');
+      return;
+    }
+    
+    // Get all categories from containers
+    const assignedCategories = new Set();
+    customViewContainers.forEach(container => {
+      if (container.categories && container.categories.length > 0) {
+        container.categories.forEach(category => {
+          assignedCategories.add(category);
+        });
+        console.log(`Container "${container.name}" has categories:`, container.categories);
+      }
+    });
+    
+    // Get all categories from multiple sources to ensure we capture all existing categories
+    const allCategories = new Set();
+    
+    // 1. Get categories from main containers (same logic as renderCustomView)
+    const categoryTypes = ['Application', 'LXC Container', 'Docker Container'];
+    
+    function collectAllCategories(containerList) {
+      containerList.forEach(container => {
+        if (categoryTypes.includes(container.type)) {
+          if (container.categories && container.categories.length > 0) {
+            container.categories.forEach(category => {
+              allCategories.add(category);
+            });
+            console.log(`Main container "${container.name}" has categories:`, container.categories);
+          } else {
+            // Containers without categories go to "Uncategorized"
+            allCategories.add('Uncategorized');
+          }
+        }
+        if (container.children && container.children.length > 0) {
+          collectAllCategories(container.children);
+        }
+      });
+    }
+    
+    collectAllCategories(containers);
+    
+    // 2. Also get categories from custom view containers to catch any that might not be in main containers
+    customViewContainers.forEach(container => {
+      if (container.categories && container.categories.length > 0) {
+        container.categories.forEach(category => {
+          allCategories.add(category);
+        });
+        console.log(`Custom view container "${container.name}" has categories:`, container.categories);
+      }
+    });
+    
+    // Find unassigned categories
+    const availableCategories = Array.from(allCategories).filter(category => !assignedCategories.has(category));
+    
+    console.log('Available categories calculation:', {
+      totalCategories: allCategories.size,
+      assignedCategories: assignedCategories.size,
+      availableCategories: availableCategories.length,
+      allCategories: Array.from(allCategories),
+      assignedCategoriesList: Array.from(assignedCategories),
+      availableCategoriesList: availableCategories
+    });
+    
+    // Update count
+    availableCount.textContent = `${availableCategories.length} categories`;
+    
+    // Clear and repopulate list
+    availableList.innerHTML = '';
+    
+    // Add accordion functionality if there are many categories
+    if (availableCategories.length > 5) {
+      // Create collapsible sections
+      const categoriesPerSection = 10;
+      const sections = Math.ceil(availableCategories.length / categoriesPerSection);
+      
+      for (let i = 0; i < sections; i++) {
+        const sectionStart = i * categoriesPerSection;
+        const sectionEnd = Math.min((i + 1) * categoriesPerSection, availableCategories.length);
+        const sectionCategories = availableCategories.slice(sectionStart, sectionEnd);
+        
+        const sectionElement = document.createElement('div');
+        sectionElement.className = 'available-categories-section';
+        
+        const sectionHeader = document.createElement('div');
+        sectionHeader.className = 'available-categories-section-header';
+        sectionHeader.innerHTML = `
+          <span class="section-title">Categories ${sectionStart + 1}-${sectionEnd}</span>
+          <span class="section-toggle">▼</span>
+        `;
+        
+        const sectionContent = document.createElement('div');
+        sectionContent.className = 'available-categories-section-content';
+        
+        // Add categories to this section
+        sectionCategories.forEach(category => {
+          const categoryElement = document.createElement('div');
+          categoryElement.className = 'available-category';
+          categoryElement.setAttribute('data-category', category);
+          
+          categoryElement.innerHTML = `
+            <div class="category-header">
+              <div class="category-title">
+                <span>📦 ${category}</span>
+              </div>
+              <div class="category-drag-handle" title="Drag to add to container">⋮⋮⋮</div>
+            </div>
+          `;
+          
+          sectionContent.appendChild(categoryElement);
+        });
+        
+        // Add click handler for accordion
+        sectionHeader.addEventListener('click', function() {
+          const isExpanded = sectionContent.style.display !== 'none';
+          sectionContent.style.display = isExpanded ? 'none' : 'block';
+          sectionHeader.querySelector('.section-toggle').textContent = isExpanded ? '▶' : '▼';
+        });
+        
+        // Start with first section expanded, others collapsed
+        if (i === 0) {
+          sectionContent.style.display = 'block';
+          sectionHeader.querySelector('.section-toggle').textContent = '▼';
+        } else {
+          sectionContent.style.display = 'none';
+          sectionHeader.querySelector('.section-toggle').textContent = '▶';
+        }
+        
+        sectionElement.appendChild(sectionHeader);
+        sectionElement.appendChild(sectionContent);
+        availableList.appendChild(sectionElement);
+      }
+    } else {
+      // Show all categories without sections if there are few
+      availableCategories.forEach(category => {
+        const categoryElement = document.createElement('div');
+        categoryElement.className = 'available-category';
+        categoryElement.setAttribute('data-category', category);
+        
+        categoryElement.innerHTML = `
+          <div class="category-header">
+            <div class="category-title">
+              <span>📦 ${category}</span>
+            </div>
+            <div class="category-drag-handle" title="Drag to add to container">⋮⋮⋮</div>
+          </div>
+        `;
+        
+        availableList.appendChild(categoryElement);
+      });
+    }
+    
+    // Show/hide zone based on edit mode
+    if (isEditMode && currentView === 'custom') {
+      availableZone.classList.remove('hidden');
+      console.log('Available categories zone shown with', availableCategories.length, 'categories');
+      
+      // Re-initialize sortable for available categories after DOM update
+      setTimeout(() => {
+        const availableCategoriesList = $('#available-categories-list');
+        if (availableCategoriesList.length > 0) {
+          // Destroy existing sortable if it exists
+          if (availableCategoriesList.hasClass('ui-sortable')) {
+            availableCategoriesList.sortable('destroy');
+          }
+          
+          // Re-create sortable with updated configuration
+          availableCategoriesList.sortable({
+            items: '.available-category',
+            handle: '.category-drag-handle',
+            placeholder: 'category-placeholder',
+            tolerance: 'pointer',
+            cursor: 'grabbing',
+            opacity: 0.9,
+            distance: 8,
+            connectWith: '.container-categories',
+            // Allow dragging from accordion sections
+            cancel: '.available-categories-section-header',
+            // Add more debugging
+            activate: function(event, ui) {
+              console.log('Available categories sortable activated');
+            },
+            deactivate: function(event, ui) {
+              console.log('Available categories sortable deactivated');
+            },
+            helper: function(event, item) {
+              const categoryName = item.attr('data-category');
+              const helper = $('<div class="category-drag-helper"></div>');
+              helper.css({
+                'width': '250px',
+                'height': '50px',
+                'background': 'linear-gradient(135deg, #6c757d 0%, #495057 100%)',
+                'color': 'white',
+                'border': '2px solid #343a40',
+                'border-radius': '8px',
+                'padding': '10px 15px',
+                'font-size': '14px',
+                'font-weight': 'bold',
+                'text-align': 'center',
+                'box-shadow': '0 8px 25px rgba(108, 117, 125, 0.5)',
+                'z-index': '10001',
+                'display': 'flex',
+                'align-items': 'center',
+                'justify-content': 'center',
+                'cursor': 'grabbing',
+                'user-select': 'none',
+                'position': 'absolute'
+              });
+              helper.text(`📦 ${categoryName}`);
+              return helper;
+            },
+            cursorAt: { top: 25, left: 125 },
+            start: function(event, ui) {
+              console.log('Available category sort started:', ui.item.attr('data-category'));
+              console.log('Start event details:', {
+                event: event,
+                ui: ui,
+                item: ui.item,
+                itemData: ui.item.attr('data-category'),
+                helper: ui.helper
+              });
+              ui.item.addClass('dragging');
+              $('*').css('transition', 'none');
+            },
+            stop: function(event, ui) {
+              const categoryName = ui.item.attr('data-category');
+              
+              // Check if dropped in a container by looking at the placeholder or the item's new position
+              let newContainerId = null;
+              
+              // Try to find the container by checking where the item ended up
+              const containerCategories = ui.item.closest('.container-categories');
+              if (containerCategories.length > 0) {
+                newContainerId = containerCategories.attr('data-container-id');
+              }
+              
+              console.log('Available category sort stopped:', categoryName, 'moved to container:', newContainerId);
+              
+              ui.item.removeClass('dragging');
+              $('*').css('transition', '');
+              
+              if (newContainerId) {
+                // Add to container
+                const newContainer = getContainerById(newContainerId);
+                if (newContainer && !newContainer.categories.includes(categoryName)) {
+                  newContainer.categories.push(categoryName);
+                  showReorderFeedback(`Category "${categoryName}" added to container! 🎉`, 'success');
+                  
+                  // Re-render containers and update available categories zone
+                  setTimeout(() => {
+                    renderContainers();
+                    updateAvailableCategoriesZone();
+                    saveCustomViewContainersToBackend();
+                  }, 100);
+                }
+              } else {
+                // If not dropped in a container, just update available categories zone
+                updateAvailableCategoriesZone();
+              }
+            }
+          });
+          
+          console.log('Re-initialized available categories sortable');
+          console.log('Available categories list found:', availableCategoriesList.length > 0);
+          console.log('Available category elements found:', availableCategoriesList.find('.available-category').length);
+          console.log('Drag handles found:', availableCategoriesList.find('.category-drag-handle').length);
+          
+          // Test if sortable is working by adding a click handler to drag handles
+          availableCategoriesList.find('.category-drag-handle').on('mousedown', function(e) {
+            console.log('Drag handle mousedown detected:', e.target);
+            console.log('Parent category:', $(this).closest('.available-category').attr('data-category'));
+          });
+          
+          // Test if sortable instance is working
+          console.log('Sortable instance check:', {
+            hasSortable: availableCategoriesList.hasClass('ui-sortable'),
+            sortableInstance: availableCategoriesList.sortable('instance'),
+            options: availableCategoriesList.sortable('option')
+          });
+        }
+      }, 50);
+    } else {
+      availableZone.classList.add('hidden');
+      console.log('Available categories zone hidden');
+    }
+  }
+
+  // Get available categories
+  function getAvailableCategories() {
+    const assignedCategories = new Set();
+    customViewContainers.forEach(container => {
+      container.categories.forEach(category => {
+        assignedCategories.add(category);
+      });
+    });
+    
+    const allCategories = new Set();
+    containers.forEach(container => {
+      if (container.categories && container.categories.length > 0) {
+        container.categories.forEach(category => {
+          allCategories.add(category);
+        });
+      }
+    });
+    
+    return Array.from(allCategories).filter(category => !assignedCategories.has(category));
+  }
+
+  // Debug function to move a category to available zone for testing
+  function moveCategoryToAvailable(categoryName) {
+    if (!isEditMode) {
+      console.log('Edit mode must be enabled to move categories');
+      return;
+    }
+    
+    // Find which container has this category
+    const containerWithCategory = customViewContainers.find(container => 
+      container.categories && container.categories.includes(categoryName)
+    );
+    
+    if (containerWithCategory) {
+      // Remove from container
+      const categoryIndex = containerWithCategory.categories.indexOf(categoryName);
+      if (categoryIndex > -1) {
+        containerWithCategory.categories.splice(categoryIndex, 1);
+        console.log(`Moved category "${categoryName}" from container "${containerWithCategory.name}" to available zone`);
+        
+        // Update the display
+        renderContainers();
+        updateAvailableCategoriesZone();
+        
+        // Save changes
+        saveCustomViewContainersToBackend();
+      }
+    } else {
+      console.log(`Category "${categoryName}" not found in any container`);
+    }
+  }
+
+  // Add debug helper to window for testing
+  window.debugMoveCategory = function(categoryName) {
+    console.log('Debug: Moving category to available zone:', categoryName);
+    moveCategoryToAvailable(categoryName);
+  };
+
+  // Add debug helper to list all categories
+  window.debugListCategories = function() {
+    console.log('=== DEBUG: All Categories ===');
+    console.log('Custom View Containers:', customViewContainers);
+    console.log('Main Containers:', containers);
+    console.log('Available Categories:', getAvailableCategories());
+  };
+
+  // Show container styling modal
+  function showContainerStyleModal(containerId) {
+    const container = getContainerById(containerId);
+    if (!container) {
+      showReorderFeedback('Container not found', 'error');
+      return;
+    }
+    
+    selectedCustomViewContainerId = containerId;
+    const modal = document.getElementById('container-styling-modal');
+    const form = document.getElementById('container-styling-form');
+    
+    if (!modal || !form) {
+      showReorderFeedback('Styling modal not found', 'error');
+      return;
+    }
+    
+    // Populate form with current values
+    form.querySelector('input[name="containerId"]').value = containerId;
+    form.querySelector('input[name="headingText"]').value = container.name;
+    form.querySelector('select[name="role"]').value = container.role;
+    form.querySelector('input[name="hideHeader"]').checked = container.styling?.hideHeader || false;
+    form.querySelector('select[name="bgType"]').value = container.styling?.bgType || 'color';
+    form.querySelector('input[name="backgroundColor"]').value = container.styling?.backgroundColor || '#f9f9f9';
+    form.querySelector('input[name="backgroundGradient"]').value = container.styling?.backgroundGradient || '';
+    form.querySelector('textarea[name="backgroundCSS"]').value = container.styling?.backgroundCSS || '';
+    form.querySelector('input[name="backgroundImage"]').value = container.styling?.backgroundImage || '';
+    form.querySelector('input[name="backgroundOpacity"]').value = container.styling?.backgroundOpacity || 100;
+    form.querySelector('input[name="borderColor"]').value = container.styling?.borderColor || '#e0e0e0';
+    form.querySelector('input[name="borderSize"]').value = container.styling?.borderSize || 2;
+    form.querySelector('select[name="borderStyle"]').value = container.styling?.borderStyle || 'solid';
+    form.querySelector('textarea[name="borderCSS"]').value = container.styling?.borderCSS || '';
+    form.querySelector('textarea[name="customCSS"]').value = container.styling?.customCSS || '';
+    form.querySelector('input[name="borderRadius"]').value = container.styling?.borderRadius || 8;
+    form.querySelector('input[name="boxShadow"]').value = container.styling?.boxShadow || '0 2px 4px rgba(0,0,0,0.1)';
+    form.querySelector('input[name="padding"]').value = container.styling?.padding || 15;
+    form.querySelector('input[name="margin"]').value = container.styling?.margin || 10;
+    
+    // Update background options visibility
+    updateContainerBackgroundOptions();
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    
+    // Set up form submission
+    form.onsubmit = saveContainerStyling;
+  }
+
+  // Hide container styling modal
+  function hideContainerStyleModal() {
+    const modal = document.getElementById('container-styling-modal');
+    if (modal) {
+      modal.classList.add('hidden');
+    }
+    selectedCustomViewContainerId = null;
+  }
+
+  // Update container background options
+  function updateContainerBackgroundOptions() {
+    const bgType = document.querySelector('select[name="bgType"]').value;
+    const colorOption = document.getElementById('container-bg-color-option');
+    const gradientOption = document.getElementById('container-bg-gradient-option');
+    const cssOption = document.getElementById('container-bg-css-option');
+    
+    if (colorOption) colorOption.classList.toggle('hidden', bgType !== 'color');
+    if (gradientOption) gradientOption.classList.toggle('hidden', bgType !== 'gradient');
+    if (cssOption) cssOption.classList.toggle('hidden', bgType !== 'css');
+  }
+
+  // Delete container
+  function deleteContainer(containerId) {
+    if (!isEditMode) {
+      showReorderFeedback('Please enable Edit Mode first', 'error');
+      return;
+    }
+    
+    const container = getContainerById(containerId);
+    if (!container) {
+      showReorderFeedback('Container not found', 'error');
+      return;
+    }
+    
+    if (customViewContainers.length <= 1) {
+      showReorderFeedback('Cannot delete the last container!', 'error');
+      return;
+    }
+    
+    // Check if container is empty
+    if (container.categories.length > 0) {
+      showReorderFeedback(`Cannot delete container "${container.name}" - it contains ${container.categories.length} categories. Move or remove categories first.`, 'error');
+      return;
+    }
+    
+    const confirmDelete = confirm(`Are you sure you want to delete the empty container "${container.name}"?`);
+    if (!confirmDelete) return;
+    
+    // Remove container
+    const containerIndex = customViewContainers.findIndex(cont => cont.id === containerId);
+    if (containerIndex > -1) {
+      customViewContainers.splice(containerIndex, 1);
+    }
+    
+    const orderIndex = customViewContainerOrder.indexOf(containerId);
+    if (orderIndex > -1) {
+      customViewContainerOrder.splice(orderIndex, 1);
+    }
+    
+    showReorderFeedback(`Empty container "${container.name}" deleted successfully! 🗑️`, 'success');
+    renderContainers(); // Re-render to reflect changes
+    
+    // Maintain edit mode after deletion
+    if (isEditMode && currentView === 'custom') {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          console.log('Setting up sortable from deleteContainer...');
+          setupContainerSortable();
+        }, 150);
+      });
+    }
+  }
+
+  // Reset Custom View
+  function resetCustomView() {
+    if (!isEditMode) {
+      showReorderFeedback('Please enable Edit Mode first', 'error');
+      return;
+    }
+    
+    const confirmReset = confirm('Are you sure you want to reset the Custom View? This will clear all containers and move all categories to the available list.');
+    if (!confirmReset) return;
+    
+    // Clear all containers
+    customViewContainers = [];
+    customViewContainerOrder = [];
+    
+    // Create a new default container
+    createDefaultContainer();
+    
+    showReorderFeedback('Custom View reset successfully! All categories moved to available list. 🔄', 'success');
+    renderContainers();
+    
+    // Maintain edit mode after reset
+    if (isEditMode && currentView === 'custom') {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          console.log('Setting up sortable from resetCustomView...');
+          setupContainerSortable();
+        }, 150);
+      });
+    }
+  }
+
+  // Make container title editable
+  function makeContainerTitleEditable(titleSpan, containerId) {
+    if (!isEditMode) {
+      showReorderFeedback('Please enable Edit Mode to edit container names', 'error');
+      return;
+    }
+    
+    const container = getContainerById(containerId);
+    if (!container) {
+      showReorderFeedback('Container not found', 'error');
+      return;
+    }
+    
+    const currentText = titleSpan.textContent;
+    const roleIcon = container.role === 'column' ? '📁' : '➡️';
+    const currentName = currentText.replace(`${roleIcon} `, '');
+    
+    // Create input element
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentName;
+    input.className = 'container-title-input';
+    input.style.cssText = `
+      width: 100%;
+      padding: 4px 8px;
+      border: 2px solid #0077cc;
+      border-radius: 4px;
+      font-size: inherit;
+      font-weight: inherit;
+      background: white;
+      color: #333;
+    `;
+    
+    // Replace span with input
+    titleSpan.style.display = 'none';
+    titleSpan.parentNode.insertBefore(input, titleSpan);
+    input.focus();
+    input.select();
+    
+    const saveEdit = () => {
+      const newName = input.value.trim();
+      if (newName && newName !== currentName) {
+        container.name = newName;
+        titleSpan.textContent = `${roleIcon} ${newName}`;
+        showReorderFeedback(`Container renamed to "${newName}"! ✏️`, 'success');
+      }
+      titleSpan.style.display = '';
+      input.remove();
+    };
+    
+    const cancelEdit = () => {
+      titleSpan.style.display = '';
+      input.remove();
+    };
+    
+    // Handle input events
+    input.addEventListener('blur', saveEdit);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveEdit();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        cancelEdit();
+      }
+    });
   }
   

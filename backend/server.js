@@ -140,6 +140,48 @@ app.post('/api/columns', (req, res) => {
   }
 });
 
+// Custom View Container configuration endpoints
+app.get('/api/custom-view-containers', (req, res) => {
+  console.log(`[${new Date().toISOString()}] GET /api/custom-view-containers - Retrieving custom view container configurations`);
+  
+  if (!fs.existsSync(columnsFile)) {
+    console.log(`[${new Date().toISOString()}] Custom view containers file does not exist, returning empty array`);
+    fs.writeFileSync(columnsFile, '[]');
+    return res.json([]);
+  }
+  
+  try {
+    const data = fs.readFileSync(columnsFile, 'utf-8');
+    const containers = JSON.parse(data);
+    console.log(`[${new Date().toISOString()}] Successfully retrieved ${containers.length} custom view containers`);
+    res.json(containers);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error reading custom view containers file:`, error);
+    res.status(500).json({ error: 'Failed to read custom view container configuration' });
+  }
+});
+
+app.post('/api/custom-view-containers', (req, res) => {
+  console.log(`[${new Date().toISOString()}] POST /api/custom-view-containers - Saving custom view container configurations`);
+  
+  try {
+    const containers = req.body;
+    
+    // Validate that it's an array
+    if (!Array.isArray(containers)) {
+      return res.status(400).json({ error: 'Custom view containers data must be an array' });
+    }
+    
+    // Save to file
+    fs.writeFileSync(columnsFile, JSON.stringify(containers, null, 2));
+    console.log(`[${new Date().toISOString()}] Successfully saved ${containers.length} custom view containers`);
+    res.status(200).json({ status: 'saved' });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error saving custom view containers:`, error);
+    res.status(500).json({ error: 'Failed to save custom view container configuration' });
+  }
+});
+
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);

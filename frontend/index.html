@@ -37,10 +37,23 @@
   <!-- Custom View Toolbar -->
   <div id="custom-view-toolbar" class="hidden">
     <button id="edit-mode-btn" onclick="toggleEditMode()">✏️ Edit Mode</button>
-    <button id="add-column-btn" onclick="addNewColumn()">➕ Add Column</button>
+    <button id="add-column-btn" onclick="addNewContainer('column')">➕ Add Column</button>
+    <button id="add-row-btn" onclick="addNewContainer('row')">➡️ Add Row</button>
+    <button id="reset-view-btn" onclick="resetCustomView()">🔄 Reset View</button>
     <span id="edit-mode-status">Drag categories to reorder</span>
   </div>
   <div id="container-root"></div>
+  
+  <!-- Available Categories Zone (only visible in edit mode) -->
+  <div id="available-categories-zone" class="hidden">
+    <div class="available-categories-header">
+      <h3>📦 Available Categories</h3>
+      <span id="available-categories-count">0 categories</span>
+    </div>
+    <div id="available-categories-list" class="available-categories-list">
+      <!-- Available categories will be populated here -->
+    </div>
+  </div>
 
   <div id="container-modal" class="modal hidden">
     <div class="modal-header">
@@ -316,47 +329,58 @@
     </form>
   </div>
 
-  <!-- Column Styling Modal -->
-  <div id="column-styling-modal" class="modal hidden">
+  <!-- Container Styling Modal -->
+  <div id="container-styling-modal" class="modal hidden">
     <div class="modal-header">
-      <h3>Column Styling</h3>
-      <button class="close-btn" onclick="hideColumnStyleModal()">×</button>
+      <h3>Container Styling</h3>
+      <button class="close-btn" onclick="hideContainerStyleModal()">×</button>
     </div>
-    <form id="column-styling-form">
-      <input type="hidden" name="columnId" />
+    <form id="container-styling-form">
+      <input type="hidden" name="containerId" />
       
       <div class="style-section">
-        <h4>Column Visibility</h4>
-        <label><input type="checkbox" name="hideHeader" /> Hide column header</label>
+        <h4>Container Information</h4>
+        <label>Heading Text: <input type="text" name="headingText" placeholder="Enter container name" /></label>
+        <label>Role: 
+          <select name="role">
+            <option value="column">Column (📁 Vertical Stack)</option>
+            <option value="row">Row (➡️ Horizontal Stack)</option>
+          </select>
+        </label>
       </div>
       
       <div class="style-section">
-        <h4>Column Background</h4>
+        <h4>Container Visibility</h4>
+        <label><input type="checkbox" name="hideHeader" /> Hide container header</label>
+      </div>
+      
+      <div class="style-section">
+        <h4>Container Background</h4>
         <label>Background Type: 
-          <select name="bgType" onchange="updateColumnBackgroundOptions()">
+          <select name="bgType" onchange="updateContainerBackgroundOptions()">
             <option value="color">Solid Color</option>
             <option value="gradient">Gradient</option>
             <option value="css">Custom CSS</option>
           </select>
         </label>
-        <div id="column-bg-color-option">
+        <div id="container-bg-color-option">
           <label>Background Color: <input type="color" name="backgroundColor" value="#f9f9f9" /></label>
         </div>
-        <div id="column-bg-gradient-option" class="hidden">
+        <div id="container-bg-gradient-option" class="hidden">
           <label>Gradient: <input type="text" name="backgroundGradient" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
         </div>
-        <div id="column-bg-css-option" class="hidden">
+        <div id="container-bg-css-option" class="hidden">
           <label>Custom CSS: <textarea name="backgroundCSS" placeholder="background: url('image.jpg') center/cover;"></textarea></label>
         </div>
         <label>Background Image URL: <input type="text" name="backgroundImage" placeholder="https://example.com/image.jpg" /></label>
         <label>Background Transparency: 
           <input type="range" name="backgroundOpacity" min="0" max="100" value="100" step="5" />
-          <span id="column-opacity-value">100%</span>
+          <span id="container-opacity-value">100%</span>
         </label>
       </div>
       
       <div class="style-section">
-        <h4>Column Border</h4>
+        <h4>Container Border</h4>
         <label>Border Color: <input type="color" name="borderColor" value="#e0e0e0" /></label>
         <label>Border Size: <input type="number" name="borderSize" min="0" max="20" value="2" step="1" />px</label>
         <label>Border Style: 
@@ -385,7 +409,7 @@
       
       <div class="modal-buttons">
         <button type="submit">Save Styling</button>
-        <button type="button" onclick="hideColumnStyleModal()">Cancel</button>
+        <button type="button" onclick="hideContainerStyleModal()">Cancel</button>
       </div>
     </form>
   </div>
