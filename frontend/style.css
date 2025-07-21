@@ -2321,6 +2321,46 @@ body {
     background: transparent;
   }
   
+  /* Widget Drag and Drop Styles */
+  .widget-container.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+  }
+  
+  .widget-drag-handle {
+    cursor: grab;
+    padding: 4px 8px;
+    color: #666;
+    font-size: 12px;
+    user-select: none;
+    margin-right: 8px;
+    transition: color 0.2s ease;
+  }
+  
+  .widget-drag-handle:hover {
+    color: #0077cc;
+  }
+  
+  .widget-drag-handle:active {
+    cursor: grabbing;
+  }
+  
+  .widget-container[draggable="true"] {
+    cursor: grab;
+  }
+  
+  .widget-container[draggable="true"]:active {
+    cursor: grabbing;
+  }
+  
+  /* Container drop zone for widgets */
+  .container-categories.drag-over {
+    background: rgba(0, 119, 204, 0.1);
+    border: 2px dashed #0077cc;
+    border-radius: 8px;
+  }
+  
   /* Widget Gallery */
   .widget-gallery .gallery-content {
     background: white;
@@ -2426,10 +2466,47 @@ body {
     background: white;
     padding: 20px;
     border-radius: 8px;
-    max-width: 500px;
+    max-width: 600px;
     width: 90%;
     max-height: 80vh;
     overflow-y: auto;
+  }
+  
+  .widget-config-modal .modal-tabs {
+    display: flex;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 20px;
+  }
+  
+  .widget-config-modal .tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.2s ease;
+  }
+  
+  .widget-config-modal .tab-btn:hover {
+    color: #0077cc;
+    background-color: #f8f9fa;
+  }
+  
+  .widget-config-modal .tab-btn.active {
+    color: #0077cc;
+    border-bottom-color: #0077cc;
+    background-color: #f8f9fa;
+  }
+  
+  .widget-config-modal .tab-content {
+    display: none;
+  }
+  
+  .widget-config-modal .tab-content.active {
+    display: block;
   }
   
   .widget-config-modal .form-group {
@@ -2483,6 +2560,17 @@ body {
     margin-left: 10px;
     font-weight: bold;
     color: #0077cc;
+  }
+  
+  .widget-config-modal .form-help {
+    font-size: 12px;
+    color: #666;
+    margin-left: 20px;
+  }
+  
+  .widget-config-modal textarea {
+    min-height: 80px;
+    resize: vertical;
   }
   
   /* Modal Headers and Footers */

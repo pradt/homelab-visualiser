@@ -1421,11 +1421,28 @@ let selectedCustomViewContainerId = null; // For styling modal
     });
     
     // Add drop zone for empty containers (visibility controlled by CSS)
-    if (container.categories.length === 0) {
+    if (container.categories.length === 0 && (!container.children || container.children.length === 0)) {
       const dropZone = document.createElement('div');
       dropZone.className = 'category-drop-zone';
-      dropZone.innerHTML = '<div class="drop-zone-content">📦 Drop categories here</div>';
+      dropZone.innerHTML = '<div class="drop-zone-content">📦 Drop categories or widgets here</div>';
       categoriesContainer.appendChild(dropZone);
+    }
+    
+    // Render widgets in this container
+    if (container.children && container.children.length > 0) {
+      console.log(`Container "${container.name}" has ${container.children.length} children:`, container.children);
+      container.children.forEach(child => {
+        if (child.type === 'widget') {
+          try {
+            console.log('Creating widget element for:', child);
+            const widgetElement = createWidgetElement(child);
+            categoriesContainer.appendChild(widgetElement);
+            console.log('Widget element created and added:', widgetElement);
+          } catch (error) {
+            console.error('Error creating widget element:', error);
+          }
+        }
+      });
     }
     
     containerElement.appendChild(containerHeader);
@@ -3648,6 +3665,73 @@ let selectedCustomViewContainerId = null; // For styling modal
         availableCategoriesList.disableSelection();
       }
       
+      // Add widget drop support to container categories
+      $('.container-categories').each(function() {
+        const containerCategories = $(this);
+        const containerId = containerCategories.attr('data-container-id');
+        
+        containerCategories.on('dragover', function(e) {
+          e.preventDefault();
+          if (e.dataTransfer) {
+            e.dataTransfer.dropEffect = 'move';
+          }
+          containerCategories.addClass('drag-over');
+          console.log('Dragover on container:', containerId);
+        });
+        
+        containerCategories.on('dragleave', function(e) {
+          if (!containerCategories.has(e.relatedTarget).length) {
+            containerCategories.removeClass('drag-over');
+          }
+        });
+        
+        containerCategories.on('drop', function(e) {
+          e.preventDefault();
+          containerCategories.removeClass('drag-over');
+          console.log('Drop event on container:', containerId);
+          
+          try {
+            // Try multiple ways to get the widget data
+            let widgetData = null;
+            
+            // Method 1: Try dataTransfer
+            if (e.dataTransfer) {
+              widgetData = e.dataTransfer.getData('application/json');
+              console.log('Widget data from dataTransfer:', widgetData);
+            }
+            
+            // Method 2: Try originalEvent dataTransfer
+            if (!widgetData && e.originalEvent && e.originalEvent.dataTransfer) {
+              widgetData = e.originalEvent.dataTransfer.getData('application/json');
+              console.log('Widget data from originalEvent.dataTransfer:', widgetData);
+            }
+            
+            // Method 3: Try global variable (fallback)
+            if (!widgetData && window.draggedWidgetData) {
+              widgetData = window.draggedWidgetData;
+              console.log('Widget data from global variable:', widgetData);
+            }
+            
+            if (widgetData) {
+              const widgetContainer = JSON.parse(widgetData);
+              console.log('Parsed widget container:', widgetContainer);
+              if (widgetContainer && widgetContainer.type === 'widget') {
+                console.log('Moving widget to container:', containerId);
+                moveWidgetToContainer(widgetContainer, containerId);
+                // Clear global variable after successful move
+                window.draggedWidgetData = null;
+              } else {
+                console.log('Dropped item is not a widget:', widgetContainer);
+              }
+            } else {
+              console.log('No widget data found in any method');
+            }
+          } catch (error) {
+            console.error('Error handling widget drop:', error);
+          }
+        });
+      });
+      
       console.log('Container and category sortable setup complete');
       console.log('Sortable instances created:');
       console.log('- Containers container sortable:', $('#containers-container').hasClass('ui-sortable'));
@@ -4288,6 +4372,7 @@ let selectedCustomViewContainerId = null; // For styling modal
       config: config,
       role: 'widget',
       name: `Widget ${widgetId}`,
+      parentContainerId: null, // Will be set when added to a container
       styling: {
         hideHeader: false,
         bgType: 'color',
@@ -4317,6 +4402,17 @@ let selectedCustomViewContainerId = null; // For styling modal
     widgetElement.className = 'widget-container';
     widgetElement.setAttribute('data-widget-id', widgetContainer.widgetId);
     widgetElement.setAttribute('data-container-id', widgetContainer.id);
+    
+          // Add drag and drop functionality for widgets
+      if (isEditMode) {
+        widgetElement.setAttribute('draggable', 'true');
+        widgetElement.setAttribute('data-widget-type', 'widget');
+        widgetElement.setAttribute('data-widget-data', JSON.stringify(widgetContainer));
+        
+        // Add drag event listeners
+        widgetElement.addEventListener('dragstart', handleWidgetDragStart);
+        widgetElement.addEventListener('dragend', handleWidgetDragEnd);
+      }
     
     // Create widget header
     const widgetHeader = document.createElement('div');
@@ -4407,11 +4503,212 @@ let selectedCustomViewContainerId = null; // For styling modal
     return widgetElement;
   }
   
+  // Widget drag and drop handlers
+  function handleWidgetDragStart(e) {
+    console.log('Widget drag start triggered:', e.target);
+    if (!isEditMode) {
+      console.log('Edit mode not active, ignoring drag');
+      return;
+    }
+    
+    const widgetElement = e.target.closest('.widget-container');
+    if (!widgetElement) {
+      console.log('No widget container found in drag target');
+      return;
+    }
+    
+    console.log('Widget element found:', widgetElement);
+    const widgetData = widgetElement.getAttribute('data-widget-data');
+    console.log('Widget data:', widgetData);
+    
+    if (widgetData && e.dataTransfer) {
+      try {
+        e.dataTransfer.setData('application/json', widgetData);
+        e.dataTransfer.effectAllowed = 'move';
+        
+        // Store widget data globally as fallback
+        window.draggedWidgetData = widgetData;
+        
+        // Add visual feedback
+        widgetElement.style.opacity = '0.5';
+        widgetElement.classList.add('dragging');
+        
+        // Add a visual drag indicator
+        const dragIndicator = document.createElement('div');
+        dragIndicator.id = 'widget-drag-indicator';
+        dragIndicator.style.cssText = `
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: #0077cc;
+          color: white;
+          padding: 10px 20px;
+          border-radius: 8px;
+          font-weight: bold;
+          z-index: 10000;
+          pointer-events: none;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        `;
+        dragIndicator.textContent = `Dragging: ${widgetContainer.name}`;
+        document.body.appendChild(dragIndicator);
+        
+        // Remove indicator on drag end
+        setTimeout(() => {
+          if (document.body.contains(dragIndicator)) {
+            document.body.removeChild(dragIndicator);
+          }
+        }, 100);
+        
+        // Create drag image
+        const dragImage = widgetElement.cloneNode(true);
+        dragImage.style.width = widgetElement.offsetWidth + 'px';
+        dragImage.style.height = '60px';
+        dragImage.style.overflow = 'hidden';
+        dragImage.style.position = 'absolute';
+        dragImage.style.top = '-1000px';
+        dragImage.style.left = '-1000px';
+        dragImage.style.zIndex = '9999';
+        dragImage.style.opacity = '0.8';
+        dragImage.style.pointerEvents = 'none';
+        dragImage.style.backgroundColor = '#ffffff';
+        dragImage.style.border = '2px solid #0077cc';
+        dragImage.style.borderRadius = '8px';
+        dragImage.style.boxShadow = '0 4px 8px rgba(0,0,0,0.3)';
+        document.body.appendChild(dragImage);
+        
+        // Set drag image with proper offset
+        const rect = widgetElement.getBoundingClientRect();
+        const offsetX = Math.min(rect.width / 2, 50);
+        const offsetY = Math.min(rect.height / 2, 30);
+        e.dataTransfer.setDragImage(dragImage, offsetX, offsetY);
+        
+        console.log('Widget drag started successfully with drag image', { offsetX, offsetY, width: rect.width, height: rect.height });
+        
+        // Remove drag image after a short delay
+        setTimeout(() => {
+          if (document.body.contains(dragImage)) {
+            document.body.removeChild(dragImage);
+          }
+        }, 100);
+      } catch (error) {
+        console.error('Error in widget drag start:', error);
+      }
+    } else {
+      console.log('Missing widget data or dataTransfer:', { widgetData: !!widgetData, dataTransfer: !!e.dataTransfer });
+    }
+  }
+  
+  function handleWidgetDragEnd(e) {
+    if (!isEditMode) return;
+    
+    const widgetElement = e.target.closest('.widget-container');
+    if (widgetElement) {
+      widgetElement.style.opacity = '';
+      widgetElement.classList.remove('dragging');
+    }
+    
+    // Remove drag indicator
+    const dragIndicator = document.getElementById('widget-drag-indicator');
+    if (dragIndicator) {
+      dragIndicator.remove();
+    }
+    
+    // Clear global widget data after a short delay to allow drop to process
+    setTimeout(() => {
+      if (window.draggedWidgetData) {
+        console.log('Clearing global widget data after drag end');
+        window.draggedWidgetData = null;
+      }
+    }, 100);
+  }
+  
+  // Move widget between containers
+  function moveWidgetToContainer(widgetContainer, targetContainerId) {
+    try {
+      console.log('Moving widget:', widgetContainer.id, 'from', widgetContainer.parentContainerId, 'to', targetContainerId);
+      
+      // Remove widget from current container
+      if (widgetContainer.parentContainerId) {
+        const currentContainer = getContainerById(widgetContainer.parentContainerId);
+        if (currentContainer && currentContainer.children) {
+          const beforeCount = currentContainer.children.length;
+          currentContainer.children = currentContainer.children.filter(child => child.id !== widgetContainer.id);
+          const afterCount = currentContainer.children.length;
+          console.log(`Removed widget from container ${widgetContainer.parentContainerId}: ${beforeCount} -> ${afterCount} children`);
+        }
+      }
+      
+      // Add widget to target container
+      const targetContainer = getContainerById(targetContainerId);
+      if (targetContainer) {
+        // Check if widget already exists in target container
+        if (!targetContainer.children) {
+          targetContainer.children = [];
+        }
+        
+        const existingWidget = targetContainer.children.find(child => child.id === widgetContainer.id);
+        if (existingWidget) {
+          console.log('Widget already exists in target container, skipping add');
+          showReorderFeedback('Widget already in this container! 🔧', 'info');
+          return;
+        }
+        
+        widgetContainer.parentContainerId = targetContainerId;
+        targetContainer.children.push(widgetContainer);
+        
+        console.log(`Added widget to container ${targetContainerId}, now has ${targetContainer.children.length} children`);
+        
+        // Update container order if needed
+        if (!customViewContainerOrder.includes(targetContainerId)) {
+          customViewContainerOrder.push(targetContainerId);
+        }
+        
+        // Save changes
+        saveCustomViewContainersToBackend();
+        showReorderFeedback(`Widget moved to ${targetContainer.name}! 🔧`, 'success');
+        
+        // Re-render
+        renderContainers();
+      }
+    } catch (error) {
+      console.error('Error moving widget to container:', error);
+      showReorderFeedback('Failed to move widget', 'error');
+    }
+  }
+  
   // Apply widget styling
   function applyWidgetStyling(widgetElement, widgetContainer) {
     if (!widgetContainer.styling) return;
     
     const style = widgetContainer.styling;
+    
+    // Add drag handle to header if in edit mode
+    if (isEditMode) {
+      const header = widgetElement.querySelector('.widget-header');
+      if (header && !header.querySelector('.widget-drag-handle')) {
+        const dragHandle = document.createElement('div');
+        dragHandle.className = 'widget-drag-handle';
+        dragHandle.innerHTML = '⋮⋮⋮';
+        dragHandle.title = 'Drag to move widget';
+        dragHandle.style.cssText = `
+          cursor: grab;
+          padding: 4px 8px;
+          color: #666;
+          font-size: 12px;
+          user-select: none;
+          margin-right: 8px;
+        `;
+        
+        // Add drag event listeners to the handle
+        dragHandle.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+          widgetElement.draggable = true;
+        });
+        
+        header.insertBefore(dragHandle, header.firstChild);
+      }
+    }
     
     // Apply header visibility
     const widgetHeader = widgetElement.querySelector('.widget-header');
@@ -4470,15 +4767,37 @@ let selectedCustomViewContainerId = null; // For styling modal
       }
       
       const widget = await response.json();
-      const modal = createWidgetConfigModal(widget, currentConfig);
+      
+      // Find the widget container to get current styling
+      const widgetContainer = customViewContainers.find(container =>
+        container.type === 'widget' && container.widgetId === widgetId
+      );
+      
+      // Combine config and styling data
+      const combinedConfig = {
+        ...currentConfig,
+        name: widgetContainer?.name || widget.manifest.name,
+        styling: widgetContainer?.styling || {}
+      };
+      
+      const modal = createWidgetConfigModal(widget, combinedConfig);
       document.body.appendChild(modal);
+      
+      // Set up form submission
+      const form = modal.querySelector('form');
+      form.onsubmit = (e) => {
+        e.preventDefault();
+        const configData = collectConfigData(form, widget.manifest.configSchema || {});
+        saveWidgetConfig(widgetId, configData);
+        closeWidgetConfigModal();
+      };
     } catch (error) {
       console.error('Error loading widget config:', error);
       showReorderFeedback('Failed to load widget configuration', 'error');
     }
   }
   
-  // Create widget configuration modal
+  // Create widget configuration modal with tabs
   function createWidgetConfigModal(widget, currentConfig) {
     const modal = document.createElement('div');
     modal.className = 'modal widget-config-modal';
@@ -4501,7 +4820,7 @@ let selectedCustomViewContainerId = null; // For styling modal
       background: white;
       padding: 20px;
       border-radius: 8px;
-      max-width: 500px;
+      max-width: 600px;
       width: 90%;
       max-height: 80vh;
       overflow-y: auto;
@@ -4513,12 +4832,109 @@ let selectedCustomViewContainerId = null; // For styling modal
         <h3>Configure ${widget.manifest.name}</h3>
         <button type="button" class="close-btn" onclick="closeWidgetConfigModal()">×</button>
       </div>
+      
+      <div class="modal-tabs">
+        <button type="button" class="tab-btn active" onclick="switchWidgetTab('general')">General</button>
+        <button type="button" class="tab-btn" onclick="switchWidgetTab('style')">Style</button>
+      </div>
+      
       <div class="modal-body">
-        <p>${widget.manifest.description}</p>
-        <div id="widget-config-fields">
-          ${generateConfigFields(widget.manifest.configSchema || {}, currentConfig)}
+        <div id="general-tab" class="tab-content active">
+          <p>${widget.manifest.description}</p>
+          <div id="widget-config-fields">
+            ${generateConfigFields(widget.manifest.configSchema || {}, currentConfig)}
+          </div>
+        </div>
+        
+        <div id="style-tab" class="tab-content">
+          <div class="form-group">
+            <label>Widget Name:</label>
+            <input type="text" name="widgetName" value="${currentConfig.name || widget.manifest.name}" placeholder="Widget name">
+          </div>
+          
+          <div class="form-group">
+            <label>Hide Header:</label>
+            <input type="checkbox" name="hideHeader" ${currentConfig.styling?.hideHeader ? 'checked' : ''}>
+            <span class="form-help">Hide the widget header in view mode</span>
+          </div>
+          
+          <div class="form-group">
+            <label>Background Type:</label>
+            <select name="bgType" onchange="updateWidgetBackgroundOptions()">
+              <option value="color" ${currentConfig.styling?.bgType === 'color' ? 'selected' : ''}>Solid Color</option>
+              <option value="gradient" ${currentConfig.styling?.bgType === 'gradient' ? 'selected' : ''}>Gradient</option>
+              <option value="css" ${currentConfig.styling?.bgType === 'css' ? 'selected' : ''}>Custom CSS</option>
+            </select>
+          </div>
+          
+          <div id="widget-bg-color-option" class="form-group ${currentConfig.styling?.bgType === 'color' ? '' : 'hidden'}">
+            <label>Background Color:</label>
+            <input type="color" name="backgroundColor" value="${currentConfig.styling?.backgroundColor || '#ffffff'}">
+          </div>
+          
+          <div id="widget-bg-gradient-option" class="form-group ${currentConfig.styling?.bgType === 'gradient' ? '' : 'hidden'}">
+            <label>Background Gradient:</label>
+            <input type="text" name="backgroundGradient" value="${currentConfig.styling?.backgroundGradient || ''}" placeholder="linear-gradient(to right, #ff6b6b, #4ecdc4)">
+          </div>
+          
+          <div id="widget-bg-css-option" class="form-group ${currentConfig.styling?.bgType === 'css' ? '' : 'hidden'}">
+            <label>Background CSS:</label>
+            <textarea name="backgroundCSS" placeholder="background: url('image.jpg') center/cover;">${currentConfig.styling?.backgroundCSS || ''}</textarea>
+          </div>
+          
+          <div class="form-group">
+            <label>Background Opacity:</label>
+            <input type="range" name="backgroundOpacity" min="0" max="100" value="${currentConfig.styling?.backgroundOpacity || 100}" oninput="updateRangeValue(this)">
+            <span class="range-value">${currentConfig.styling?.backgroundOpacity || 100}%</span>
+          </div>
+          
+          <div class="form-group">
+            <label>Border Color:</label>
+            <input type="color" name="borderColor" value="${currentConfig.styling?.borderColor || '#e0e0e0'}">
+          </div>
+          
+          <div class="form-group">
+            <label>Border Size:</label>
+            <input type="number" name="borderSize" min="0" max="20" value="${currentConfig.styling?.borderSize || 1}">
+          </div>
+          
+          <div class="form-group">
+            <label>Border Style:</label>
+            <select name="borderStyle">
+              <option value="solid" ${currentConfig.styling?.borderStyle === 'solid' ? 'selected' : ''}>Solid</option>
+              <option value="dashed" ${currentConfig.styling?.borderStyle === 'dashed' ? 'selected' : ''}>Dashed</option>
+              <option value="dotted" ${currentConfig.styling?.borderStyle === 'dotted' ? 'selected' : ''}>Dotted</option>
+              <option value="none" ${currentConfig.styling?.borderStyle === 'none' ? 'selected' : ''}>None</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Border Radius:</label>
+            <input type="number" name="borderRadius" min="0" max="50" value="${currentConfig.styling?.borderRadius || 8}">
+          </div>
+          
+          <div class="form-group">
+            <label>Box Shadow:</label>
+            <input type="text" name="boxShadow" value="${currentConfig.styling?.boxShadow || '0 2px 4px rgba(0,0,0,0.1)'}" placeholder="0 2px 4px rgba(0,0,0,0.1)">
+          </div>
+          
+          <div class="form-group">
+            <label>Padding:</label>
+            <input type="number" name="padding" min="0" max="50" value="${currentConfig.styling?.padding || 10}">
+          </div>
+          
+          <div class="form-group">
+            <label>Margin:</label>
+            <input type="number" name="margin" min="0" max="50" value="${currentConfig.styling?.margin || 5}">
+          </div>
+          
+          <div class="form-group">
+            <label>Custom CSS:</label>
+            <textarea name="customCSS" placeholder="Additional CSS styles...">${currentConfig.styling?.customCSS || ''}</textarea>
+          </div>
         </div>
       </div>
+      
       <div class="modal-footer">
         <button type="submit" class="btn btn-primary">Save Configuration</button>
         <button type="button" class="btn btn-secondary" onclick="closeWidgetConfigModal()">Cancel</button>
@@ -4640,19 +5056,46 @@ let selectedCustomViewContainerId = null; // For styling modal
     return config;
   }
   
-  // Save widget configuration
+    // Save widget configuration and styling
   function saveWidgetConfig(widgetId, config) {
     // Find widget container and update config
-    const widgetContainer = customViewContainers.find(container => 
+    const widgetContainer = customViewContainers.find(container =>
       container.type === 'widget' && container.widgetId === widgetId
     );
     
     if (widgetContainer) {
+      // Update widget configuration
       widgetContainer.config = config;
-      saveCustomViewContainersToBackend();
-      showReorderFeedback('Widget configuration saved! ⚙️', 'success');
       
-      // Re-render to apply new config
+      // Update widget styling
+      const form = document.querySelector('.widget-config-modal form');
+      if (form) {
+        widgetContainer.name = form.querySelector('input[name="widgetName"]').value;
+        
+        if (!widgetContainer.styling) {
+          widgetContainer.styling = {};
+        }
+        
+        widgetContainer.styling.hideHeader = form.querySelector('input[name="hideHeader"]').checked;
+        widgetContainer.styling.bgType = form.querySelector('select[name="bgType"]').value;
+        widgetContainer.styling.backgroundColor = form.querySelector('input[name="backgroundColor"]').value;
+        widgetContainer.styling.backgroundGradient = form.querySelector('input[name="backgroundGradient"]').value;
+        widgetContainer.styling.backgroundCSS = form.querySelector('textarea[name="backgroundCSS"]').value;
+        widgetContainer.styling.backgroundOpacity = parseInt(form.querySelector('input[name="backgroundOpacity"]').value);
+        widgetContainer.styling.borderColor = form.querySelector('input[name="borderColor"]').value;
+        widgetContainer.styling.borderSize = parseInt(form.querySelector('input[name="borderSize"]').value);
+        widgetContainer.styling.borderStyle = form.querySelector('select[name="borderStyle"]').value;
+        widgetContainer.styling.borderRadius = parseInt(form.querySelector('input[name="borderRadius"]').value);
+        widgetContainer.styling.boxShadow = form.querySelector('input[name="boxShadow"]').value;
+        widgetContainer.styling.padding = parseInt(form.querySelector('input[name="padding"]').value);
+        widgetContainer.styling.margin = parseInt(form.querySelector('input[name="margin"]').value);
+        widgetContainer.styling.customCSS = form.querySelector('textarea[name="customCSS"]').value;
+      }
+      
+      saveCustomViewContainersToBackend();
+      showReorderFeedback('Widget configuration and styling saved! ⚙️', 'success');
+      
+      // Re-render to apply new config and styling
       renderContainers();
     }
   }
@@ -4672,27 +5115,40 @@ let selectedCustomViewContainerId = null; // For styling modal
       return;
     }
     
-    const container = getContainerById(containerId);
-    if (!container) {
-      showReorderFeedback('Widget container not found', 'error');
+    console.log('Attempting to delete widget container:', containerId);
+    
+    // Find the widget in any container's children
+    let widgetContainer = null;
+    let parentContainer = null;
+    
+    for (const container of customViewContainers) {
+      if (container.children) {
+        const widget = container.children.find(child => child.id === containerId && child.type === 'widget');
+        if (widget) {
+          widgetContainer = widget;
+          parentContainer = container;
+          break;
+        }
+      }
+    }
+    
+    if (!widgetContainer || !parentContainer) {
+      console.log('Widget not found in any container. Available containers:', customViewContainers);
+      showReorderFeedback('Widget not found', 'error');
       return;
     }
     
-    const confirmDelete = confirm(`Are you sure you want to delete the widget "${container.name}"?`);
+    const confirmDelete = confirm(`Are you sure you want to delete the widget "${widgetContainer.name}"?`);
     if (!confirmDelete) return;
     
-    // Remove container
-    const containerIndex = customViewContainers.findIndex(cont => cont.id === containerId);
-    if (containerIndex > -1) {
-      customViewContainers.splice(containerIndex, 1);
-    }
+    // Remove widget from parent container
+    parentContainer.children = parentContainer.children.filter(child => child.id !== containerId);
     
-    const orderIndex = customViewContainerOrder.indexOf(containerId);
-    if (orderIndex > -1) {
-      customViewContainerOrder.splice(orderIndex, 1);
-    }
+    console.log(`Widget "${widgetContainer.name}" removed from container "${parentContainer.name}"`);
     
-    showReorderFeedback(`Widget "${container.name}" deleted successfully! 🗑️`, 'success');
+    // Save changes
+    saveCustomViewContainersToBackend();
+    showReorderFeedback(`Widget "${widgetContainer.name}" deleted successfully! 🗑️`, 'success');
     renderContainers();
   }
   
@@ -4831,6 +5287,7 @@ let selectedCustomViewContainerId = null; // For styling modal
       </div>
       <div class="gallery-footer">
         <button onclick="showWidgetUploadModal()" class="btn btn-primary">Upload Widget</button>
+        <button onclick="testWidgetDrag()" class="btn btn-secondary">Test Widget Drag</button>
         <button onclick="closeWidgetGallery()" class="btn btn-secondary">Close</button>
       </div>
     `;
@@ -4857,15 +5314,35 @@ let selectedCustomViewContainerId = null; // For styling modal
   
   // Add widget to container
   function addWidgetToContainer(widgetId) {
+    console.log('Adding widget to container:', widgetId);
     if (!isEditMode) {
       showReorderFeedback('Please enable Edit Mode to add widgets', 'error');
       return;
     }
     
     const widgetContainer = createWidgetContainer(widgetId);
-    customViewContainers.push(widgetContainer);
-    customViewContainerOrder.push(widgetContainer.id);
+    console.log('Created widget container:', widgetContainer);
     
+    // Add to the first available container or create a default one
+    if (customViewContainers.length > 0) {
+      const firstContainer = customViewContainers[0];
+      console.log('Adding widget to first container:', firstContainer.name);
+      widgetContainer.parentContainerId = firstContainer.id;
+      if (!firstContainer.children) {
+        firstContainer.children = [];
+      }
+      firstContainer.children.push(widgetContainer);
+    } else {
+      // Create a default container if none exists
+      console.log('Creating default container for widget');
+      const defaultContainer = createNewContainer('Widgets', 'column');
+      customViewContainers.push(defaultContainer);
+      customViewContainerOrder.push(defaultContainer.id);
+      widgetContainer.parentContainerId = defaultContainer.id;
+      defaultContainer.children.push(widgetContainer);
+    }
+    
+    console.log('Widget containers after adding:', customViewContainers);
     saveCustomViewContainersToBackend();
     showReorderFeedback('Widget added to Custom View! 🔧', 'success');
     
@@ -5063,6 +5540,121 @@ let selectedCustomViewContainerId = null; // For styling modal
   function showWidgetDocs() {
     // Open the developer documentation in a new tab
     window.open('/docs/WidgetDevelopment.md', '_blank');
+  }
+  
+  // Switch widget configuration tabs
+  function switchWidgetTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('.widget-config-modal .tab-content').forEach(content => {
+      content.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('.widget-config-modal .tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    const selectedTab = document.getElementById(tabName + '-tab');
+    if (selectedTab) {
+      selectedTab.classList.add('active');
+    }
+    
+    // Add active class to selected tab button
+    const selectedBtn = document.querySelector(`.widget-config-modal .tab-btn[onclick*="${tabName}"]`);
+    if (selectedBtn) {
+      selectedBtn.classList.add('active');
+    }
+  }
+  
+  // Update widget background options visibility
+  function updateWidgetBackgroundOptions() {
+    const bgType = document.querySelector('.widget-config-modal select[name="bgType"]').value;
+    const colorOption = document.getElementById('widget-bg-color-option');
+    const gradientOption = document.getElementById('widget-bg-gradient-option');
+    const cssOption = document.getElementById('widget-bg-css-option');
+    
+    if (colorOption) colorOption.classList.toggle('hidden', bgType !== 'color');
+    if (gradientOption) gradientOption.classList.toggle('hidden', bgType !== 'gradient');
+    if (cssOption) cssOption.classList.toggle('hidden', bgType !== 'css');
+  }
+  
+  // Test widget drag functionality
+  function testWidgetDrag() {
+    console.log('Testing widget drag functionality...');
+    console.log('Edit mode:', isEditMode);
+    console.log('Available widgets:', availableWidgets);
+    console.log('Custom view containers:', customViewContainers);
+    
+    // Check if there are any widgets in containers
+    let widgetCount = 0;
+    let duplicateWidgets = [];
+    const widgetIds = new Set();
+    
+    customViewContainers.forEach(container => {
+      if (container.children) {
+        container.children.forEach(child => {
+          if (child.type === 'widget') {
+            widgetCount++;
+            if (widgetIds.has(child.id)) {
+              duplicateWidgets.push(child);
+            } else {
+              widgetIds.add(child.id);
+            }
+            console.log('Found widget:', child);
+          }
+        });
+      }
+    });
+    
+    console.log(`Total widgets found: ${widgetCount}`);
+    console.log(`Duplicate widgets found: ${duplicateWidgets.length}`);
+    
+    if (duplicateWidgets.length > 0) {
+      console.log('Cleaning up duplicate widgets...');
+      cleanupDuplicateWidgets();
+    }
+    
+    if (widgetCount === 0) {
+      showReorderFeedback('No widgets found. Add a widget first!', 'error');
+    } else {
+      showReorderFeedback(`Found ${widgetCount} widgets. Try dragging them!`, 'success');
+    }
+  }
+  
+  // Clean up duplicate widgets
+  function cleanupDuplicateWidgets() {
+    const widgetIds = new Set();
+    let cleanedCount = 0;
+    
+    customViewContainers.forEach(container => {
+      if (container.children) {
+        const originalLength = container.children.length;
+        container.children = container.children.filter(child => {
+          if (child.type === 'widget') {
+            if (widgetIds.has(child.id)) {
+              cleanedCount++;
+              return false; // Remove duplicate
+            } else {
+              widgetIds.add(child.id);
+              return true; // Keep first occurrence
+            }
+          }
+          return true; // Keep non-widget children
+        });
+        
+        if (container.children.length !== originalLength) {
+          console.log(`Cleaned container ${container.name}: ${originalLength} -> ${container.children.length} children`);
+        }
+      }
+    });
+    
+    if (cleanedCount > 0) {
+      console.log(`Cleaned up ${cleanedCount} duplicate widgets`);
+      saveCustomViewContainersToBackend();
+      renderContainers();
+      showReorderFeedback(`Cleaned up ${cleanedCount} duplicate widgets! 🧹`, 'success');
+    }
   }
   
   
