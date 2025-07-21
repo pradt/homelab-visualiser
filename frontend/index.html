@@ -332,83 +332,95 @@
   <!-- Container Styling Modal -->
   <div id="container-styling-modal" class="modal hidden">
     <div class="modal-header">
-      <h3>Container Styling</h3>
+      <h3>Container Settings</h3>
       <button class="close-btn" onclick="hideContainerStyleModal()">×</button>
     </div>
     <form id="container-styling-form">
       <input type="hidden" name="containerId" />
       
-      <div class="style-section">
-        <h4>Container Information</h4>
-        <label>Heading Text: <input type="text" name="headingText" placeholder="Enter container name" /></label>
-        <label>Role: 
-          <select name="role">
-            <option value="column">Column (📁 Vertical Stack)</option>
-            <option value="row">Row (➡️ Horizontal Stack)</option>
-          </select>
-        </label>
+      <!-- Tab Navigation -->
+      <div class="modal-tabs">
+        <button type="button" class="tab-btn active" onclick="switchContainerTab('general')">General</button>
+        <button type="button" class="tab-btn" onclick="switchContainerTab('style')">Style</button>
       </div>
       
-      <div class="style-section">
-        <h4>Container Visibility</h4>
-        <label><input type="checkbox" name="hideHeader" /> Hide container header</label>
-      </div>
-      
-      <div class="style-section">
-        <h4>Container Background</h4>
-        <label>Background Type: 
-          <select name="bgType" onchange="updateContainerBackgroundOptions()">
-            <option value="color">Solid Color</option>
-            <option value="gradient">Gradient</option>
-            <option value="css">Custom CSS</option>
-          </select>
-        </label>
-        <div id="container-bg-color-option">
-          <label>Background Color: <input type="color" name="backgroundColor" value="#f9f9f9" /></label>
+      <!-- General Tab Content -->
+      <div id="general-tab" class="tab-content active">
+        <div class="style-section">
+          <h4>Container Information</h4>
+          <label>Heading Text: <input type="text" name="headingText" placeholder="Enter container name" /></label>
+          <label>Role: 
+            <select name="role">
+              <option value="column">Column (📁 Vertical Stack)</option>
+              <option value="row">Row (➡️ Horizontal Stack)</option>
+            </select>
+          </label>
         </div>
-        <div id="container-bg-gradient-option" class="hidden">
-          <label>Gradient: <input type="text" name="backgroundGradient" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
+        
+        <div class="style-section">
+          <h4>Container Visibility</h4>
+          <label><input type="checkbox" name="hideHeader" /> Hide container header</label>
         </div>
-        <div id="container-bg-css-option" class="hidden">
-          <label>Custom CSS: <textarea name="backgroundCSS" placeholder="background: url('image.jpg') center/cover;"></textarea></label>
-        </div>
-        <label>Background Image URL: <input type="text" name="backgroundImage" placeholder="https://example.com/image.jpg" /></label>
-        <label>Background Transparency: 
-          <input type="range" name="backgroundOpacity" min="0" max="100" value="100" step="5" />
-          <span id="container-opacity-value">100%</span>
-        </label>
       </div>
       
-      <div class="style-section">
-        <h4>Container Border</h4>
-        <label>Border Color: <input type="color" name="borderColor" value="#e0e0e0" /></label>
-        <label>Border Size: <input type="number" name="borderSize" min="0" max="20" value="2" step="1" />px</label>
-        <label>Border Style: 
-          <select name="borderStyle">
-            <option value="solid">Solid</option>
-            <option value="dashed">Dashed</option>
-            <option value="dotted">Dotted</option>
-            <option value="double">Double</option>
-            <option value="groove">Groove</option>
-            <option value="ridge">Ridge</option>
-            <option value="inset">Inset</option>
-            <option value="outset">Outset</option>
-          </select>
-        </label>
-        <label>Custom Border CSS: <textarea name="borderCSS" placeholder="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></textarea></label>
-      </div>
-      
-      <div class="style-section">
-        <h4>Additional Styles</h4>
-        <label>Custom CSS: <textarea name="customCSS" placeholder="Add any additional CSS styles here..."></textarea></label>
-        <label>Border Radius: <input type="number" name="borderRadius" min="0" max="50" value="8" step="1" />px</label>
-        <label>Box Shadow: <input type="text" name="boxShadow" placeholder="0 2px 4px rgba(0,0,0,0.1)" /></label>
-        <label>Padding: <input type="number" name="padding" min="0" max="50" value="15" step="1" />px</label>
-        <label>Margin: <input type="number" name="margin" min="0" max="50" value="10" step="1" />px</label>
+      <!-- Style Tab Content -->
+      <div id="style-tab" class="tab-content">
+        <div class="style-section">
+          <h4>Container Background</h4>
+          <label>Background Type: 
+            <select name="bgType" onchange="updateContainerBackgroundOptions()">
+              <option value="color">Solid Color</option>
+              <option value="gradient">Gradient</option>
+              <option value="css">Custom CSS</option>
+            </select>
+          </label>
+          <div id="container-bg-color-option">
+            <label>Background Color: <input type="color" name="backgroundColor" value="#f9f9f9" /></label>
+          </div>
+          <div id="container-bg-gradient-option" class="hidden">
+            <label>Gradient: <input type="text" name="backgroundGradient" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
+          </div>
+          <div id="container-bg-css-option" class="hidden">
+            <label>Custom CSS: <textarea name="backgroundCSS" placeholder="background: url('image.jpg') center/cover;"></textarea></label>
+          </div>
+          <label>Background Image URL: <input type="text" name="backgroundImage" placeholder="https://example.com/image.jpg" /></label>
+          <label>Background Transparency: 
+            <input type="range" name="backgroundOpacity" min="0" max="100" value="100" step="5" />
+            <span id="container-opacity-value">100%</span>
+          </label>
+        </div>
+        
+        <div class="style-section">
+          <h4>Container Border</h4>
+          <label>Border Color: <input type="color" name="borderColor" value="#e0e0e0" /></label>
+          <label>Border Size: <input type="number" name="borderSize" min="0" max="20" value="2" step="1" />px</label>
+          <label>Border Style: 
+            <select name="borderStyle">
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+              <option value="double">Double</option>
+              <option value="groove">Groove</option>
+              <option value="ridge">Ridge</option>
+              <option value="inset">Inset</option>
+              <option value="outset">Outset</option>
+            </select>
+          </label>
+          <label>Custom Border CSS: <textarea name="borderCSS" placeholder="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></textarea></label>
+        </div>
+        
+        <div class="style-section">
+          <h4>Additional Styles</h4>
+          <label>Custom CSS: <textarea name="customCSS" placeholder="Add any additional CSS styles here..."></textarea></label>
+          <label>Border Radius: <input type="number" name="borderRadius" min="0" max="50" value="8" step="1" />px</label>
+          <label>Box Shadow: <input type="text" name="boxShadow" placeholder="0 2px 4px rgba(0,0,0,0.1)" /></label>
+          <label>Padding: <input type="number" name="padding" min="0" max="50" value="15" step="1" />px</label>
+          <label>Margin: <input type="number" name="margin" min="0" max="50" value="10" step="1" />px</label>
+        </div>
       </div>
       
       <div class="modal-buttons">
-        <button type="submit">Save Styling</button>
+        <button type="submit">Save Settings</button>
         <button type="button" onclick="hideContainerStyleModal()">Cancel</button>
       </div>
     </form>

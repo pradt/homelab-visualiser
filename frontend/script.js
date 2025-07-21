@@ -1369,7 +1369,7 @@ let selectedCustomViewContainerId = null; // For styling modal
     
     hamburgerMenu.innerHTML = `
       <div class="container-hamburger-actions">
-        <button onclick="showContainerStyleModal('${container.id}')" title="Style Container">🎨 Style</button>
+        <button onclick="showContainerStyleModal('${container.id}')" title="Edit Container">✏️ Edit</button>
         <button onclick="addNewContainer('${oppositeRole}', '${container.id}')" title="Add ${oppositeRoleName}">${oppositeRoleIcon} Add ${oppositeRoleName}</button>
         <button onclick="deleteContainer('${container.id}')" title="Delete Container">🗑️ Delete</button>
       </div>
@@ -2695,6 +2695,25 @@ let selectedCustomViewContainerId = null; // For styling modal
     // Add active class to clicked tab button
     event.target.classList.add('active');
   }
+
+  function switchContainerTab(tabName) {
+    // Hide all tab contents in the container modal
+    const modal = document.getElementById('container-styling-modal');
+    modal.querySelectorAll('.tab-content').forEach(content => {
+      content.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons in the container modal
+    modal.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    modal.querySelector('#' + tabName + '-tab').classList.add('active');
+    
+    // Add active class to clicked tab button
+    event.target.classList.add('active');
+  }
   
   function updateBackgroundOptions() {
     const bgType = document.querySelector('select[name="bgType"]').value;
@@ -3246,11 +3265,11 @@ let selectedCustomViewContainerId = null; // For styling modal
       .then(() => {
         hideContainerStyleModal();
         renderContainers();
-        showReorderFeedback(`Container "${container.name}" styling saved successfully! 🎨`, 'success');
+        showReorderFeedback(`Container "${container.name}" settings saved successfully! ✏️`, 'success');
       })
       .catch((error) => {
         console.error('Failed to save container styling:', error);
-        showReorderFeedback('Failed to save container styling', 'error');
+        showReorderFeedback('Failed to save container settings', 'error');
       });
   }
 
@@ -3936,7 +3955,7 @@ let selectedCustomViewContainerId = null; // For styling modal
     const form = document.getElementById('container-styling-form');
     
     if (!modal || !form) {
-      showReorderFeedback('Styling modal not found', 'error');
+      showReorderFeedback('Container settings modal not found', 'error');
       return;
     }
     
@@ -3963,6 +3982,16 @@ let selectedCustomViewContainerId = null; // For styling modal
     
     // Update background options visibility
     updateContainerBackgroundOptions();
+    
+    // Reset to General tab by default
+    modal.querySelectorAll('.tab-content').forEach(content => {
+      content.classList.remove('active');
+    });
+    modal.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    modal.querySelector('#general-tab').classList.add('active');
+    modal.querySelector('.tab-btn[onclick*="general"]').classList.add('active');
     
     // Show modal
     modal.classList.remove('hidden');
