@@ -108,6 +108,8 @@
     return customViewContainers.find(container => container.id === containerId);
   }
 
+
+
   function getCategoryContainer(categoryName) {
     return customViewContainers.find(container => container.categories.includes(categoryName));
   }
@@ -146,6 +148,8 @@
       return response.json();
     });
   }
+
+
   
   let containers = [];
 let currentView = 'box';
@@ -1465,7 +1469,7 @@ let selectedCustomViewContainerId = null; // For styling modal
     containersDiv.className = 'category-containers';
     
     containers.forEach(container => {
-      const containerBox = renderBox(container, '', 0);
+      const containerBox = renderCustomViewContainer(container);
       containersDiv.appendChild(containerBox);
     });
     
@@ -1473,6 +1477,83 @@ let selectedCustomViewContainerId = null; // For styling modal
     group.appendChild(containersDiv);
     
     return group;
+  }
+
+  function renderCustomViewContainer(container) {
+    // Create a simplified container element for Custom View
+    const containerBox = document.createElement('div');
+    containerBox.className = 'container-box';
+    containerBox.setAttribute('data-container-id', container.id);
+    
+    // Apply basic styling for Custom View (no Box View styling)
+    containerBox.style.width = '100%';
+    containerBox.style.display = 'inline-block';
+    containerBox.style.verticalAlign = 'top';
+    
+    const header = document.createElement('div');
+    header.className = 'container-header';
+    
+    const leftSide = document.createElement('div');
+    leftSide.className = 'header-left';
+    const iconHtml = renderIcon(container.icon);
+    leftSide.innerHTML = `${iconHtml} <strong>${container.name}</strong>`;
+    
+    // Add category tags if they exist
+    if (container.categories && container.categories.length > 0) {
+      const categoryTags = document.createElement('div');
+      categoryTags.className = 'category-tags';
+      container.categories.forEach(category => {
+        const tag = document.createElement('span');
+        tag.className = 'category-tag';
+        tag.textContent = category;
+        categoryTags.appendChild(tag);
+      });
+      leftSide.appendChild(categoryTags);
+    }
+    
+    if (container.url) {
+      leftSide.style.cursor = 'pointer';
+      leftSide.onclick = () => window.open(container.url, '_blank');
+    }
+
+    const rightSide = document.createElement('div');
+    rightSide.className = 'header-right';
+    
+    // Create hamburger menu for container actions (simplified for Custom View)
+    const hamburgerMenu = document.createElement('div');
+    hamburgerMenu.className = 'hamburger-menu';
+    hamburgerMenu.innerHTML = `
+      <div class="hamburger-actions">
+        <button onclick="showCreateModal('${container.id}')" title="Add Child Container">➕ Add</button>
+        <button onclick="showEditModal('${container.id}')" title="Edit Container">✏️ Edit</button>
+      </div>
+      <button class="hamburger-btn" onclick="toggleHamburgerMenu(this, event)">☰</button>
+    `;
+    
+    rightSide.appendChild(hamburgerMenu);
+
+    header.appendChild(leftSide);
+    header.appendChild(rightSide);
+    containerBox.appendChild(header);
+
+    // Only render children for containers that can have them
+    const hasChildren = (container.children || []).length > 0;
+    if (hasChildren) {
+      const childBox = document.createElement('div');
+      childBox.className = 'container-children';
+      
+      container.children.forEach(childId => {
+        const childContainer = containers.find(c => c.id === childId);
+        if (childContainer) {
+          const childElement = renderCustomViewContainer(childContainer);
+          childBox.appendChild(childElement);
+        }
+      });
+      
+      containerBox.appendChild(childBox);
+    }
+    
+    return containerBox;
   }
 
   function applyContainerStyling(containerElement, container) {
@@ -1722,7 +1803,7 @@ let selectedCustomViewContainerId = null; // For styling modal
             showReorderFeedback(`Category "${categoryName}" moved to new column! 🚀`, 'success');
           } else {
             // Update category order within the same column
-            const newColumn = getColumnById(newColumnId);
+            const newColumn = getContainerById(newColumnId);
             if (newColumn) {
               const newOrder = [];
               $(ui.item).closest('.column-categories').find('.category-group').each(function() {
@@ -2026,7 +2107,7 @@ let selectedCustomViewContainerId = null; // For styling modal
 
   function showColumnStyleModal(columnId) {
     selectedColumnId = columnId;
-    const column = getColumnById(columnId);
+    const column = getContainerById(columnId);
     if (!column) return;
     
     const form = document.getElementById('column-styling-form');
@@ -2114,7 +2195,7 @@ let selectedCustomViewContainerId = null; // For styling modal
       return;
     }
     
-    const column = getColumnById(columnId);
+    const column = getContainerById(columnId);
     if (!column) {
       console.log('Column not found:', columnId);
       return;
@@ -2168,7 +2249,7 @@ let selectedCustomViewContainerId = null; // For styling modal
         showReorderFeedback(`Column renamed to "${newName}" 📝`, 'success');
         
         // Auto-save to backend
-        saveColumnsToBackend()
+        saveCustomViewContainersToBackend()
           .then(() => {
             console.log('Column name updated and saved to backend');
           })
@@ -2902,7 +2983,7 @@ let selectedCustomViewContainerId = null; // For styling modal
         
         const formData = new FormData(this);
         const columnId = formData.get('columnId');
-        const column = getColumnById(columnId);
+        const column = getContainerById(columnId);
         
         if (!column) return;
         
@@ -2933,12 +3014,12 @@ let selectedCustomViewContainerId = null; // For styling modal
         // Apply styling immediately to the specific column
         const columnElement = document.querySelector(`[data-column-id="${columnId}"]`);
         if (columnElement) {
-          applyColumnStyling(columnElement, column);
+          applyContainerStyling(columnElement, column);
           console.log('Applied styling immediately to column:', column.name);
         }
         
         // Save to backend
-        saveColumnsToBackend()
+        saveCustomViewContainersToBackend()
           .then(() => {
             showReorderFeedback(`Column "${column.name}" styling saved successfully! 🎨`, 'success');
             hideColumnStyleModal();
@@ -4171,4 +4252,6 @@ let selectedCustomViewContainerId = null; // For styling modal
       }
     });
   }
+  
+
   
