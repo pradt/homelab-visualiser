@@ -397,6 +397,24 @@ app.get('/api/widgets/:id/render', async (req, res) => {
   }
 });
 
+// Widget download endpoint
+app.get('/api/widgets/download/clock-widget', (req, res) => {
+  console.log(`[${new Date().toISOString()}] GET /api/widgets/download/clock-widget - Downloading clock widget`);
+  const widgetPath = path.join(__dirname, '../examples/clock-widget/clock-widget.zip');
+  
+  if (fs.existsSync(widgetPath)) {
+    res.download(widgetPath, 'clock-widget.zip', (err) => {
+      if (err) {
+        console.error(`[${new Date().toISOString()}] Error downloading widget:`, err);
+        res.status(500).json({ error: 'Failed to download widget' });
+      }
+    });
+  } else {
+    console.error(`[${new Date().toISOString()}] Widget file not found: ${widgetPath}`);
+    res.status(404).json({ error: 'Widget file not found' });
+  }
+});
+
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log('Client connected:', socket.id);

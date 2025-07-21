@@ -2643,3 +2643,88 @@ body {
     }
   }
   
+  /* ========================================
+     WIDGET DOWNLOAD SECTION STYLES
+     ======================================== */
+  
+  .widget-download-section {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+  
+  .widget-download-section h5 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 18px;
+  }
+  
+  .widget-download-section p {
+    margin: 0 0 15px 0;
+    color: #666;
+    line-height: 1.4;
+  }
+  
+  .widget-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
+  }
+  
+  .feature-tag {
+    background: #0077cc;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  
+  .widget-info {
+    background: #e3f2fd;
+    border: 1px solid #bbdefb;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+  
+  .widget-info h5 {
+    margin: 0 0 15px 0;
+    color: #1976d2;
+    font-size: 16px;
+  }
+  
+  .widget-info ol {
+    margin: 0;
+    padding-left: 20px;
+    color: #424242;
+    line-height: 1.6;
+  }
+  
+  .widget-info li {
+    margin-bottom: 8px;
+  }
+  
+  .widget-docs {
+    background: #fff3e0;
+    border: 1px solid #ffcc02;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+  
+  .widget-docs h5 {
+    margin: 0 0 10px 0;
+    color: #f57c00;
+    font-size: 16px;
+  }
+  
+  .widget-docs p {
+    margin: 0 0 15px 0;
+    color: #424242;
+    line-height: 1.4;
+  }
+  

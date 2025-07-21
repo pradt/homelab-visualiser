@@ -5004,4 +5004,52 @@ let selectedCustomViewContainerId = null; // For styling modal
     setTimeout(initializeWidgetSystem, 1000); // Delay to ensure other systems are loaded
   });
   
+  // ========================================
+  // PAGE SETTINGS TAB FUNCTIONS
+  // ========================================
+  
+  // Switch Page Settings tabs
+  function switchPageSettingsTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('#page-settings-modal .tab-content').forEach(content => {
+      content.classList.remove('active');
+    });
+    
+    // Remove active class from all tab buttons
+    document.querySelectorAll('#page-settings-modal .tab-btn').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    
+    // Show selected tab content
+    const selectedTab = document.getElementById(`${tabName}-settings-tab`);
+    if (selectedTab) {
+      selectedTab.classList.add('active');
+    }
+    
+    // Add active class to selected tab button
+    const selectedBtn = document.querySelector(`#page-settings-modal .tab-btn[onclick*="${tabName}"]`);
+    if (selectedBtn) {
+      selectedBtn.classList.add('active');
+    }
+  }
+  
+  // Download clock widget
+  function downloadClockWidget() {
+    const link = document.createElement('a');
+    link.href = '/api/widgets/download/clock-widget';
+    link.download = 'clock-widget.zip';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    showReorderFeedback('Clock widget download started! 📥', 'success');
+  }
+  
+  // Show widget documentation
+  function showWidgetDocs() {
+    // Open the developer documentation in a new tab
+    window.open('/docs/WidgetDevelopment.md', '_blank');
+  }
+  
   

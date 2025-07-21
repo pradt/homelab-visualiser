@@ -267,66 +267,118 @@
       <h3>Page Settings</h3>
       <button class="close-btn" onclick="hidePageSettings()">×</button>
     </div>
-    <form id="page-settings-form">
-      <div class="style-section">
-        <h4>Page Background</h4>
-        <label>Background Type: 
-          <select name="pageBgType" onchange="updatePageBackgroundOptions()">
-            <option value="color">Solid Color</option>
-            <option value="gradient">Gradient</option>
-            <option value="css">Custom CSS</option>
-          </select>
-        </label>
-        <div id="page-bg-color-option">
-          <label>Background Color: <input type="color" name="pageBackgroundColor" value="#ffffff" /></label>
+    
+    <!-- Tab Navigation -->
+    <div class="modal-tabs">
+      <button type="button" class="tab-btn active" onclick="switchPageSettingsTab('page')">Page</button>
+      <button type="button" class="tab-btn" onclick="switchPageSettingsTab('widgets')">Widgets</button>
+    </div>
+    
+    <!-- Page Tab Content -->
+    <div id="page-settings-tab" class="tab-content active">
+      <form id="page-settings-form">
+        <div class="style-section">
+          <h4>Page Background</h4>
+          <label>Background Type: 
+            <select name="pageBgType" onchange="updatePageBackgroundOptions()">
+              <option value="color">Solid Color</option>
+              <option value="gradient">Gradient</option>
+              <option value="css">Custom CSS</option>
+            </select>
+          </label>
+          <div id="page-bg-color-option">
+            <label>Background Color: <input type="color" name="pageBackgroundColor" value="#ffffff" /></label>
+          </div>
+          <div id="page-bg-gradient-option" class="hidden">
+            <label>Gradient: <input type="text" name="pageBackgroundGradient" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
+          </div>
+          <div id="page-bg-css-option" class="hidden">
+            <label>Custom CSS: <textarea name="pageBackgroundCSS" placeholder="background: url('image.jpg') center/cover;"></textarea></label>
+          </div>
+          <label>Background Image URL: <input type="text" name="pageBackgroundImage" placeholder="https://example.com/image.jpg" /></label>
+          <label>Background Transparency: 
+            <input type="range" name="pageBackgroundOpacity" min="0" max="100" value="100" step="5" />
+            <span id="page-opacity-value">100%</span>
+          </label>
         </div>
-        <div id="page-bg-gradient-option" class="hidden">
-          <label>Gradient: <input type="text" name="pageBackgroundGradient" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
+        
+        <div class="style-section">
+          <h4>Page Layout</h4>
+          <label>Container Spacing: <input type="number" name="containerSpacing" min="0" max="50" value="10" step="1" />px</label>
+          <label>Default Container Width: <input type="range" name="defaultContainerWidth" min="10" max="100" value="100" step="5" /> <span id="default-width-value">100%</span></label>
+          <label>Page Padding: <input type="number" name="pagePadding" min="0" max="100" value="10" step="1" />px</label>
         </div>
-        <div id="page-bg-css-option" class="hidden">
-          <label>Custom CSS: <textarea name="pageBackgroundCSS" placeholder="background: url('image.jpg') center/cover;"></textarea></label>
+        
+        <div class="style-section">
+          <h4>Theme</h4>
+          <label>Theme: 
+            <select name="theme">
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+              <option value="auto">Auto (System)</option>
+            </select>
+          </label>
+          <label>Font Family: 
+            <select name="fontFamily">
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="Helvetica, sans-serif">Helvetica</option>
+              <option value="Times New Roman, serif">Times New Roman</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="Courier New, monospace">Courier New</option>
+              <option value="Verdana, sans-serif">Verdana</option>
+            </select>
+          </label>
+          <label>Font Size: <input type="number" name="fontSize" min="8" max="24" value="14" step="1" />px</label>
         </div>
-        <label>Background Image URL: <input type="text" name="pageBackgroundImage" placeholder="https://example.com/image.jpg" /></label>
-        <label>Background Transparency: 
-          <input type="range" name="pageBackgroundOpacity" min="0" max="100" value="100" step="5" />
-          <span id="page-opacity-value">100%</span>
-        </label>
-      </div>
-      
+        
+        <div class="modal-buttons">
+          <button type="submit">Save Settings</button>
+          <button type="button" onclick="hidePageSettings()">Cancel</button>
+        </div>
+      </form>
+    </div>
+    
+    <!-- Widgets Tab Content -->
+    <div id="widgets-settings-tab" class="tab-content">
       <div class="style-section">
-        <h4>Page Layout</h4>
-        <label>Container Spacing: <input type="number" name="containerSpacing" min="0" max="50" value="10" step="1" />px</label>
-        <label>Default Container Width: <input type="range" name="defaultContainerWidth" min="10" max="100" value="100" step="5" /> <span id="default-width-value">100%</span></label>
-        <label>Page Padding: <input type="number" name="pagePadding" min="0" max="100" value="10" step="1" />px</label>
+        <h4>Available Widgets</h4>
+        <p>Download sample widgets to get started with the widget system.</p>
+        
+        <div class="widget-download-section">
+          <h5>🕐 Clock Widget</h5>
+          <p>A simple clock widget with configurable timezone and format.</p>
+          <div class="widget-features">
+            <span class="feature-tag">Real-time updates</span>
+            <span class="feature-tag">Configurable timezone</span>
+            <span class="feature-tag">12h/24h format</span>
+            <span class="feature-tag">Customizable styling</span>
+          </div>
+          <button type="button" class="btn btn-primary" onclick="downloadClockWidget()">
+            📥 Download Clock Widget
+          </button>
+        </div>
+        
+        <div class="widget-info">
+          <h5>How to Install Widgets</h5>
+          <ol>
+            <li>Download a widget ZIP file</li>
+            <li>Go to Custom View</li>
+            <li>Click the "🔧 Widgets" button</li>
+            <li>Click "Upload Widget"</li>
+            <li>Select the downloaded ZIP file</li>
+            <li>The widget will be available in the Widget Gallery</li>
+          </ol>
+        </div>
+        
+        <div class="widget-docs">
+          <h5>Developer Resources</h5>
+          <p>Want to create your own widgets? Check out the developer documentation:</p>
+          <button type="button" class="btn btn-secondary" onclick="showWidgetDocs()">
+            📚 View Developer Guide
+          </button>
+        </div>
       </div>
-      
-      <div class="style-section">
-        <h4>Theme</h4>
-        <label>Theme: 
-          <select name="theme">
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="auto">Auto (System)</option>
-          </select>
-        </label>
-        <label>Font Family: 
-          <select name="fontFamily">
-            <option value="Arial, sans-serif">Arial</option>
-            <option value="Helvetica, sans-serif">Helvetica</option>
-            <option value="Times New Roman, serif">Times New Roman</option>
-            <option value="Georgia, serif">Georgia</option>
-            <option value="Courier New, monospace">Courier New</option>
-            <option value="Verdana, sans-serif">Verdana</option>
-          </select>
-        </label>
-        <label>Font Size: <input type="number" name="fontSize" min="8" max="24" value="14" step="1" />px</label>
-      </div>
-      
-      <div class="modal-buttons">
-        <button type="submit">Save Settings</button>
-        <button type="button" onclick="hidePageSettings()">Cancel</button>
-      </div>
-    </form>
+    </div>
   </div>
 
   <!-- Container Styling Modal -->
