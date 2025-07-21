@@ -112,7 +112,7 @@
   {
     "id": "eb1a5c-ad14-46da",
     "name": "Column 5",
-    "role": "column",
+    "role": "row",
     "order": 4,
     "styling": {
       "hideHeader": false,

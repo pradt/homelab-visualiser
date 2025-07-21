@@ -1407,7 +1407,7 @@ let selectedCustomViewContainerId = null; // For styling modal
     // Render categories assigned to this container
     container.categories.forEach(categoryName => {
       if (categoryGroups[categoryName]) {
-        const categoryGroup = createCategoryGroup(categoryName, categoryGroups[categoryName], container.id);
+        const categoryGroup = createCategoryGroup(categoryName, categoryGroups[categoryName], container.id, container.role);
         categoriesContainer.appendChild(categoryGroup);
       }
     });
@@ -1431,11 +1431,19 @@ let selectedCustomViewContainerId = null; // For styling modal
     return containerElement;
   }
 
-  function createCategoryGroup(category, containers, containerId) {
+  function createCategoryGroup(category, containers, containerId, parentRole) {
     const group = document.createElement('div');
     group.className = 'category-group';
     group.setAttribute('data-category', category);
     group.setAttribute('data-container-id', containerId);
+    group.setAttribute('data-parent-role', parentRole);
+    
+    // Add CSS class based on parent role to ensure proper layout inheritance
+    if (parentRole === 'row') {
+      group.classList.add('parent-row');
+    } else {
+      group.classList.add('parent-column');
+    }
     
     const header = document.createElement('div');
     header.className = 'category-header';

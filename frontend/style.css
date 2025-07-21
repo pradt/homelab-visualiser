@@ -1537,7 +1537,7 @@ body {
 .container.container-row .category-group {
   flex: 0 0 auto;
   min-width: 250px;
-  max-width: 350px;
+  /* max-width: 350px; */ /* Removed to allow horizontal growth */
   margin: 0 10px 10px 0; /* Add some spacing between category groups */
 }
 
@@ -1555,8 +1555,40 @@ body {
   gap: 10px !important;
 }
 
+/* Ensure container boxes in row layouts don't interfere with flex */
+.container.container-row .category-containers .container-box {
+  flex: 0 0 auto !important;
+  width: 250px !important;
+  max-width: 250px !important;
+  display: block !important;
+  margin: 0 !important;
+}
+
 /* Container boxes within category groups in columns should stack vertically */
 .container.container-column .category-containers {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+/* Additional CSS classes for category groups based on parent role */
+.category-group.parent-row .category-containers {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+}
+
+/* Ensure container boxes in parent-row layouts work properly */
+.category-group.parent-row .category-containers .container-box {
+  flex: 0 0 auto !important;
+  width: 250px !important;
+  max-width: 250px !important;
+  display: block !important;
+  margin: 0 !important;
+}
+
+.category-group.parent-column .category-containers {
   display: flex !important;
   flex-direction: column !important;
   gap: 10px !important;
