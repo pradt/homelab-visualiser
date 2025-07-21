@@ -1,0 +1,47 @@
+{
+  "id": "com.example.clock-widget",
+  "name": "Clock Widget",
+  "version": "1.0.0",
+  "description": "Displays current time with configurable timezone and format",
+  "author": "Homelab-Visualiser Team",
+  "category": "Utility",
+  "icon": "🕐",
+  "entryPoint": "widget.js",
+  "configSchema": {
+    "timezone": {
+      "type": "string",
+      "default": "UTC",
+      "description": "Timezone to display (e.g., UTC, America/New_York, Europe/London)"
+    },
+    "format": {
+      "type": "select",
+      "options": ["12h", "24h"],
+      "default": "24h",
+      "description": "Time format"
+    },
+    "showDate": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show current date"
+    },
+    "fontColor": {
+      "type": "color",
+      "default": "#000000",
+      "description": "Text color"
+    },
+    "fontSize": {
+      "type": "range",
+      "min": 12,
+      "max": 48,
+      "default": 24,
+      "description": "Font size in pixels"
+    },
+    "backgroundColor": {
+      "type": "color",
+      "default": "#ffffff",
+      "description": "Background color"
+    }
+  },
+  "permissions": ["dom"],
+  "dependencies": []
+} 

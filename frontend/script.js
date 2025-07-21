@@ -4485,8 +4485,8 @@ let selectedCustomViewContainerId = null; // For styling modal
     modal.style.cssText = `
       position: fixed;
       top: 0;
-      left: 0;
-      width: 100%;
+      left: 320px;
+      width: calc(100% - 320px);
       height: 100%;
       background: rgba(0, 0, 0, 0.5);
       display: flex;
@@ -4776,8 +4776,8 @@ let selectedCustomViewContainerId = null; // For styling modal
     gallery.style.cssText = `
       position: fixed;
       top: 0;
-      left: 0;
-      width: 100%;
+      left: 320px;
+      width: calc(100% - 320px);
       height: 100%;
       background: rgba(0, 0, 0, 0.5);
       display: flex;
@@ -4795,7 +4795,10 @@ let selectedCustomViewContainerId = null; // For styling modal
       max-width: 800px;
       width: 90%;
       max-height: 80vh;
+      min-height: 400px;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     `;
     
     galleryContent.innerHTML = `
@@ -4803,8 +4806,8 @@ let selectedCustomViewContainerId = null; // For styling modal
         <h3>Widget Gallery</h3>
         <button onclick="closeWidgetGallery()" class="close-btn">×</button>
       </div>
-      <div class="widget-grid">
-        ${availableWidgets.map(widget => `
+      <div class="widget-grid" style="flex: 1;">
+        ${availableWidgets.length > 0 ? availableWidgets.map(widget => `
           <div class="widget-card" onclick="addWidgetToContainer('${widget.id}')">
             <div class="widget-icon">${widget.icon || '🔧'}</div>
             <h4>${widget.name}</h4>
@@ -4814,7 +4817,17 @@ let selectedCustomViewContainerId = null; // For styling modal
               <span>v${widget.version}</span>
             </div>
           </div>
-        `).join('')}
+        `).join('') : `
+          <div class="widget-empty-state">
+            <div class="empty-icon">🔧</div>
+            <h4>No Widgets Installed</h4>
+            <p>Get started by uploading your first widget or downloading the sample clock widget.</p>
+            <div class="empty-actions">
+              <button onclick="showWidgetUploadModal()" class="btn btn-primary">Upload Widget</button>
+              <button onclick="downloadClockWidget()" class="btn btn-secondary">Download Clock Widget</button>
+            </div>
+          </div>
+        `}
       </div>
       <div class="gallery-footer">
         <button onclick="showWidgetUploadModal()" class="btn btn-primary">Upload Widget</button>
@@ -4867,8 +4880,8 @@ let selectedCustomViewContainerId = null; // For styling modal
     modal.style.cssText = `
       position: fixed;
       top: 0;
-      left: 0;
-      width: 100%;
+      left: 320px;
+      width: calc(100% - 320px);
       height: 100%;
       background: rgba(0, 0, 0, 0.5);
       display: flex;

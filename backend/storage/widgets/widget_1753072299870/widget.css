@@ -1,0 +1,54 @@
+.clock-widget {
+  font-family: 'Courier New', monospace;
+  font-weight: bold;
+  text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.clock-widget .time {
+  font-size: 1.2em;
+  margin-bottom: 5px;
+  letter-spacing: 2px;
+}
+
+.clock-widget .date {
+  font-size: 0.8em;
+  opacity: 0.7;
+  margin-bottom: 5px;
+}
+
+.clock-widget .timezone {
+  font-size: 0.7em;
+  opacity: 0.5;
+  font-style: italic;
+}
+
+.clock-widget .error {
+  color: #d32f2f;
+  background: #ffebee;
+  border: 1px solid #f44336;
+  border-radius: 4px;
+  padding: 10px;
+  text-align: center;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .clock-widget {
+    padding: 15px;
+  }
+  
+  .clock-widget .time {
+    font-size: 1em;
+  }
+  
+  .clock-widget .date {
+    font-size: 0.7em;
+  }
+  
+  .clock-widget .timezone {
+    font-size: 0.6em;
+  }
+} 

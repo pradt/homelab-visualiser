@@ -164,5 +164,40 @@
       "Meeker Maker"
     ],
     "children": []
+  },
+  {
+    "id": "b0f85f-2b50-4016",
+    "type": "widget",
+    "widgetId": "widget_1753072299870",
+    "config": {
+      "timezone": "UTC",
+      "format": "12h",
+      "showDate": true,
+      "fontColor": "#000000",
+      "fontSize": 45,
+      "backgroundColor": "#e31616"
+    },
+    "role": "widget",
+    "name": "My Clock",
+    "styling": {
+      "hideHeader": false,
+      "bgType": "color",
+      "backgroundColor": "#ffffff",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": 100,
+      "borderColor": "#e0e0e0",
+      "borderSize": 1,
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "borderRadius": 8,
+      "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
+      "padding": 10,
+      "margin": 5,
+      "customCSS": ""
+    },
+    "categories": [],
+    "children": []
   }
 ]

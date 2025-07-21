@@ -2580,6 +2580,46 @@ body {
     margin: 10px 0;
   }
   
+  /* Widget Empty State */
+  .widget-empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    margin: 20px 0;
+  }
+  
+  .widget-empty-state .empty-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.6;
+  }
+  
+  .widget-empty-state h4 {
+    margin: 0 0 15px 0;
+    color: #495057;
+    font-size: 20px;
+  }
+  
+  .widget-empty-state p {
+    margin: 0 0 30px 0;
+    color: #6c757d;
+    font-size: 16px;
+    line-height: 1.5;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .widget-empty-state .empty-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
   /* Widget Loading State */
   .widget-loading {
     display: flex;
