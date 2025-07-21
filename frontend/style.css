@@ -2210,3 +2210,436 @@ body {
     box-shadow: 0 4px 12px rgba(0, 119, 204, 0.5) !important;
   }
   
+  /* ========================================
+     WIDGET SYSTEM STYLES
+     ======================================== */
+  
+  /* Widget Container */
+  .widget-container {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .widget-container:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+  
+  /* Widget Header */
+  .widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .widget-title {
+    display: flex;
+    align-items: center;
+  }
+  
+  .widget-title-text {
+    font-weight: bold;
+    font-size: 14px;
+    color: #333;
+    cursor: default;
+  }
+  
+  .edit-mode-active .widget-title-text.editable {
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .edit-mode-active .widget-title-text.editable:hover {
+    background-color: rgba(0, 119, 204, 0.1);
+    border: 1px dashed #0077cc;
+  }
+  
+  .edit-mode-active .widget-title-text.editable:hover::after {
+    content: ' ✏️';
+    font-size: 12px;
+    opacity: 0.7;
+  }
+  
+  .widget-title-input {
+    font-family: inherit !important;
+    font-weight: bold !important;
+    font-size: 14px !important;
+    background: white !important;
+    border: 2px solid #0077cc !important;
+    border-radius: 4px !important;
+    padding: 4px 8px !important;
+    width: 150px !important;
+    box-shadow: 0 2px 8px rgba(0, 119, 204, 0.3) !important;
+    z-index: 1000 !important;
+    outline: none !important;
+  }
+  
+  .widget-title-input:focus {
+    border-color: #005fa3 !important;
+    box-shadow: 0 4px 12px rgba(0, 119, 204, 0.5) !important;
+  }
+  
+  /* Widget Actions */
+  .widget-actions {
+    display: flex;
+    gap: 5px;
+  }
+  
+  .widget-action-btn {
+    background: none;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .widget-action-btn:hover {
+    background-color: rgba(0, 119, 204, 0.1);
+  }
+  
+  /* Widget Content */
+  .widget-content {
+    min-height: 100px;
+  }
+  
+  .widget-frame {
+    width: 100%;
+    height: 200px;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+  }
+  
+  /* Widget Gallery */
+  .widget-gallery .gallery-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 800px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  
+  .widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+  }
+  
+  .widget-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+  }
+  
+  .widget-card:hover {
+    background: #e9ecef;
+    border-color: #0077cc;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+  
+  .widget-card .widget-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+  }
+  
+  .widget-card h4 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 18px;
+  }
+  
+  .widget-card p {
+    margin: 0 0 15px 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  
+  .widget-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #888;
+  }
+  
+  /* Widget Upload Modal */
+  .widget-upload-modal .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+  }
+  
+  .widget-upload-modal .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .widget-upload-modal label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .widget-upload-modal input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 2px dashed #ccc;
+    border-radius: 4px;
+    background: #f8f9fa;
+  }
+  
+  .widget-upload-modal input[type="file"]:hover {
+    border-color: #0077cc;
+    background: #f0f8ff;
+  }
+  
+  .help-text {
+    font-size: 12px;
+    color: #666;
+    margin-top: 8px;
+    line-height: 1.4;
+  }
+  
+  /* Widget Configuration Modal */
+  .widget-config-modal .modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  
+  .widget-config-modal .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .widget-config-modal label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .widget-config-modal input[type="text"],
+  .widget-config-modal input[type="number"],
+  .widget-config-modal select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+  
+  .widget-config-modal input[type="text"]:focus,
+  .widget-config-modal input[type="number"]:focus,
+  .widget-config-modal select:focus {
+    border-color: #0077cc;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 119, 204, 0.2);
+  }
+  
+  .widget-config-modal input[type="range"] {
+    width: 100%;
+    margin: 10px 0;
+  }
+  
+  .widget-config-modal input[type="color"] {
+    width: 60px;
+    height: 40px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .widget-config-modal input[type="checkbox"] {
+    margin-right: 8px;
+  }
+  
+  .widget-config-modal .range-value {
+    display: inline-block;
+    margin-left: 10px;
+    font-weight: bold;
+    color: #0077cc;
+  }
+  
+  /* Modal Headers and Footers */
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e0e0e0;
+  }
+  
+  .modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 20px;
+  }
+  
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .close-btn:hover {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  
+  .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+  }
+  
+  .gallery-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e0e0e0;
+  }
+  
+  /* Button Styles */
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+  }
+  
+  .btn-primary {
+    background-color: #0077cc;
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #005fa3;
+  }
+  
+  .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #545b62;
+  }
+  
+  /* Widget Error State */
+  .widget-error {
+    padding: 20px;
+    text-align: center;
+    color: #d32f2f;
+    background: #ffebee;
+    border: 1px solid #f44336;
+    border-radius: 4px;
+    margin: 10px 0;
+  }
+  
+  /* Widget Loading State */
+  .widget-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    color: #666;
+  }
+  
+  .widget-loading::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #0077cc;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-left: 10px;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* Widget Gallery Button in Toolbar */
+  #widget-gallery-btn {
+    background: #0077cc;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background-color 0.2s ease;
+  }
+  
+  #widget-gallery-btn:hover {
+    background: #005fa3;
+  }
+  
+  /* Responsive Design for Widgets */
+  @media (max-width: 768px) {
+    .widget-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .widget-card {
+      padding: 15px;
+    }
+    
+    .widget-gallery .gallery-content {
+      width: 95%;
+      padding: 15px;
+    }
+    
+    .widget-config-modal .modal-content {
+      width: 95%;
+      padding: 15px;
+    }
+  }
+  

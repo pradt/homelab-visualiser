@@ -4,12 +4,14 @@ const path = require('path');
 const net = require('net');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
+const multer = require('multer');
 const fontAwesomeIcons = require('./icons');
 const materialIcons = require('./materialIcons');
 const emojiIcons = require('./emoji');
 const simpleIcons = require('./simpleIconsList');
 const homelabIcons = require('./homelabIconsFull');
 const AgentManager = require('./agent-manager');
+const WidgetManager = require('./widget-manager');
 
 const app = express();
 const server = createServer(app);
@@ -21,8 +23,24 @@ const storageDir = path.join(__dirname, 'storage');
 const dataFile = path.join(storageDir, 'containers.json');
 const columnsFile = path.join(storageDir, 'columns.json');
 
-// Initialize agent manager
+// Initialize managers
 const agentManager = new AgentManager(io);
+const widgetManager = new WidgetManager();
+
+// Configure multer for file uploads
+const upload = multer({ 
+  dest: path.join(__dirname, 'storage', 'temp'),
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/zip' || file.originalname.endsWith('.zip')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only ZIP files are allowed for widget installation'));
+    }
+  },
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  }
+});
 
 // Ensure storage folder and file exist
 if (!fs.existsSync(storageDir)) {
@@ -179,6 +197,203 @@ app.post('/api/custom-view-containers', (req, res) => {
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Error saving custom view containers:`, error);
     res.status(500).json({ error: 'Failed to save custom view container configuration' });
+  }
+});
+
+// Widget management endpoints
+app.get('/api/widgets', (req, res) => {
+  console.log(`[${new Date().toISOString()}] GET /api/widgets - Retrieving all widgets`);
+  const widgets = widgetManager.getAvailableWidgets();
+  console.log(`[${new Date().toISOString()}] Successfully retrieved ${widgets.length} widgets`);
+  res.json(widgets);
+});
+
+app.get('/api/widgets/:id', async (req, res) => {
+  console.log(`[${new Date().toISOString()}] GET /api/widgets/:id - Loading widget with ID: ${req.params.id}`);
+  try {
+    const widget = await widgetManager.loadWidget(req.params.id);
+    console.log(`[${new Date().toISOString()}] Successfully loaded widget: ${req.params.id}`);
+    res.json(widget);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error loading widget:`, error);
+    res.status(404).json({ error: 'Widget not found' });
+  }
+});
+
+app.post('/api/widgets', upload.single('widget'), async (req, res) => {
+  console.log(`[${new Date().toISOString()}] POST /api/widgets - Installing widget`);
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded.' });
+  }
+
+  try {
+    const widgetId = await widgetManager.installWidget(req.file.path);
+    console.log(`[${new Date().toISOString()}] Widget installed successfully with ID: ${widgetId}`);
+    res.status(200).json({ status: 'installed', widgetId });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error installing widget:`, error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/widgets/:id', async (req, res) => {
+  console.log(`[${new Date().toISOString()}] DELETE /api/widgets/:id - Uninstalling widget with ID: ${req.params.id}`);
+  try {
+    await widgetManager.uninstallWidget(req.params.id);
+    console.log(`[${new Date().toISOString()}] Widget uninstalled successfully with ID: ${req.params.id}`);
+    res.status(200).json({ status: 'uninstalled' });
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error uninstalling widget:`, error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Widget render endpoint
+app.get('/api/widgets/:id/render', async (req, res) => {
+  console.log(`[${new Date().toISOString()}] GET /api/widgets/:id/render - Rendering widget with ID: ${req.params.id}`);
+  try {
+    const widget = await widgetManager.loadWidget(req.params.id);
+    const config = req.query.config ? JSON.parse(decodeURIComponent(req.query.config)) : {};
+    
+    // Create HTML page for widget
+    const html = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${widget.manifest.name}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 10px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: transparent;
+        }
+        ${widget.css}
+    </style>
+</head>
+<body>
+    <div id="widget-root"></div>
+    <script>
+        // Widget configuration
+        const widgetConfig = ${JSON.stringify(config)};
+        
+        // Widget API
+        const widgetAPI = {
+            getConfig: () => widgetConfig,
+            getElement: () => document.getElementById('widget-root'),
+            setSize: (width, height) => {
+                const root = document.getElementById('widget-root');
+                if (root) {
+                    root.style.width = width;
+                    root.style.height = height;
+                }
+            },
+            emit: (eventName, data) => {
+                window.parent.postMessage({
+                    type: 'widget-event',
+                    eventName: eventName,
+                    data: data
+                }, '*');
+            }
+        };
+        
+        // Safe fetch with rate limiting
+        const safeFetch = async (url, options = {}) => {
+            try {
+                const response = await fetch(url, options);
+                return {
+                    ok: response.ok,
+                    status: response.status,
+                    json: async () => await response.json(),
+                    text: async () => await response.text()
+                };
+            } catch (error) {
+                throw new Error('Fetch failed: ' + error.message);
+            }
+        };
+        
+        // Safe storage
+        const safeStorage = {
+            data: {},
+            getItem: (key) => safeStorage.data[key] || null,
+            setItem: (key, value) => {
+                if (typeof key !== 'string' || typeof value !== 'string') {
+                    throw new Error('Storage keys and values must be strings');
+                }
+                if (key.length > 100 || value.length > 10000) {
+                    throw new Error('Storage key or value too large');
+                }
+                safeStorage.data[key] = value;
+            },
+            removeItem: (key) => delete safeStorage.data[key],
+            clear: () => safeStorage.data = {}
+        };
+        
+        // Execute widget code
+        try {
+            ${widget.code}
+            
+            // Call render function if it exists
+            if (typeof render === 'function') {
+                const result = render(widgetConfig);
+                if (result && result.nodeType) {
+                    document.getElementById('widget-root').appendChild(result);
+                }
+            }
+        } catch (error) {
+            console.error('Widget execution error:', error);
+            document.getElementById('widget-root').innerHTML = 
+                '<div style="padding: 20px; text-align: center; color: #d32f2f; background: #ffebee; border: 1px solid #f44336; border-radius: 4px;">' +
+                '<strong>Widget Error:</strong><br>' + error.message + '</div>';
+        }
+        
+        // Handle messages from parent
+        window.addEventListener('message', (event) => {
+            if (event.data.type === 'widget-config') {
+                // Update configuration
+                Object.assign(widgetConfig, event.data.config);
+                // Re-render if render function exists
+                if (typeof render === 'function') {
+                    const root = document.getElementById('widget-root');
+                    root.innerHTML = '';
+                    const result = render(widgetConfig);
+                    if (result && result.nodeType) {
+                        root.appendChild(result);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>`;
+    
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
+  } catch (error) {
+    console.error(`[${new Date().toISOString()}] Error rendering widget:`, error);
+    res.status(404).send(`
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Widget Not Found</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <div style="padding: 20px; text-align: center; color: #d32f2f; background: #ffebee; border: 1px solid #f44336; border-radius: 4px;">
+        <strong>Widget Error:</strong><br>Widget not found or failed to load
+    </div>
+</body>
+</html>`);
   }
 });
 

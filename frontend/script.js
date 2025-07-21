@@ -200,6 +200,10 @@ let selectedCustomViewContainerId = null; // For styling modal
   let socket;
   let agentData = new Map(); // Store agent data by container ID
   
+  // Widget system variables
+  let availableWidgets = [];
+  let widgetInstances = new Map();
+  
   window.onload = () => {
     // Check if jQuery is loaded
     if (typeof $ === 'undefined') {
@@ -4254,4 +4258,750 @@ let selectedCustomViewContainerId = null; // For styling modal
   }
   
 
+  
+  // ========================================
+  // WIDGET SYSTEM FUNCTIONS
+  // ========================================
+  
+  // Load available widgets from backend
+  async function loadAvailableWidgets() {
+    try {
+      const response = await fetch('/api/widgets');
+      if (response.ok) {
+        availableWidgets = await response.json();
+        console.log('Loaded available widgets:', availableWidgets);
+        updateWidgetGallery();
+      } else {
+        console.error('Failed to load widgets:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error loading widgets:', error);
+    }
+  }
+  
+  // Create widget container
+  function createWidgetContainer(widgetId, config = {}) {
+    return {
+      id: generateId(),
+      type: 'widget',
+      widgetId: widgetId,
+      config: config,
+      role: 'widget',
+      name: `Widget ${widgetId}`,
+      styling: {
+        hideHeader: false,
+        bgType: 'color',
+        backgroundColor: '#ffffff',
+        backgroundGradient: '',
+        backgroundCSS: '',
+        backgroundImage: '',
+        backgroundOpacity: 100,
+        borderColor: '#e0e0e0',
+        borderSize: 1,
+        borderStyle: 'solid',
+        borderCSS: '',
+        borderRadius: 8,
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        padding: 10,
+        margin: 5,
+        customCSS: ''
+      },
+      categories: [],
+      children: []
+    };
+  }
+  
+  // Create widget element
+  function createWidgetElement(widgetContainer) {
+    const widgetElement = document.createElement('div');
+    widgetElement.className = 'widget-container';
+    widgetElement.setAttribute('data-widget-id', widgetContainer.widgetId);
+    widgetElement.setAttribute('data-container-id', widgetContainer.id);
+    
+    // Create widget header
+    const widgetHeader = document.createElement('div');
+    widgetHeader.className = 'widget-header';
+    
+    const widgetTitle = document.createElement('div');
+    widgetTitle.className = 'widget-title';
+    
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'widget-title-text';
+    titleSpan.textContent = `🔧 ${widgetContainer.name}`;
+    titleSpan.setAttribute('data-container-id', widgetContainer.id);
+    
+    if (isEditMode) {
+      titleSpan.style.cursor = 'pointer';
+      titleSpan.title = 'Click to edit widget name';
+      titleSpan.onclick = (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        makeWidgetTitleEditable(titleSpan, widgetContainer.id);
+      };
+      titleSpan.classList.add('editable');
+    }
+    
+    widgetTitle.appendChild(titleSpan);
+    
+    const widgetActions = document.createElement('div');
+    widgetActions.className = 'widget-actions';
+    
+    if (isEditMode) {
+      const configBtn = document.createElement('button');
+      configBtn.className = 'widget-action-btn';
+      configBtn.innerHTML = '⚙️';
+      configBtn.title = 'Configure Widget';
+      configBtn.onclick = () => showWidgetConfigModal(widgetContainer.widgetId, widgetContainer.config);
+      
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'widget-action-btn';
+      deleteBtn.innerHTML = '🗑️';
+      deleteBtn.title = 'Delete Widget';
+      deleteBtn.onclick = () => deleteWidgetContainer(widgetContainer.id);
+      
+      widgetActions.appendChild(configBtn);
+      widgetActions.appendChild(deleteBtn);
+    }
+    
+    widgetHeader.appendChild(widgetTitle);
+    widgetHeader.appendChild(widgetActions);
+    
+    // Create widget content area
+    const widgetContent = document.createElement('div');
+    widgetContent.className = 'widget-content';
+    
+    // Create iframe for widget isolation
+    const iframe = document.createElement('iframe');
+    iframe.className = 'widget-frame';
+    iframe.src = `/api/widgets/${widgetContainer.widgetId}/render`;
+    iframe.setAttribute('data-config', JSON.stringify(widgetContainer.config));
+    iframe.style.cssText = `
+      width: 100%;
+      height: 200px;
+      border: none;
+      border-radius: 4px;
+      background: transparent;
+    `;
+    
+    // Handle widget events
+    iframe.addEventListener('load', () => {
+      try {
+        const config = JSON.parse(iframe.getAttribute('data-config'));
+        iframe.contentWindow.postMessage({
+          type: 'widget-config',
+          config: config
+        }, '*');
+      } catch (error) {
+        console.error('Error sending config to widget:', error);
+      }
+    });
+    
+    widgetContent.appendChild(iframe);
+    
+    widgetElement.appendChild(widgetHeader);
+    widgetElement.appendChild(widgetContent);
+    
+    // Apply widget styling
+    applyWidgetStyling(widgetElement, widgetContainer);
+    
+    return widgetElement;
+  }
+  
+  // Apply widget styling
+  function applyWidgetStyling(widgetElement, widgetContainer) {
+    if (!widgetContainer.styling) return;
+    
+    const style = widgetContainer.styling;
+    
+    // Apply header visibility
+    const widgetHeader = widgetElement.querySelector('.widget-header');
+    if (widgetHeader) {
+      if (style.hideHeader && !isEditMode) {
+        widgetHeader.style.display = 'none';
+      } else {
+        widgetHeader.style.display = '';
+      }
+    }
+    
+    // Apply background
+    if (style.bgType === 'color' && style.backgroundColor) {
+      widgetElement.style.backgroundColor = style.backgroundColor;
+    } else if (style.bgType === 'gradient' && style.backgroundGradient) {
+      widgetElement.style.background = style.backgroundGradient;
+    } else if (style.bgType === 'css' && style.backgroundCSS) {
+      widgetElement.style.cssText += style.backgroundCSS;
+    }
+    
+    // Apply border
+    if (style.borderColor) {
+      widgetElement.style.borderColor = style.borderColor;
+    }
+    if (style.borderSize) {
+      widgetElement.style.borderWidth = style.borderSize + 'px';
+    }
+    if (style.borderStyle) {
+      widgetElement.style.borderStyle = style.borderStyle;
+    }
+    
+    // Apply additional styles
+    if (style.borderRadius) {
+      widgetElement.style.borderRadius = style.borderRadius + 'px';
+    }
+    if (style.boxShadow) {
+      widgetElement.style.boxShadow = style.boxShadow;
+    }
+    if (style.padding) {
+      widgetElement.style.padding = style.padding + 'px';
+    }
+    if (style.margin) {
+      widgetElement.style.margin = style.margin + 'px';
+    }
+    if (style.customCSS) {
+      widgetElement.style.cssText += style.customCSS;
+    }
+  }
+  
+  // Show widget configuration modal
+  async function showWidgetConfigModal(widgetId, currentConfig = {}) {
+    try {
+      const response = await fetch(`/api/widgets/${widgetId}`);
+      if (!response.ok) {
+        throw new Error('Widget not found');
+      }
+      
+      const widget = await response.json();
+      const modal = createWidgetConfigModal(widget, currentConfig);
+      document.body.appendChild(modal);
+    } catch (error) {
+      console.error('Error loading widget config:', error);
+      showReorderFeedback('Failed to load widget configuration', 'error');
+    }
+  }
+  
+  // Create widget configuration modal
+  function createWidgetConfigModal(widget, currentConfig) {
+    const modal = document.createElement('div');
+    modal.className = 'modal widget-config-modal';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.style.cssText = `
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    `;
+    
+    const form = document.createElement('form');
+    form.innerHTML = `
+      <div class="modal-header">
+        <h3>Configure ${widget.manifest.name}</h3>
+        <button type="button" class="close-btn" onclick="closeWidgetConfigModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <p>${widget.manifest.description}</p>
+        <div id="widget-config-fields">
+          ${generateConfigFields(widget.manifest.configSchema || {}, currentConfig)}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Save Configuration</button>
+        <button type="button" class="btn btn-secondary" onclick="closeWidgetConfigModal()">Cancel</button>
+      </div>
+    `;
+    
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      const config = collectConfigData(form, widget.manifest.configSchema || {});
+      saveWidgetConfig(widget.manifest.id, config);
+      closeWidgetConfigModal();
+    };
+    
+    modalContent.appendChild(form);
+    modal.appendChild(modalContent);
+    
+    // Close modal when clicking outside
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        closeWidgetConfigModal();
+      }
+    };
+    
+    return modal;
+  }
+  
+  // Generate configuration fields
+  function generateConfigFields(configSchema, currentConfig) {
+    let fields = '';
+    
+    Object.entries(configSchema).forEach(([key, field]) => {
+      const value = currentConfig[key] !== undefined ? currentConfig[key] : field.default;
+      
+      switch (field.type) {
+        case 'string':
+          fields += `
+            <div class="form-group">
+              <label for="${key}">${field.description || key}:</label>
+              <input type="text" id="${key}" name="${key}" value="${value || ''}" />
+            </div>
+          `;
+          break;
+        case 'number':
+          fields += `
+            <div class="form-group">
+              <label for="${key}">${field.description || key}:</label>
+              <input type="number" id="${key}" name="${key}" value="${value || ''}" />
+            </div>
+          `;
+          break;
+        case 'select':
+          const options = field.options.map(option => 
+            `<option value="${option}" ${value === option ? 'selected' : ''}>${option}</option>`
+          ).join('');
+          fields += `
+            <div class="form-group">
+              <label for="${key}">${field.description || key}:</label>
+              <select id="${key}" name="${key}">${options}</select>
+            </div>
+          `;
+          break;
+        case 'range':
+          fields += `
+            <div class="form-group">
+              <label for="${key}">${field.description || key}:</label>
+              <input type="range" id="${key}" name="${key}" 
+                     min="${field.min}" max="${field.max}" value="${value || field.default}" />
+              <span class="range-value">${value || field.default}</span>
+            </div>
+          `;
+          break;
+        case 'color':
+          fields += `
+            <div class="form-group">
+              <label for="${key}">${field.description || key}:</label>
+              <input type="color" id="${key}" name="${key}" value="${value || field.default}" />
+            </div>
+          `;
+          break;
+        case 'boolean':
+          fields += `
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="${key}" name="${key}" ${value ? 'checked' : ''} />
+                ${field.description || key}
+              </label>
+            </div>
+          `;
+          break;
+      }
+    });
+    
+    return fields || '<p>No configuration options available for this widget.</p>';
+  }
+  
+  // Collect configuration data from form
+  function collectConfigData(form, configSchema) {
+    const config = {};
+    
+    Object.entries(configSchema).forEach(([key, field]) => {
+      const element = form.querySelector(`[name="${key}"]`);
+      if (!element) return;
+      
+      switch (field.type) {
+        case 'boolean':
+          config[key] = element.checked;
+          break;
+        case 'number':
+          config[key] = parseFloat(element.value) || field.default;
+          break;
+        case 'range':
+          config[key] = parseInt(element.value) || field.default;
+          break;
+        default:
+          config[key] = element.value || field.default;
+      }
+    });
+    
+    return config;
+  }
+  
+  // Save widget configuration
+  function saveWidgetConfig(widgetId, config) {
+    // Find widget container and update config
+    const widgetContainer = customViewContainers.find(container => 
+      container.type === 'widget' && container.widgetId === widgetId
+    );
+    
+    if (widgetContainer) {
+      widgetContainer.config = config;
+      saveCustomViewContainersToBackend();
+      showReorderFeedback('Widget configuration saved! ⚙️', 'success');
+      
+      // Re-render to apply new config
+      renderContainers();
+    }
+  }
+  
+  // Close widget configuration modal
+  function closeWidgetConfigModal() {
+    const modal = document.querySelector('.widget-config-modal');
+    if (modal) {
+      modal.remove();
+    }
+  }
+  
+  // Delete widget container
+  function deleteWidgetContainer(containerId) {
+    if (!isEditMode) {
+      showReorderFeedback('Please enable Edit Mode first', 'error');
+      return;
+    }
+    
+    const container = getContainerById(containerId);
+    if (!container) {
+      showReorderFeedback('Widget container not found', 'error');
+      return;
+    }
+    
+    const confirmDelete = confirm(`Are you sure you want to delete the widget "${container.name}"?`);
+    if (!confirmDelete) return;
+    
+    // Remove container
+    const containerIndex = customViewContainers.findIndex(cont => cont.id === containerId);
+    if (containerIndex > -1) {
+      customViewContainers.splice(containerIndex, 1);
+    }
+    
+    const orderIndex = customViewContainerOrder.indexOf(containerId);
+    if (orderIndex > -1) {
+      customViewContainerOrder.splice(orderIndex, 1);
+    }
+    
+    showReorderFeedback(`Widget "${container.name}" deleted successfully! 🗑️`, 'success');
+    renderContainers();
+  }
+  
+  // Make widget title editable
+  function makeWidgetTitleEditable(titleSpan, containerId) {
+    if (!isEditMode) {
+      showReorderFeedback('Please enable Edit Mode to edit widget names', 'error');
+      return;
+    }
+    
+    const container = getContainerById(containerId);
+    if (!container) {
+      showReorderFeedback('Widget container not found', 'error');
+      return;
+    }
+    
+    const currentText = titleSpan.textContent;
+    const currentName = currentText.replace('🔧 ', '');
+    
+    // Create input element
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = currentName;
+    input.className = 'widget-title-input';
+    input.style.cssText = `
+      width: 100%;
+      padding: 4px 8px;
+      border: 2px solid #0077cc;
+      border-radius: 4px;
+      font-size: inherit;
+      font-weight: inherit;
+      background: white;
+      color: #333;
+    `;
+    
+    // Replace span with input
+    titleSpan.style.display = 'none';
+    titleSpan.parentNode.insertBefore(input, titleSpan);
+    input.focus();
+    input.select();
+    
+    const saveEdit = () => {
+      const newName = input.value.trim();
+      if (newName && newName !== currentName) {
+        container.name = newName;
+        titleSpan.textContent = `🔧 ${newName}`;
+        showReorderFeedback(`Widget renamed to "${newName}"! ✏️`, 'success');
+      }
+      titleSpan.style.display = '';
+      input.remove();
+    };
+    
+    const cancelEdit = () => {
+      titleSpan.style.display = '';
+      input.remove();
+    };
+    
+    // Handle input events
+    input.addEventListener('blur', saveEdit);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveEdit();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        cancelEdit();
+      }
+    });
+  }
+  
+  // Show widget gallery
+  function showWidgetGallery() {
+    const gallery = createWidgetGallery();
+    document.body.appendChild(gallery);
+  }
+  
+  // Create widget gallery
+  function createWidgetGallery() {
+    const gallery = document.createElement('div');
+    gallery.className = 'modal widget-gallery';
+    gallery.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    `;
+    
+    const galleryContent = document.createElement('div');
+    galleryContent.className = 'gallery-content';
+    galleryContent.style.cssText = `
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 800px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    `;
+    
+    galleryContent.innerHTML = `
+      <div class="modal-header">
+        <h3>Widget Gallery</h3>
+        <button onclick="closeWidgetGallery()" class="close-btn">×</button>
+      </div>
+      <div class="widget-grid">
+        ${availableWidgets.map(widget => `
+          <div class="widget-card" onclick="addWidgetToContainer('${widget.id}')">
+            <div class="widget-icon">${widget.icon || '🔧'}</div>
+            <h4>${widget.name}</h4>
+            <p>${widget.description}</p>
+            <div class="widget-meta">
+              <span>By ${widget.author}</span>
+              <span>v${widget.version}</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="gallery-footer">
+        <button onclick="showWidgetUploadModal()" class="btn btn-primary">Upload Widget</button>
+        <button onclick="closeWidgetGallery()" class="btn btn-secondary">Close</button>
+      </div>
+    `;
+    
+    gallery.appendChild(galleryContent);
+    
+    // Close gallery when clicking outside
+    gallery.onclick = (e) => {
+      if (e.target === gallery) {
+        closeWidgetGallery();
+      }
+    };
+    
+    return gallery;
+  }
+  
+  // Close widget gallery
+  function closeWidgetGallery() {
+    const gallery = document.querySelector('.widget-gallery');
+    if (gallery) {
+      gallery.remove();
+    }
+  }
+  
+  // Add widget to container
+  function addWidgetToContainer(widgetId) {
+    if (!isEditMode) {
+      showReorderFeedback('Please enable Edit Mode to add widgets', 'error');
+      return;
+    }
+    
+    const widgetContainer = createWidgetContainer(widgetId);
+    customViewContainers.push(widgetContainer);
+    customViewContainerOrder.push(widgetContainer.id);
+    
+    saveCustomViewContainersToBackend();
+    showReorderFeedback('Widget added to Custom View! 🔧', 'success');
+    
+    closeWidgetGallery();
+    renderContainers();
+  }
+  
+  // Show widget upload modal
+  function showWidgetUploadModal() {
+    const modal = document.createElement('div');
+    modal.className = 'modal widget-upload-modal';
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    `;
+    
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.style.cssText = `
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 500px;
+      width: 90%;
+    `;
+    
+    modalContent.innerHTML = `
+      <div class="modal-header">
+        <h3>Install Widget</h3>
+        <button onclick="closeWidgetUploadModal()" class="close-btn">×</button>
+      </div>
+      <form id="widget-upload-form" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="widget-file">Select Widget Package (ZIP file):</label>
+          <input type="file" id="widget-file" name="widget" accept=".zip" required />
+        </div>
+        <div class="form-group">
+          <p class="help-text">
+            Widget packages must be ZIP files containing a manifest.json file and widget code.
+            See the developer documentation for more details.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Install Widget</button>
+          <button type="button" class="btn btn-secondary" onclick="closeWidgetUploadModal()">Cancel</button>
+        </div>
+      </form>
+    `;
+    
+    const form = modalContent.querySelector('#widget-upload-form');
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData();
+      const fileInput = document.getElementById('widget-file');
+      
+      if (!fileInput.files[0]) {
+        showReorderFeedback('Please select a widget file', 'error');
+        return;
+      }
+      
+      formData.append('widget', fileInput.files[0]);
+      
+      try {
+        const response = await fetch('/api/widgets', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          showReorderFeedback('Widget installed successfully! 🎉', 'success');
+          closeWidgetUploadModal();
+          closeWidgetGallery();
+          
+          // Reload widgets and update gallery
+          await loadAvailableWidgets();
+        } else {
+          const error = await response.json();
+          showReorderFeedback(`Failed to install widget: ${error.error}`, 'error');
+        }
+      } catch (error) {
+        console.error('Error installing widget:', error);
+        showReorderFeedback('Failed to install widget', 'error');
+      }
+    };
+    
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Close modal when clicking outside
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        closeWidgetUploadModal();
+      }
+    };
+  }
+  
+  // Close widget upload modal
+  function closeWidgetUploadModal() {
+    const modal = document.querySelector('.widget-upload-modal');
+    if (modal) {
+      modal.remove();
+    }
+  }
+  
+  // Update widget gallery
+  function updateWidgetGallery() {
+    // This function will be called when widgets are loaded
+    // It can be used to update any widget-related UI elements
+    console.log('Widget gallery updated with', availableWidgets.length, 'widgets');
+  }
+  
+  // Initialize widget system
+  function initializeWidgetSystem() {
+    loadAvailableWidgets();
+    
+    // Add widget button to custom view toolbar
+    const customToolbar = document.getElementById('custom-view-toolbar');
+    if (customToolbar) {
+      const widgetBtn = document.createElement('button');
+      widgetBtn.id = 'widget-gallery-btn';
+      widgetBtn.innerHTML = '🔧 Widgets';
+      widgetBtn.title = 'Open Widget Gallery';
+      widgetBtn.onclick = showWidgetGallery;
+      customToolbar.appendChild(widgetBtn);
+    }
+  }
+  
+  // Modify createContainerElement to handle widgets
+  const originalCreateContainerElement = createContainerElement;
+  createContainerElement = function(container, categoryGroups, term) {
+    if (container.type === 'widget') {
+      return createWidgetElement(container);
+    }
+    return originalCreateContainerElement(container, categoryGroups, term);
+  };
+  
+  // Initialize widget system when page loads
+  window.addEventListener('load', () => {
+    setTimeout(initializeWidgetSystem, 1000); // Delay to ensure other systems are loaded
+  });
+  
   
