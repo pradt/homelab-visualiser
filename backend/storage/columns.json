@@ -22,9 +22,9 @@
       "margin": 10
     },
     "categories": [
-      "cat6",
       "new category",
-      "cat3"
+      "cat3",
+      "cat6"
     ],
     "role": "row",
     "children": [
@@ -54,9 +54,7 @@
       "margin": 10
     },
     "categories": [
-      "cat1",
-      "Uncategorized",
-      "cat2"
+      "Uncategorized"
     ],
     "role": "column"
   },
@@ -106,7 +104,9 @@
       "margin": 10,
       "customCSS": ""
     },
-    "categories": [],
+    "categories": [
+      "cat1"
+    ],
     "children": []
   },
   {
@@ -132,13 +132,15 @@
       "margin": 10,
       "customCSS": ""
     },
-    "categories": [],
+    "categories": [
+      "cat2"
+    ],
     "children": []
   },
   {
     "id": "c949f8-dfce-4126",
-    "name": "Row 6",
-    "role": "row",
+    "name": "Modififed container",
+    "role": "column",
     "order": 5,
     "styling": {
       "hideHeader": false,
