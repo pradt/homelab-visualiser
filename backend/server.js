@@ -12,6 +12,8 @@ const simpleIcons = require('./simpleIconsList');
 const homelabIcons = require('./homelabIconsFull');
 const AgentManager = require('./agent-manager');
 const WidgetManager = require('./widget-manager');
+const PluginManager = require('./plugin-manager');
+const ConfigManager = require('./config-manager');
 
 const app = express();
 const server = createServer(app);
@@ -26,6 +28,8 @@ const columnsFile = path.join(storageDir, 'columns.json');
 // Initialize managers
 const agentManager = new AgentManager(io);
 const widgetManager = new WidgetManager();
+const pluginManager = new PluginManager();
+const configManager = new ConfigManager();
 
 // Configure multer for file uploads
 const upload = multer({ 
@@ -412,6 +416,34 @@ app.get('/api/widgets/download/clock-widget', (req, res) => {
   } else {
     console.error(`[${new Date().toISOString()}] Widget file not found: ${widgetPath}`);
     res.status(404).json({ error: 'Widget file not found' });
+  }
+});
+
+// Plugin API endpoints
+app.get('/api/plugins', (req, res) => {
+  try {
+    const plugins = pluginManager.getPluginList();
+    res.json(plugins);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to list plugins' });
+  }
+});
+
+app.post('/api/plugins/:id/:function', async (req, res) => {
+  const { id, function: functionName } = req.params;
+  const args = req.body || {};
+  
+  try {
+    // If this is a widget calling a plugin, decrypt any sensitive fields
+    if (args.widgetId && args.config) {
+      const widget = await widgetManager.loadWidget(args.widgetId);
+      args.config = configManager.decryptSensitiveFields(args.config, widget.manifest);
+    }
+    
+    const result = await pluginManager.callPluginFunction(id, functionName, args);
+    res.json({ result });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 

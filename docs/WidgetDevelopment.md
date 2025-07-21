@@ -164,6 +164,39 @@ The `configSchema` defines what configuration options your widget accepts:
 | `range` | Slider input | Sizes, intervals, percentages |
 | `color` | Color picker | Text colors, backgrounds |
 
+### Sensitive Configuration Fields
+
+For fields containing sensitive information like API keys, passwords, or tokens, you can mark them as sensitive:
+
+```json
+{
+  "configSchema": {
+    "apiKey": {
+      "type": "string",
+      "default": "",
+      "description": "API Key for external service",
+      "sensitive": true
+    }
+  }
+}
+```
+
+**How it works:**
+- Fields marked with `"sensitive": true` are automatically encrypted when saved
+- The encryption key is set via the `WIDGET_ENCRYPTION_KEY` environment variable
+- Sensitive fields are decrypted automatically when the widget needs them
+- If no encryption key is set, sensitive fields are stored in plain text (with a warning)
+
+**For users:**
+- Set the `WIDGET_ENCRYPTION_KEY` environment variable to a secure random string
+- Example: `WIDGET_ENCRYPTION_KEY=your-secure-32-character-key-here`
+- The key should be at least 32 characters long for AES-256 encryption
+
+**Security benefits:**
+- API keys and other secrets are encrypted at rest
+- Even if someone gains access to the configuration files, they can't read sensitive data
+- Each sensitive field is encrypted with a unique initialization vector
+
 ## Widget Code
 
 The `widget.js` file contains your widget's main logic. It must export a `render` function.
@@ -812,6 +845,73 @@ clock-widget.zip
   window.render = render;
 })();
 ```
+
+## Extending the Backend with Plugins
+
+### Overview
+
+Homelab-Visualiser now supports backend plugins, allowing advanced widgets to securely extend backend functionality. Plugins are Node.js modules placed in the `backend/plugins/` directory. Each plugin can expose functions that can be called via HTTP endpoints.
+
+### How Plugins Work
+- Plugins are loaded by the backend at startup.
+- Each plugin must export an object with an `id`, `description`, and one or more functions.
+- Plugins run in a sandboxed environment for security.
+- Widgets (or other clients) can call plugin functions via HTTP POST requests to `/api/plugins/:id/:function`.
+
+### Creating a Plugin
+
+1. Create a new file in `backend/plugins/`, e.g. `my-plugin.js`:
+
+```js
+module.exports = {
+  id: 'my-plugin',
+  description: 'Does something useful.',
+  doSomething: async ({ input }) => {
+    // Your backend logic here
+    return { message: `You sent: ${input}` };
+  }
+};
+```
+
+2. Restart the backend server to load new plugins.
+
+### Example Plugin
+
+`backend/plugins/hello-plugin.js`:
+```js
+module.exports = {
+  id: 'hello-plugin',
+  description: 'A sample plugin that greets the user.',
+  greet: async ({ name }) => {
+    return `Hello, ${name || 'World'}!`;
+  }
+};
+```
+
+### Calling a Plugin from a Widget
+
+Widgets can call backend plugin functions using `fetch`:
+
+```js
+const response = await fetch('/api/plugins/hello-plugin/greet', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ name: 'Alice' })
+});
+const data = await response.json();
+console.log(data.result); // "Hello, Alice!"
+```
+
+### Security Considerations
+- Plugins run in a sandbox, but can access backend resources. Only install plugins from trusted sources.
+- Review plugin code before enabling.
+- All plugin actions are logged by the backend.
+- If a plugin misbehaves, remove its file from `backend/plugins/` and restart the server.
+
+### Best Practices
+- Document your plugin's API and expected arguments.
+- Handle errors gracefully in plugin code.
+- Avoid long-running or blocking operations in plugins.
 
 ## Conclusion
 

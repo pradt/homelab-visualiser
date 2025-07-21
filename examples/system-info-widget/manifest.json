@@ -1,0 +1,19 @@
+{
+  "id": "com.example.system-info-widget",
+  "name": "System Info Widget",
+  "version": "1.0.0",
+  "description": "Displays live system information from the backend.",
+  "author": "Widget Developer",
+  "category": "Monitoring",
+  "icon": "🖥️",
+  "entryPoint": "widget.js",
+  "configSchema": {
+    "refreshInterval": {
+      "type": "range",
+      "min": 2,
+      "max": 60,
+      "default": 5,
+      "description": "Refresh interval (seconds)"
+    }
+  }
+} 

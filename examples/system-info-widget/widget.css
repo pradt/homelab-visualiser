@@ -1,0 +1,10 @@
+.system-info-widget {
+  font-family: monospace;
+  background: #f4f4f4;
+  border-radius: 8px;
+  padding: 16px;
+  color: #222;
+}
+.system-info-widget div {
+  margin-bottom: 4px;
+} 

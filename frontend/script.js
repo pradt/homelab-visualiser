@@ -4784,13 +4784,16 @@ let selectedCustomViewContainerId = null; // For styling modal
       document.body.appendChild(modal);
       
       // Set up form submission
-      const form = modal.querySelector('form');
+      const form = modalContent.querySelector('#widget-config-form');
       form.onsubmit = (e) => {
         e.preventDefault();
         const configData = collectConfigData(form, widget.manifest.configSchema || {});
         saveWidgetConfig(widgetId, configData);
         closeWidgetConfigModal();
       };
+      
+      // Initialize background options visibility
+      updateWidgetBackgroundOptions();
     } catch (error) {
       console.error('Error loading widget config:', error);
       showReorderFeedback('Failed to load widget configuration', 'error');
@@ -4800,7 +4803,7 @@ let selectedCustomViewContainerId = null; // For styling modal
   // Create widget configuration modal with tabs
   function createWidgetConfigModal(widget, currentConfig) {
     const modal = document.createElement('div');
-    modal.className = 'modal widget-config-modal';
+    modal.className = 'modal';
     modal.style.cssText = `
       position: fixed;
       top: 0;
@@ -4826,119 +4829,99 @@ let selectedCustomViewContainerId = null; // For styling modal
       overflow-y: auto;
     `;
     
-    const form = document.createElement('form');
-    form.innerHTML = `
+    modalContent.innerHTML = `
       <div class="modal-header">
-        <h3>Configure ${widget.manifest.name}</h3>
-        <button type="button" class="close-btn" onclick="closeWidgetConfigModal()">×</button>
+        <h3>Widget Settings - ${widget.manifest.name}</h3>
+        <button class="close-btn" onclick="closeWidgetConfigModal()">×</button>
       </div>
       
-      <div class="modal-tabs">
-        <button type="button" class="tab-btn active" onclick="switchWidgetTab('general')">General</button>
-        <button type="button" class="tab-btn" onclick="switchWidgetTab('style')">Style</button>
-      </div>
-      
-      <div class="modal-body">
+      <form id="widget-config-form">
+        <input type="hidden" name="widgetId" value="${widget.id}" />
+        
+        <!-- Tab Navigation -->
+        <div class="modal-tabs">
+          <button type="button" class="tab-btn active" onclick="switchWidgetTab('general')">General</button>
+          <button type="button" class="tab-btn" onclick="switchWidgetTab('style')">Style</button>
+        </div>
+        
+        <!-- General Tab Content -->
         <div id="general-tab" class="tab-content active">
-          <p>${widget.manifest.description}</p>
-          <div id="widget-config-fields">
-            ${generateConfigFields(widget.manifest.configSchema || {}, currentConfig)}
+          <div class="style-section">
+            <h4>Widget Configuration</h4>
+            <p>${widget.manifest.description}</p>
+            <div id="widget-config-fields">
+              ${generateConfigFields(widget.manifest.configSchema || {}, currentConfig)}
+            </div>
           </div>
         </div>
         
+        <!-- Style Tab Content -->
         <div id="style-tab" class="tab-content">
-          <div class="form-group">
-            <label>Widget Name:</label>
-            <input type="text" name="widgetName" value="${currentConfig.name || widget.manifest.name}" placeholder="Widget name">
+          <div class="style-section">
+            <h4>Widget Information</h4>
+            <label>Widget Name: <input type="text" name="widgetName" value="${currentConfig.name || widget.manifest.name}" placeholder="Enter widget name" /></label>
+            <label><input type="checkbox" name="hideHeader" ${currentConfig.styling?.hideHeader ? 'checked' : ''} /> Hide widget header</label>
           </div>
           
-          <div class="form-group">
-            <label>Hide Header:</label>
-            <input type="checkbox" name="hideHeader" ${currentConfig.styling?.hideHeader ? 'checked' : ''}>
-            <span class="form-help">Hide the widget header in view mode</span>
+          <div class="style-section">
+            <h4>Widget Background</h4>
+            <label>Background Type: 
+              <select name="bgType" onchange="updateWidgetBackgroundOptions()">
+                <option value="color" ${currentConfig.styling?.bgType === 'color' ? 'selected' : ''}>Solid Color</option>
+                <option value="gradient" ${currentConfig.styling?.bgType === 'gradient' ? 'selected' : ''}>Gradient</option>
+                <option value="css" ${currentConfig.styling?.bgType === 'css' ? 'selected' : ''}>Custom CSS</option>
+              </select>
+            </label>
+            <div id="widget-bg-color-option">
+              <label>Background Color: <input type="color" name="backgroundColor" value="${currentConfig.styling?.backgroundColor || '#ffffff'}" /></label>
+            </div>
+            <div id="widget-bg-gradient-option" class="hidden">
+              <label>Gradient: <input type="text" name="backgroundGradient" value="${currentConfig.styling?.backgroundGradient || ''}" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
+            </div>
+            <div id="widget-bg-css-option" class="hidden">
+              <label>Custom CSS: <textarea name="backgroundCSS" placeholder="background: url('image.jpg') center/cover;">${currentConfig.styling?.backgroundCSS || ''}</textarea></label>
+            </div>
+            <label>Background Transparency: 
+              <input type="range" name="backgroundOpacity" min="0" max="100" value="${currentConfig.styling?.backgroundOpacity || 100}" step="5" oninput="updateRangeValue(this)" />
+              <span id="widget-opacity-value">${currentConfig.styling?.backgroundOpacity || 100}%</span>
+            </label>
           </div>
           
-          <div class="form-group">
-            <label>Background Type:</label>
-            <select name="bgType" onchange="updateWidgetBackgroundOptions()">
-              <option value="color" ${currentConfig.styling?.bgType === 'color' ? 'selected' : ''}>Solid Color</option>
-              <option value="gradient" ${currentConfig.styling?.bgType === 'gradient' ? 'selected' : ''}>Gradient</option>
-              <option value="css" ${currentConfig.styling?.bgType === 'css' ? 'selected' : ''}>Custom CSS</option>
-            </select>
+          <div class="style-section">
+            <h4>Widget Border</h4>
+            <label>Border Color: <input type="color" name="borderColor" value="${currentConfig.styling?.borderColor || '#e0e0e0'}" /></label>
+            <label>Border Size: <input type="number" name="borderSize" min="0" max="20" value="${currentConfig.styling?.borderSize || 1}" step="1" />px</label>
+            <label>Border Style: 
+              <select name="borderStyle">
+                <option value="solid" ${currentConfig.styling?.borderStyle === 'solid' ? 'selected' : ''}>Solid</option>
+                <option value="dashed" ${currentConfig.styling?.borderStyle === 'dashed' ? 'selected' : ''}>Dashed</option>
+                <option value="dotted" ${currentConfig.styling?.borderStyle === 'dotted' ? 'selected' : ''}>Dotted</option>
+                <option value="double" ${currentConfig.styling?.borderStyle === 'double' ? 'selected' : ''}>Double</option>
+                <option value="groove" ${currentConfig.styling?.borderStyle === 'groove' ? 'selected' : ''}>Groove</option>
+                <option value="ridge" ${currentConfig.styling?.borderStyle === 'ridge' ? 'selected' : ''}>Ridge</option>
+                <option value="inset" ${currentConfig.styling?.borderStyle === 'inset' ? 'selected' : ''}>Inset</option>
+                <option value="outset" ${currentConfig.styling?.borderStyle === 'outset' ? 'selected' : ''}>Outset</option>
+                <option value="none" ${currentConfig.styling?.borderStyle === 'none' ? 'selected' : ''}>None</option>
+              </select>
+            </label>
+            <label>Custom Border CSS: <textarea name="borderCSS" placeholder="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">${currentConfig.styling?.borderCSS || ''}</textarea></label>
           </div>
           
-          <div id="widget-bg-color-option" class="form-group ${currentConfig.styling?.bgType === 'color' ? '' : 'hidden'}">
-            <label>Background Color:</label>
-            <input type="color" name="backgroundColor" value="${currentConfig.styling?.backgroundColor || '#ffffff'}">
-          </div>
-          
-          <div id="widget-bg-gradient-option" class="form-group ${currentConfig.styling?.bgType === 'gradient' ? '' : 'hidden'}">
-            <label>Background Gradient:</label>
-            <input type="text" name="backgroundGradient" value="${currentConfig.styling?.backgroundGradient || ''}" placeholder="linear-gradient(to right, #ff6b6b, #4ecdc4)">
-          </div>
-          
-          <div id="widget-bg-css-option" class="form-group ${currentConfig.styling?.bgType === 'css' ? '' : 'hidden'}">
-            <label>Background CSS:</label>
-            <textarea name="backgroundCSS" placeholder="background: url('image.jpg') center/cover;">${currentConfig.styling?.backgroundCSS || ''}</textarea>
-          </div>
-          
-          <div class="form-group">
-            <label>Background Opacity:</label>
-            <input type="range" name="backgroundOpacity" min="0" max="100" value="${currentConfig.styling?.backgroundOpacity || 100}" oninput="updateRangeValue(this)">
-            <span class="range-value">${currentConfig.styling?.backgroundOpacity || 100}%</span>
-          </div>
-          
-          <div class="form-group">
-            <label>Border Color:</label>
-            <input type="color" name="borderColor" value="${currentConfig.styling?.borderColor || '#e0e0e0'}">
-          </div>
-          
-          <div class="form-group">
-            <label>Border Size:</label>
-            <input type="number" name="borderSize" min="0" max="20" value="${currentConfig.styling?.borderSize || 1}">
-          </div>
-          
-          <div class="form-group">
-            <label>Border Style:</label>
-            <select name="borderStyle">
-              <option value="solid" ${currentConfig.styling?.borderStyle === 'solid' ? 'selected' : ''}>Solid</option>
-              <option value="dashed" ${currentConfig.styling?.borderStyle === 'dashed' ? 'selected' : ''}>Dashed</option>
-              <option value="dotted" ${currentConfig.styling?.borderStyle === 'dotted' ? 'selected' : ''}>Dotted</option>
-              <option value="none" ${currentConfig.styling?.borderStyle === 'none' ? 'selected' : ''}>None</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label>Border Radius:</label>
-            <input type="number" name="borderRadius" min="0" max="50" value="${currentConfig.styling?.borderRadius || 8}">
-          </div>
-          
-          <div class="form-group">
-            <label>Box Shadow:</label>
-            <input type="text" name="boxShadow" value="${currentConfig.styling?.boxShadow || '0 2px 4px rgba(0,0,0,0.1)'}" placeholder="0 2px 4px rgba(0,0,0,0.1)">
-          </div>
-          
-          <div class="form-group">
-            <label>Padding:</label>
-            <input type="number" name="padding" min="0" max="50" value="${currentConfig.styling?.padding || 10}">
-          </div>
-          
-          <div class="form-group">
-            <label>Margin:</label>
-            <input type="number" name="margin" min="0" max="50" value="${currentConfig.styling?.margin || 5}">
-          </div>
-          
-          <div class="form-group">
-            <label>Custom CSS:</label>
-            <textarea name="customCSS" placeholder="Additional CSS styles...">${currentConfig.styling?.customCSS || ''}</textarea>
+          <div class="style-section">
+            <h4>Additional Styles</h4>
+            <label>Custom CSS: <textarea name="customCSS" placeholder="Add any additional CSS styles here...">${currentConfig.styling?.customCSS || ''}</textarea></label>
+            <label>Border Radius: <input type="number" name="borderRadius" min="0" max="50" value="${currentConfig.styling?.borderRadius || 8}" step="1" />px</label>
+            <label>Box Shadow: <input type="text" name="boxShadow" value="${currentConfig.styling?.boxShadow || '0 2px 4px rgba(0,0,0,0.1)'}" placeholder="0 2px 4px rgba(0,0,0,0.1)" /></label>
+            <label>Padding: <input type="number" name="padding" min="0" max="50" value="${currentConfig.styling?.padding || 10}" step="1" />px</label>
+            <label>Margin: <input type="number" name="margin" min="0" max="50" value="${currentConfig.styling?.margin || 5}" step="1" />px</label>
           </div>
         </div>
-      </div>
-      
-      <div class="modal-footer">
-        <button type="submit" class="btn btn-primary">Save Configuration</button>
-        <button type="button" class="btn btn-secondary" onclick="closeWidgetConfigModal()">Cancel</button>
-      </div>
+        
+        <div class="modal-buttons">
+          <button type="submit">Save Settings</button>
+          <button type="button" onclick="closeWidgetConfigModal()">Cancel</button>
+        </div>
+      </form>
     `;
     
     form.onsubmit = (e) => {
@@ -5068,7 +5051,7 @@ let selectedCustomViewContainerId = null; // For styling modal
       widgetContainer.config = config;
       
       // Update widget styling
-      const form = document.querySelector('.widget-config-modal form');
+      const form = document.getElementById('widget-config-form');
       if (form) {
         widgetContainer.name = form.querySelector('input[name="widgetName"]').value;
         
@@ -5085,6 +5068,7 @@ let selectedCustomViewContainerId = null; // For styling modal
         widgetContainer.styling.borderColor = form.querySelector('input[name="borderColor"]').value;
         widgetContainer.styling.borderSize = parseInt(form.querySelector('input[name="borderSize"]').value);
         widgetContainer.styling.borderStyle = form.querySelector('select[name="borderStyle"]').value;
+        widgetContainer.styling.borderCSS = form.querySelector('textarea[name="borderCSS"]').value;
         widgetContainer.styling.borderRadius = parseInt(form.querySelector('input[name="borderRadius"]').value);
         widgetContainer.styling.boxShadow = form.querySelector('input[name="boxShadow"]').value;
         widgetContainer.styling.padding = parseInt(form.querySelector('input[name="padding"]').value);
@@ -5093,7 +5077,7 @@ let selectedCustomViewContainerId = null; // For styling modal
       }
       
       saveCustomViewContainersToBackend();
-      showReorderFeedback('Widget configuration and styling saved! ⚙️', 'success');
+      showReorderFeedback('Widget settings saved! ⚙️', 'success');
       
       // Re-render to apply new config and styling
       renderContainers();
@@ -5545,12 +5529,12 @@ let selectedCustomViewContainerId = null; // For styling modal
   // Switch widget configuration tabs
   function switchWidgetTab(tabName) {
     // Hide all tab contents
-    document.querySelectorAll('.widget-config-modal .tab-content').forEach(content => {
+    document.querySelectorAll('.tab-content').forEach(content => {
       content.classList.remove('active');
     });
     
     // Remove active class from all tab buttons
-    document.querySelectorAll('.widget-config-modal .tab-btn').forEach(btn => {
+    document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.classList.remove('active');
     });
     
@@ -5561,7 +5545,7 @@ let selectedCustomViewContainerId = null; // For styling modal
     }
     
     // Add active class to selected tab button
-    const selectedBtn = document.querySelector(`.widget-config-modal .tab-btn[onclick*="${tabName}"]`);
+    const selectedBtn = document.querySelector(`.tab-btn[onclick*="${tabName}"]`);
     if (selectedBtn) {
       selectedBtn.classList.add('active');
     }
@@ -5569,7 +5553,7 @@ let selectedCustomViewContainerId = null; // For styling modal
   
   // Update widget background options visibility
   function updateWidgetBackgroundOptions() {
-    const bgType = document.querySelector('.widget-config-modal select[name="bgType"]').value;
+    const bgType = document.querySelector('select[name="bgType"]').value;
     const colorOption = document.getElementById('widget-bg-color-option');
     const gradientOption = document.getElementById('widget-bg-gradient-option');
     const cssOption = document.getElementById('widget-bg-css-option');

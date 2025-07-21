@@ -1,0 +1,53 @@
+{
+  "id": "com.example.youtube-subscriber-count",
+  "name": "YouTube Subscriber Count",
+  "version": "1.0.0",
+  "description": "Displays YouTube channel subscriber count and latest video info",
+  "author": "Widget Developer",
+  "category": "Social Media",
+  "icon": "📺",
+  "entryPoint": "widget.js",
+  "configSchema": {
+    "apiKey": {
+      "type": "string",
+      "default": "",
+      "description": "YouTube Data API Key (required)",
+      "sensitive": true
+    },
+    "channelId": {
+      "type": "string",
+      "default": "",
+      "description": "YouTube Channel ID or Username"
+    },
+    "refreshInterval": {
+      "type": "range",
+      "min": 30,
+      "max": 3600,
+      "default": 300,
+      "description": "Refresh interval (seconds)"
+    },
+    "fontColor": {
+      "type": "color",
+      "default": "#ffffff",
+      "description": "Text color"
+    },
+    "fontSize": {
+      "type": "range",
+      "min": 12,
+      "max": 32,
+      "default": 16,
+      "description": "Font size in pixels"
+    },
+    "fontFamily": {
+      "type": "select",
+      "options": ["Arial", "Helvetica", "Times New Roman", "Courier New", "Georgia", "Verdana"],
+      "default": "Arial",
+      "description": "Font family"
+    },
+    "backgroundColor": {
+      "type": "color",
+      "default": "#ff0000",
+      "description": "Background color"
+    }
+  }
+} 

@@ -186,6 +186,11 @@ The application uses volume mapping to persist your homelab data:
 
 ### Environment Variables
 - `PORT`: Server port (default: 3000)
+- `WIDGET_ENCRYPTION_KEY`: (Recommended) A secure random string used to encrypt sensitive widget configuration fields (such as API keys). If not set, sensitive fields will be stored in plain text with a warning. Example:
+
+```bash
+export WIDGET_ENCRYPTION_KEY=your-secure-32-character-key-here
+```
 
 ### Docker Compose Configuration
 The `docker-compose.yml` file includes:
