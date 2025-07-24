@@ -22,9 +22,9 @@
       "margin": 10
     },
     "categories": [
-      "new category",
       "cat3",
-      "cat6"
+      "cat6",
+      "new category"
     ],
     "role": "row",
     "children": [
@@ -83,23 +83,30 @@
     "categories": [],
     "children": [
       {
-        "id": "0f5862-bd66-4606",
+        "id": "f1cb7a-d7f0-46b6",
         "type": "widget",
         "widgetId": "widget_1753072299870",
-        "config": {},
+        "config": {
+          "timezone": "UTC",
+          "format": "12h",
+          "showDate": true,
+          "fontColor": "#e11414",
+          "fontSize": 46,
+          "backgroundColor": ""
+        },
         "role": "widget",
-        "name": "Widget widget_1753072299870",
+        "name": "Widget ",
         "parentContainerId": "8a3053-34f1-4863",
         "styling": {
           "hideHeader": false,
           "bgType": "color",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "",
           "backgroundGradient": "",
           "backgroundCSS": "",
           "backgroundImage": "",
           "backgroundOpacity": 100,
           "borderColor": "#e0e0e0",
-          "borderSize": 1,
+          "borderSize": 10,
           "borderStyle": "solid",
           "borderCSS": "",
           "borderRadius": 8,

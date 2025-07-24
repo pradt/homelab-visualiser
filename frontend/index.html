@@ -170,6 +170,39 @@
               <span id="icon-color-value">#000000</span>
             </div>
           </label>
+          <label>Icon Placement: 
+            <select id="icon-placement" onchange="updateIconPlacementPreview()">
+              <option value="top-left">Top Left</option>
+              <option value="top-right">Top Right</option>
+              <option value="bottom-left">Bottom Left</option>
+              <option value="bottom-right">Bottom Right</option>
+            </select>
+          </label>
+          <label>Icon Offset Top: <input type="number" id="icon-offset-top" value="0" min="-50" max="50" step="1" onchange="updateIconPlacementPreview()" />px</label>
+          <label>Icon Offset Left: <input type="number" id="icon-offset-left" value="0" min="-50" max="50" step="1" onchange="updateIconPlacementPreview()" />px</label>
+          <label>Icon Offset Right: <input type="number" id="icon-offset-right" value="0" min="-50" max="50" step="1" onchange="updateIconPlacementPreview()" />px</label>
+          <label>Icon Offset Bottom: <input type="number" id="icon-offset-bottom" value="0" min="-50" max="50" step="1" onchange="updateIconPlacementPreview()" />px</label>
+        </div>
+        
+        <div class="style-section">
+          <h4>Icon Specific Styling</h4>
+          <label>Icon Border Size: <input type="number" id="icon-border-size" value="0" min="0" max="10" step="1" onchange="updateIconStylingPreview()" />px</label>
+          <label>Icon Border Radius: <input type="number" id="icon-border-radius" value="0" min="0" max="20" step="1" onchange="updateIconStylingPreview()" />px</label>
+          <label>Icon Border Style: 
+            <select id="icon-border-style" onchange="updateIconStylingPreview()">
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+              <option value="double">Double</option>
+              <option value="groove">Groove</option>
+              <option value="ridge">Ridge</option>
+              <option value="inset">Inset</option>
+              <option value="outset">Outset</option>
+              <option value="none">None</option>
+            </select>
+          </label>
+          <label>Icon Border Color: <input type="color" id="icon-border-color" value="#000000" onchange="updateIconStylingPreview()" /></label>
+          <label>Icon Background Color: <input type="color" id="icon-background-color" value="transparent" onchange="updateIconStylingPreview()" /></label>
         </div>
       </div>
       
@@ -427,7 +460,7 @@
             </select>
           </label>
           <div id="container-bg-color-option">
-            <label>Background Color: <input type="color" name="backgroundColor" value="#f9f9f9" /></label>
+            <label>Background Color: <input type="color" name="backgroundColor" value="#ffffff" /></label>
           </div>
           <div id="container-bg-gradient-option" class="hidden">
             <label>Gradient: <input type="text" name="backgroundGradient" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
@@ -444,8 +477,8 @@
         
         <div class="style-section">
           <h4>Container Border</h4>
-          <label>Border Color: <input type="color" name="borderColor" value="#e0e0e0" /></label>
-          <label>Border Size: <input type="number" name="borderSize" min="0" max="20" value="2" step="1" />px</label>
+          <label>Border Color: <input type="color" name="borderColor" value="transparent" /></label>
+          <label>Border Size: <input type="number" name="borderSize" min="0" max="20" value="1" step="1" />px</label>
           <label>Border Style: 
             <select name="borderStyle">
               <option value="solid">Solid</option>
@@ -464,9 +497,9 @@
         <div class="style-section">
           <h4>Additional Styles</h4>
           <label>Custom CSS: <textarea name="customCSS" placeholder="Add any additional CSS styles here..."></textarea></label>
-          <label>Border Radius: <input type="number" name="borderRadius" min="0" max="50" value="8" step="1" />px</label>
-          <label>Box Shadow: <input type="text" name="boxShadow" placeholder="0 2px 4px rgba(0,0,0,0.1)" /></label>
-          <label>Padding: <input type="number" name="padding" min="0" max="50" value="15" step="1" />px</label>
+          <label>Border Radius: <input type="number" name="borderRadius" min="0" max="50" value="16" step="1" />px</label>
+          <label>Box Shadow: <input type="text" name="boxShadow" value="0 4px 10px rgba(0, 0, 0, 0.06)" /></label>
+          <label>Padding: <input type="number" name="padding" min="0" max="50" value="11" step="1" />px</label>
           <label>Margin: <input type="number" name="margin" min="0" max="50" value="10" step="1" />px</label>
         </div>
       </div>
@@ -474,6 +507,91 @@
       <div class="modal-buttons">
         <button type="submit">Save Settings</button>
         <button type="button" onclick="hideContainerStyleModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Widget Settings Modal -->
+  <div id="widget-settings-modal" class="modal hidden">
+    <div class="modal-header">
+      <h3>Widget Settings</h3>
+      <button class="close-btn" onclick="closeWidgetConfigModal()">×</button>
+    </div>
+    <form id="widget-settings-form">
+      <input type="hidden" name="widgetId" />
+      <!-- Tab Navigation -->
+      <div class="modal-tabs">
+        <button type="button" class="tab-btn active" onclick="switchWidgetTab('general')">General</button>
+        <button type="button" class="tab-btn" onclick="switchWidgetTab('style')">Style</button>
+      </div>
+      <!-- General Tab -->
+      <div id="widget-general-tab" class="tab-content active">
+        <div class="style-section">
+          <h4>Widget Configuration</h4>
+          <div id="widget-config-fields"></div>
+        </div>
+      </div>
+      <!-- Style Tab -->
+      <div id="widget-style-tab" class="tab-content">
+        <div class="style-section">
+          <h4>Widget Information</h4>
+          <label>Widget Name: <input type="text" name="widgetName" /></label>
+          <label><input type="checkbox" name="hideHeader" /> Hide widget header</label>
+        </div>
+        <div class="style-section">
+          <h4>Widget Background</h4>
+          <label>Background Type:
+            <select name="bgType" onchange="updateWidgetBackgroundOptions()">
+              <option value="color">Solid Color</option>
+              <option value="gradient">Gradient</option>
+              <option value="css">Custom CSS</option>
+            </select>
+          </label>
+          <div id="widget-bg-color-option">
+            <label>Background Color: <input type="color" name="backgroundColor" value="#ffffff" /></label>
+          </div>
+          <div id="widget-bg-gradient-option" class="hidden">
+            <label>Gradient: <input type="text" name="backgroundGradient" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
+          </div>
+          <div id="widget-bg-css-option" class="hidden">
+            <label>Custom CSS: <textarea name="backgroundCSS" placeholder="background: url('image.jpg') center/cover;"></textarea></label>
+          </div>
+          <label>Background Transparency:
+            <input type="range" name="backgroundOpacity" min="0" max="100" value="100" step="5" oninput="updateRangeValue(this)" />
+            <span id="widget-opacity-value">100%</span>
+          </label>
+        </div>
+        <div class="style-section">
+          <h4>Widget Border</h4>
+          <label>Border Color: <input type="color" name="borderColor" value="transparent" /></label>
+          <label>Border Size: <input type="number" name="borderSize" min="0" max="20" value="1" step="1" />px</label>
+          <label>Border Style:
+            <select name="borderStyle">
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+              <option value="double">Double</option>
+              <option value="groove">Groove</option>
+              <option value="ridge">Ridge</option>
+              <option value="inset">Inset</option>
+              <option value="outset">Outset</option>
+              <option value="none">None</option>
+            </select>
+          </label>
+          <label>Custom Border CSS: <textarea name="borderCSS" placeholder="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></textarea></label>
+        </div>
+        <div class="style-section">
+          <h4>Additional Styles</h4>
+          <label>Custom CSS: <textarea name="customCSS" placeholder="Add any additional CSS styles here..."></textarea></label>
+          <label>Border Radius: <input type="number" name="borderRadius" min="0" max="50" value="16" step="1" />px</label>
+          <label>Box Shadow: <input type="text" name="boxShadow" value="0 4px 10px rgba(0, 0, 0, 0.06)" /></label>
+          <label>Padding: <input type="number" name="padding" min="0" max="50" value="11" step="1" />px</label>
+          <label>Margin: <input type="number" name="margin" min="0" max="50" value="5" step="1" />px</label>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button type="submit">Save Settings</button>
+        <button type="button" onclick="closeWidgetConfigModal()">Cancel</button>
       </div>
     </form>
   </div>

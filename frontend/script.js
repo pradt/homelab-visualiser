@@ -45,18 +45,18 @@
       styling: {
         hideHeader: false,
         bgType: 'color',
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#ffffff',
         backgroundGradient: '',
         backgroundCSS: '',
         backgroundImage: '',
         backgroundOpacity: 100,
-        borderColor: '#e0e0e0',
-        borderSize: 2,
+        borderColor: 'transparent',
+        borderSize: 1,
         borderStyle: 'solid',
         borderCSS: '',
-        borderRadius: 8,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        padding: 15,
+        borderRadius: 16,
+        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.06)',
+        padding: 11,
         margin: 10,
         customCSS: ''
       },
@@ -80,18 +80,18 @@
       styling: {
         hideHeader: false,
         bgType: 'color',
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#ffffff',
         backgroundGradient: '',
         backgroundCSS: '',
         backgroundImage: '',
         backgroundOpacity: 100,
-        borderColor: '#e0e0e0',
-        borderSize: 2,
+        borderColor: 'transparent',
+        borderSize: 1,
         borderStyle: 'solid',
         borderCSS: '',
-        borderRadius: 8,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        padding: 15,
+        borderRadius: 16,
+        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.06)',
+        padding: 11,
         margin: 10,
         customCSS: ''
       },
@@ -800,6 +800,8 @@ let selectedCustomViewContainerId = null; // For styling modal
     const iconInput = document.getElementById('icon-input');
     iconInput.value = value;
     updateIconPreview();
+    updateIconPlacementPreview();
+    updateIconStylingPreview();
   
     document.querySelectorAll('.icon-item').forEach(item => {
       item.classList.remove('selected');
@@ -849,6 +851,81 @@ let selectedCustomViewContainerId = null; // For styling modal
         iconPreview.innerHTML = `<img src="${value}" style="width:${iconSize}px;height:${iconSize}px;" onerror="this.style.display='none'">`;
         break;
     }
+    
+    // Apply icon styling to preview
+    updateIconStylingPreview();
+  }
+  
+  function updateIconPlacementPreview() {
+    const iconPreview = document.getElementById('icon-preview');
+    if (!iconPreview) return;
+    
+    const placement = document.getElementById('icon-placement').value;
+    const offsetTop = document.getElementById('icon-offset-top').value;
+    const offsetLeft = document.getElementById('icon-offset-left').value;
+    const offsetRight = document.getElementById('icon-offset-right').value;
+    const offsetBottom = document.getElementById('icon-offset-bottom').value;
+    
+    // Reset positioning
+    iconPreview.style.position = 'relative';
+    iconPreview.style.top = '';
+    iconPreview.style.left = '';
+    iconPreview.style.right = '';
+    iconPreview.style.bottom = '';
+    
+    // Apply placement and offsets
+    switch(placement) {
+      case 'top-left':
+        iconPreview.style.position = 'absolute';
+        iconPreview.style.top = offsetTop + 'px';
+        iconPreview.style.left = offsetLeft + 'px';
+        break;
+      case 'top-right':
+        iconPreview.style.position = 'absolute';
+        iconPreview.style.top = offsetTop + 'px';
+        iconPreview.style.right = offsetRight + 'px';
+        break;
+      case 'bottom-left':
+        iconPreview.style.position = 'absolute';
+        iconPreview.style.bottom = offsetBottom + 'px';
+        iconPreview.style.left = offsetLeft + 'px';
+        break;
+      case 'bottom-right':
+        iconPreview.style.position = 'absolute';
+        iconPreview.style.bottom = offsetBottom + 'px';
+        iconPreview.style.right = offsetRight + 'px';
+        break;
+    }
+  }
+  
+  function updateIconStylingPreview() {
+    const iconPreview = document.getElementById('icon-preview');
+    if (!iconPreview) return;
+    
+    const borderSize = document.getElementById('icon-border-size').value;
+    const borderRadius = document.getElementById('icon-border-radius').value;
+    const borderStyle = document.getElementById('icon-border-style').value;
+    const borderColor = document.getElementById('icon-border-color').value;
+    const backgroundColor = document.getElementById('icon-background-color').value;
+    
+    // Apply border styling
+    if (borderSize > 0 && borderStyle !== 'none') {
+      iconPreview.style.border = `${borderSize}px ${borderStyle} ${borderColor}`;
+    } else {
+      iconPreview.style.border = 'none';
+    }
+    
+    // Apply border radius
+    iconPreview.style.borderRadius = borderRadius + 'px';
+    
+    // Apply background color
+    if (backgroundColor !== 'transparent') {
+      iconPreview.style.backgroundColor = backgroundColor;
+      iconPreview.style.padding = '4px';
+    } else {
+      iconPreview.style.backgroundColor = 'transparent';
+      iconPreview.style.padding = '0';
+    }
   }
   
   function getFaviconUrl(url) {
@@ -880,6 +957,19 @@ let selectedCustomViewContainerId = null; // For styling modal
     form.padding.value = '10';
     form.margin.value = '10';
     
+    // Set default icon placement and styling values
+    document.getElementById('icon-placement').value = 'top-left';
+    document.getElementById('icon-offset-top').value = 0;
+    document.getElementById('icon-offset-left').value = 0;
+    document.getElementById('icon-offset-right').value = 0;
+    document.getElementById('icon-offset-bottom').value = 0;
+    
+    document.getElementById('icon-border-size').value = 0;
+    document.getElementById('icon-border-radius').value = 0;
+    document.getElementById('icon-border-style').value = 'solid';
+    document.getElementById('icon-border-color').value = '#000000';
+    document.getElementById('icon-background-color').value = 'transparent';
+    
     // Update background options
     updateBackgroundOptions();
     updateTitleBackgroundOptions();
@@ -907,15 +997,43 @@ let selectedCustomViewContainerId = null; // For styling modal
       document.getElementById('icon-input').value = container.icon.value || '';
       document.getElementById('icon-size-slider').value = container.icon.size || 30;
       document.getElementById('icon-color-picker').value = container.icon.color || '#000000';
+      
+      // Set icon placement and styling values
+      document.getElementById('icon-placement').value = container.icon.placement || 'top-left';
+      document.getElementById('icon-offset-top').value = container.icon.offsetTop || 0;
+      document.getElementById('icon-offset-left').value = container.icon.offsetLeft || 0;
+      document.getElementById('icon-offset-right').value = container.icon.offsetRight || 0;
+      document.getElementById('icon-offset-bottom').value = container.icon.offsetBottom || 0;
+      
+      document.getElementById('icon-border-size').value = container.icon.borderSize || 0;
+      document.getElementById('icon-border-radius').value = container.icon.borderRadius || 0;
+      document.getElementById('icon-border-style').value = container.icon.borderStyle || 'solid';
+      document.getElementById('icon-border-color').value = container.icon.borderColor || '#000000';
+      document.getElementById('icon-background-color').value = container.icon.backgroundColor || 'transparent';
     } else {
       document.getElementById('icon-type').value = 'emoji';
       document.getElementById('icon-input').value = container.icon || '';
       document.getElementById('icon-size-slider').value = 30;
       document.getElementById('icon-color-picker').value = '#000000';
+      
+      // Set default values for new fields
+      document.getElementById('icon-placement').value = 'top-left';
+      document.getElementById('icon-offset-top').value = 0;
+      document.getElementById('icon-offset-left').value = 0;
+      document.getElementById('icon-offset-right').value = 0;
+      document.getElementById('icon-offset-bottom').value = 0;
+      
+      document.getElementById('icon-border-size').value = 0;
+      document.getElementById('icon-border-radius').value = 0;
+      document.getElementById('icon-border-style').value = 'solid';
+      document.getElementById('icon-border-color').value = '#000000';
+      document.getElementById('icon-background-color').value = 'transparent';
     }
   
     updateIconSelector();
     updateIconPreview();
+    updateIconPlacementPreview();
+    updateIconStylingPreview();
   
     form.ip.value = container.ip;
     form.url.value = container.url;
@@ -1022,10 +1140,38 @@ let selectedCustomViewContainerId = null; // For styling modal
     const iconValue = document.getElementById('icon-input').value.trim();
     const iconSize = parseInt(document.getElementById('icon-size-slider').value) || 30;
     const iconColor = document.getElementById('icon-color-picker').value || '#000000';
+    
+    // Get icon placement and styling values
+    const iconPlacement = document.getElementById('icon-placement').value;
+    const iconOffsetTop = parseInt(document.getElementById('icon-offset-top').value) || 0;
+    const iconOffsetLeft = parseInt(document.getElementById('icon-offset-left').value) || 0;
+    const iconOffsetRight = parseInt(document.getElementById('icon-offset-right').value) || 0;
+    const iconOffsetBottom = parseInt(document.getElementById('icon-offset-bottom').value) || 0;
+    
+    const iconBorderSize = parseInt(document.getElementById('icon-border-size').value) || 0;
+    const iconBorderRadius = parseInt(document.getElementById('icon-border-radius').value) || 0;
+    const iconBorderStyle = document.getElementById('icon-border-style').value;
+    const iconBorderColor = document.getElementById('icon-border-color').value;
+    const iconBackgroundColor = document.getElementById('icon-background-color').value;
   
     let iconData = null;
     if (iconType !== 'none' && iconValue) {
-      iconData = { type: iconType, value: iconValue, size: iconSize, color: iconColor };
+      iconData = { 
+        type: iconType, 
+        value: iconValue, 
+        size: iconSize, 
+        color: iconColor,
+        placement: iconPlacement,
+        offsetTop: iconOffsetTop,
+        offsetLeft: iconOffsetLeft,
+        offsetRight: iconOffsetRight,
+        offsetBottom: iconOffsetBottom,
+        borderSize: iconBorderSize,
+        borderRadius: iconBorderRadius,
+        borderStyle: iconBorderStyle,
+        borderColor: iconBorderColor,
+        backgroundColor: iconBackgroundColor
+      };
     }
   
     // Collect styling data
@@ -1501,61 +1647,146 @@ let selectedCustomViewContainerId = null; // For styling modal
   }
 
   function renderCustomViewContainer(container) {
-    // Create a simplified container element for Custom View
+    // Create a card-like container element for Custom View
     const containerBox = document.createElement('div');
-    containerBox.className = 'container-box';
+    containerBox.className = 'container-box custom-view-card';
     containerBox.setAttribute('data-container-id', container.id);
     
-    // Apply basic styling for Custom View (no Box View styling)
-    containerBox.style.width = '100%';
-    containerBox.style.display = 'inline-block';
-    containerBox.style.verticalAlign = 'top';
+    // Create card structure
+    const card = document.createElement('div');
+    card.className = 'card';
     
-    const header = document.createElement('div');
-    header.className = 'container-header';
+    // Create card header
+    const cardHeader = document.createElement('div');
+    cardHeader.className = 'card-header';
     
-    const leftSide = document.createElement('div');
-    leftSide.className = 'header-left';
-    const iconHtml = renderIcon(container.icon);
-    leftSide.innerHTML = `${iconHtml} <strong>${container.name}</strong>`;
+    const title = document.createElement('span');
+    title.className = 'title';
+    title.textContent = container.name;
+    cardHeader.appendChild(title);
     
-    // Add category tags if they exist
+    // Create card body
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body with-icon';
+    
+    // Add category tags icon if they exist
     if (container.categories && container.categories.length > 0) {
-      const categoryTags = document.createElement('div');
-      categoryTags.className = 'category-tags';
-      container.categories.forEach(category => {
-        const tag = document.createElement('span');
-        tag.className = 'category-tag';
-        tag.textContent = category;
-        categoryTags.appendChild(tag);
+      const tagsIcon = document.createElement('div');
+      tagsIcon.className = 'tags-icon';
+      tagsIcon.innerHTML = '🏷️';
+      tagsIcon.setAttribute('data-tooltip', container.categories.join(', '));
+      
+      // Add tooltip functionality
+      tagsIcon.addEventListener('mouseenter', function(e) {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tags-tooltip';
+        tooltip.textContent = this.getAttribute('data-tooltip');
+        document.body.appendChild(tooltip);
+        
+        // Position tooltip after it's added to DOM so we can get its dimensions
+        setTimeout(() => {
+          const rect = this.getBoundingClientRect();
+          const tooltipRect = tooltip.getBoundingClientRect();
+          
+          let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+          let top = rect.top - tooltipRect.height - 8;
+          
+          // Ensure tooltip doesn't go off-screen
+          if (left < 10) left = 10;
+          if (left + tooltipRect.width > window.innerWidth - 10) {
+            left = window.innerWidth - tooltipRect.width - 10;
+          }
+          if (top < 10) {
+            // Show below if not enough space above
+            top = rect.bottom + 8;
+          }
+          
+          tooltip.style.left = left + 'px';
+          tooltip.style.top = top + 'px';
+        }, 0);
+        
+        this.tooltip = tooltip;
       });
-      leftSide.appendChild(categoryTags);
+      
+      tagsIcon.addEventListener('mouseleave', function() {
+        if (this.tooltip) {
+          this.tooltip.remove();
+          this.tooltip = null;
+        }
+      });
+      
+      cardBody.appendChild(tagsIcon);
     }
     
+    // Add icon with placement
+    if (container.icon && container.icon.type !== 'none') {
+      const iconHtml = renderIcon(container.icon);
+      const iconElement = document.createElement('div');
+      iconElement.className = 'chart-icon-large';
+      iconElement.innerHTML = iconHtml;
+      
+      // Apply icon placement
+      const placement = container.icon.placement || 'top-left';
+      const offsetTop = container.icon.offsetTop || 0;
+      const offsetLeft = container.icon.offsetLeft || 0;
+      const offsetRight = container.icon.offsetRight || 0;
+      const offsetBottom = container.icon.offsetBottom || 0;
+      
+      // Set positioning based on placement
+      iconElement.style.position = 'absolute';
+      iconElement.style.zIndex = '5';
+      
+      switch(placement) {
+        case 'top-left':
+          iconElement.style.top = offsetTop + 'px';
+          iconElement.style.left = offsetLeft + 'px';
+          // Adjust title position to avoid collision
+          if (offsetLeft < 50) {
+            title.style.marginLeft = (50 - offsetLeft) + 'px';
+          }
+          break;
+        case 'top-right':
+          iconElement.style.top = offsetTop + 'px';
+          iconElement.style.right = offsetRight + 'px';
+          // Ensure hamburger menu appears above icon
+          hamburgerMenu.style.zIndex = '10';
+          break;
+        case 'bottom-left':
+          iconElement.style.bottom = offsetBottom + 'px';
+          iconElement.style.left = offsetLeft + 'px';
+          break;
+        case 'bottom-right':
+          iconElement.style.bottom = offsetBottom + 'px';
+          iconElement.style.right = offsetRight + 'px';
+          break;
+      }
+      
+      card.appendChild(iconElement);
+    }
+    
+    // Add click handler for URL if it exists
     if (container.url) {
-      leftSide.style.cursor = 'pointer';
-      leftSide.onclick = () => window.open(container.url, '_blank');
+      card.style.cursor = 'pointer';
+      card.onclick = () => window.open(container.url, '_blank');
     }
-
-    const rightSide = document.createElement('div');
-    rightSide.className = 'header-right';
     
-    // Create hamburger menu for container actions (simplified for Custom View)
+    // Add hamburger menu for container actions (positioned absolutely)
     const hamburgerMenu = document.createElement('div');
-    hamburgerMenu.className = 'hamburger-menu';
+    hamburgerMenu.className = 'hamburger-menu card-hamburger-menu';
     hamburgerMenu.innerHTML = `
       <div class="hamburger-actions">
         <button onclick="showCreateModal('${container.id}')" title="Add Child Container">➕ Add</button>
         <button onclick="showEditModal('${container.id}')" title="Edit Container">✏️ Edit</button>
+        <button onclick="showContainerStyleModal('${container.id}')" title="Style Container">🎨 Style</button>
       </div>
       <button class="hamburger-btn" onclick="toggleHamburgerMenu(this, event)">☰</button>
     `;
     
-    rightSide.appendChild(hamburgerMenu);
-
-    header.appendChild(leftSide);
-    header.appendChild(rightSide);
-    containerBox.appendChild(header);
+    // Assemble the card
+    card.appendChild(cardHeader);
+    card.appendChild(cardBody);
+    card.appendChild(hamburgerMenu);
+    containerBox.appendChild(card);
 
     // Only render children for containers that can have them
     const hasChildren = (container.children || []).length > 0;
@@ -1574,6 +1805,9 @@ let selectedCustomViewContainerId = null; // For styling modal
       containerBox.appendChild(childBox);
     }
     
+    // Apply container styling AFTER all elements are created and added to the DOM
+    applyContainerStyling(containerBox, container);
+    
     return containerBox;
   }
 
@@ -1587,9 +1821,13 @@ let selectedCustomViewContainerId = null; // For styling modal
     const style = container.styling;
     console.log('Container styling object:', style);
     
+    // For custom view cards, apply styling to the .card element
+    const cardElement = containerElement.querySelector('.card');
+    const targetElement = cardElement || containerElement;
+    
     // Apply header visibility - only hide when NOT in edit mode
     // In edit mode, we need to keep headers visible so users can access menus
-    const containerHeader = containerElement.querySelector('.container-header');
+    const containerHeader = containerElement.querySelector('.card-header') || containerElement.querySelector('.container-header');
     console.log('Found containerHeader element:', !!containerHeader);
     if (containerHeader) {
       console.log('applyContainerStyling - hideHeader:', style.hideHeader, 'isEditMode:', isEditMode, 'will hide:', style.hideHeader && !isEditMode);
@@ -1604,56 +1842,92 @@ let selectedCustomViewContainerId = null; // For styling modal
       console.log('containerHeader element not found!');
     }
     
+    // Clear existing styles first to prevent conflicts
+    targetElement.style.removeProperty('background');
+    targetElement.style.removeProperty('background-color');
+    targetElement.style.removeProperty('background-image');
+    targetElement.style.removeProperty('background-size');
+    targetElement.style.removeProperty('background-position');
+    targetElement.style.removeProperty('opacity');
+    targetElement.style.removeProperty('border-color');
+    targetElement.style.removeProperty('border-width');
+    targetElement.style.removeProperty('border-style');
+    targetElement.style.removeProperty('border-radius');
+    targetElement.style.removeProperty('box-shadow');
+    targetElement.style.removeProperty('padding');
+    targetElement.style.removeProperty('margin');
+    
     // Apply background
     if (style.bgType === 'color' && style.backgroundColor) {
-      containerElement.style.backgroundColor = style.backgroundColor;
+      targetElement.style.setProperty('background-color', style.backgroundColor, 'important');
     } else if (style.bgType === 'gradient' && style.backgroundGradient) {
-      containerElement.style.background = style.backgroundGradient;
+      targetElement.style.setProperty('background', style.backgroundGradient, 'important');
     } else if (style.bgType === 'css' && style.backgroundCSS) {
-      containerElement.style.cssText += style.backgroundCSS;
+      // Parse and apply custom CSS properties
+      const cssRules = style.backgroundCSS.split(';').filter(rule => rule.trim());
+      cssRules.forEach(rule => {
+        const [property, value] = rule.split(':').map(part => part.trim());
+        if (property && value) {
+          targetElement.style.setProperty(property, value, 'important');
+        }
+      });
     }
     
     // Apply background image
     if (style.backgroundImage) {
-      containerElement.style.backgroundImage = `url('${style.backgroundImage}')`;
-      containerElement.style.backgroundSize = 'cover';
-      containerElement.style.backgroundPosition = 'center';
+      targetElement.style.setProperty('background-image', `url('${style.backgroundImage}')`, 'important');
+      targetElement.style.setProperty('background-size', 'cover', 'important');
+      targetElement.style.setProperty('background-position', 'center', 'important');
     }
     
     // Apply background opacity
     if (style.backgroundOpacity && style.backgroundOpacity !== 100) {
-      containerElement.style.opacity = style.backgroundOpacity / 100;
+      targetElement.style.setProperty('opacity', style.backgroundOpacity / 100, 'important');
     }
     
     // Apply border
     if (style.borderColor) {
-      containerElement.style.borderColor = style.borderColor;
+      targetElement.style.setProperty('border-color', style.borderColor, 'important');
     }
     if (style.borderSize) {
-      containerElement.style.borderWidth = style.borderSize + 'px';
+      targetElement.style.setProperty('border-width', style.borderSize + 'px', 'important');
     }
     if (style.borderStyle) {
-      containerElement.style.borderStyle = style.borderStyle;
+      targetElement.style.setProperty('border-style', style.borderStyle, 'important');
     }
     if (style.borderCSS) {
-      containerElement.style.cssText += style.borderCSS;
+      // Parse and apply custom border CSS properties
+      const cssRules = style.borderCSS.split(';').filter(rule => rule.trim());
+      cssRules.forEach(rule => {
+        const [property, value] = rule.split(':').map(part => part.trim());
+        if (property && value) {
+          targetElement.style.setProperty(property, value, 'important');
+        }
+      });
     }
     
     // Apply additional styles
     if (style.borderRadius) {
-      containerElement.style.borderRadius = style.borderRadius + 'px';
+      targetElement.style.setProperty('border-radius', style.borderRadius + 'px', 'important');
     }
     if (style.boxShadow) {
-      containerElement.style.boxShadow = style.boxShadow;
+      targetElement.style.setProperty('box-shadow', style.boxShadow, 'important');
     }
     if (style.padding) {
-      containerElement.style.padding = style.padding + 'px';
+      targetElement.style.setProperty('padding', style.padding + 'px', 'important');
     }
     if (style.margin) {
-      containerElement.style.margin = style.margin + 'px';
+      targetElement.style.setProperty('margin', style.margin + 'px', 'important');
     }
     if (style.customCSS) {
-      containerElement.style.cssText += style.customCSS;
+      // Parse and apply custom CSS properties
+      const cssRules = style.customCSS.split(';').filter(rule => rule.trim());
+      cssRules.forEach(rule => {
+        const [property, value] = rule.split(':').map(part => part.trim());
+        if (property && value) {
+          targetElement.style.setProperty(property, value, 'important');
+        }
+      });
     }
   }
   
@@ -2158,27 +2432,27 @@ let selectedCustomViewContainerId = null; // For styling modal
       
       // Additional fields
       form.customCSS.value = style.customCSS || '';
-      form.borderRadius.value = style.borderRadius || '8';
-      form.boxShadow.value = style.boxShadow || '0 2px 4px rgba(0,0,0,0.1)';
-      form.padding.value = style.padding || '15';
+      form.borderRadius.value = style.borderRadius || '16';
+      form.boxShadow.value = style.boxShadow || '0 4px 10px rgba(0, 0, 0, 0.06)';
+      form.padding.value = style.padding || '11';
       form.margin.value = style.margin || '10';
     } else {
       // Set default values
       form.hideHeader.checked = false;
       form.bgType.value = 'color';
-      form.backgroundColor.value = '#f9f9f9';
+      form.backgroundColor.value = '#ffffff';
       form.backgroundGradient.value = '';
       form.backgroundCSS.value = '';
       form.backgroundImage.value = '';
       form.backgroundOpacity.value = '100';
-      form.borderColor.value = '#e0e0e0';
-      form.borderSize.value = '2';
+      form.borderColor.value = 'transparent';
+      form.borderSize.value = '1';
       form.borderStyle.value = 'solid';
       form.borderCSS.value = '';
       form.customCSS.value = '';
-      form.borderRadius.value = '8';
-      form.boxShadow.value = '0 2px 4px rgba(0,0,0,0.1)';
-      form.padding.value = '15';
+      form.borderRadius.value = '16';
+      form.boxShadow.value = '0 4px 10px rgba(0, 0, 0, 0.06)';
+      form.padding.value = '11';
       form.margin.value = '10';
     }
     
@@ -2622,24 +2896,42 @@ let selectedCustomViewContainerId = null; // For styling modal
     if (!iconData || !iconData.type || !iconData.value) return '';
     const iconSize = iconData.size || 30;
     const iconColor = iconData.color || '#000000';
+    
+    // Build base styling
+    let baseStyle = `width:${iconSize}px;height:${iconSize}px;color:${iconColor};`;
+    
+    // Apply border styling
+    if (iconData.borderSize > 0 && iconData.borderStyle && iconData.borderStyle !== 'none') {
+      baseStyle += `border:${iconData.borderSize}px ${iconData.borderStyle} ${iconData.borderColor || '#000000'};`;
+    }
+    
+    // Apply border radius
+    if (iconData.borderRadius > 0) {
+      baseStyle += `border-radius:${iconData.borderRadius}px;`;
+    }
+    
+    // Apply background color
+    if (iconData.backgroundColor && iconData.backgroundColor !== 'transparent') {
+      baseStyle += `background-color:${iconData.backgroundColor};padding:4px;`;
+    }
   
     switch (iconData.type) {
       case 'emoji':
-        return iconData.value;
+        return `<span style="${baseStyle}font-size:${iconSize}px;display:inline-block;text-align:center;line-height:${iconSize}px;">${iconData.value}</span>`;
       case 'favicon':
-        return `<img src="${getFaviconUrl(iconData.value)}" style="width:${iconSize}px;height:${iconSize}px;" onerror="this.style.display='none'">`;
+        return `<img src="${getFaviconUrl(iconData.value)}" style="${baseStyle}" onerror="this.style.display='none'">`;
       case 'fontawesome':
-        return `<i class="${iconData.value}" style="font-size:${iconSize}px;color:${iconColor};"></i>`;
+        return `<i class="${iconData.value}" style="${baseStyle}font-size:${iconSize}px;display:inline-block;text-align:center;line-height:${iconSize}px;"></i>`;
       case 'simpleicons':
-        return `<img src="https://cdn.simpleicons.org/${iconData.value}" style="width:${iconSize}px;height:${iconSize}px;" onerror="this.style.display='none'">`;
+        return `<img src="https://cdn.simpleicons.org/${iconData.value}" style="${baseStyle}" onerror="this.style.display='none'">`;
       case 'material':
-        return `<i class="mdi mdi-${iconData.value}" style="font-size:${iconSize}px;color:${iconColor};"></i>`;
+        return `<i class="mdi mdi-${iconData.value}" style="${baseStyle}font-size:${iconSize}px;display:inline-block;text-align:center;line-height:${iconSize}px;"></i>`;
       case 'homelab':
-        return `<img src="https://raw.githubusercontent.com/WalkxCode/dashboard-icons/master/png/${iconData.value}.png" style="width:${iconSize}px;height:${iconSize}px;" onerror="this.style.display='none'">`;
+        return `<img src="https://raw.githubusercontent.com/WalkxCode/dashboard-icons/master/png/${iconData.value}.png" style="${baseStyle}" onerror="this.style.display='none'">`;
       case 'generative':
-        return `<img src="https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(iconData.value)}" style="width:${iconSize}px;height:${iconSize}px;">`;
+        return `<img src="https://api.dicebear.com/7.x/identicon/svg?seed=${encodeURIComponent(iconData.value)}" style="${baseStyle}">`;
       case 'url':
-        return `<img src="${iconData.value}" style="width:${iconSize}px;height:${iconSize}px;" onerror="this.style.display='none'">`;
+        return `<img src="${iconData.value}" style="${baseStyle}" onerror="this.style.display='none'">`;
       default:
         return '';
     }
@@ -4134,19 +4426,19 @@ let selectedCustomViewContainerId = null; // For styling modal
     form.querySelector('select[name="role"]').value = container.role;
     form.querySelector('input[name="hideHeader"]').checked = container.styling?.hideHeader || false;
     form.querySelector('select[name="bgType"]').value = container.styling?.bgType || 'color';
-    form.querySelector('input[name="backgroundColor"]').value = container.styling?.backgroundColor || '#f9f9f9';
+    form.querySelector('input[name="backgroundColor"]').value = container.styling?.backgroundColor || '#ffffff';
     form.querySelector('input[name="backgroundGradient"]').value = container.styling?.backgroundGradient || '';
     form.querySelector('textarea[name="backgroundCSS"]').value = container.styling?.backgroundCSS || '';
     form.querySelector('input[name="backgroundImage"]').value = container.styling?.backgroundImage || '';
     form.querySelector('input[name="backgroundOpacity"]').value = container.styling?.backgroundOpacity || 100;
-    form.querySelector('input[name="borderColor"]').value = container.styling?.borderColor || '#e0e0e0';
-    form.querySelector('input[name="borderSize"]').value = container.styling?.borderSize || 2;
+    form.querySelector('input[name="borderColor"]').value = container.styling?.borderColor || 'transparent';
+    form.querySelector('input[name="borderSize"]').value = container.styling?.borderSize || 1;
     form.querySelector('select[name="borderStyle"]').value = container.styling?.borderStyle || 'solid';
     form.querySelector('textarea[name="borderCSS"]').value = container.styling?.borderCSS || '';
     form.querySelector('textarea[name="customCSS"]').value = container.styling?.customCSS || '';
-    form.querySelector('input[name="borderRadius"]').value = container.styling?.borderRadius || 8;
-    form.querySelector('input[name="boxShadow"]').value = container.styling?.boxShadow || '0 2px 4px rgba(0,0,0,0.1)';
-    form.querySelector('input[name="padding"]').value = container.styling?.padding || 15;
+    form.querySelector('input[name="borderRadius"]').value = container.styling?.borderRadius || 16;
+    form.querySelector('input[name="boxShadow"]').value = container.styling?.boxShadow || '0 4px 10px rgba(0, 0, 0, 0.06)';
+    form.querySelector('input[name="padding"]').value = container.styling?.padding || 11;
     form.querySelector('input[name="margin"]').value = container.styling?.margin || 10;
     
     // Update background options visibility
@@ -4381,13 +4673,13 @@ let selectedCustomViewContainerId = null; // For styling modal
         backgroundCSS: '',
         backgroundImage: '',
         backgroundOpacity: 100,
-        borderColor: '#e0e0e0',
+        borderColor: 'transparent',
         borderSize: 1,
         borderStyle: 'solid',
         borderCSS: '',
-        borderRadius: 8,
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        padding: 10,
+        borderRadius: 16,
+        boxShadow: '0 4px 10px rgba(0, 0, 0, 0.06)',
+        padding: 11,
         margin: 5,
         customCSS: ''
       },
@@ -4758,337 +5050,131 @@ let selectedCustomViewContainerId = null; // For styling modal
     }
   }
   
-  // Show widget configuration modal
+  // Show widget configuration modal (static modal)
   async function showWidgetConfigModal(widgetId, currentConfig = {}) {
     try {
       const response = await fetch(`/api/widgets/${widgetId}`);
       if (!response.ok) {
         throw new Error('Widget not found');
       }
-      
       const widget = await response.json();
-      
       // Find the widget container to get current styling
-      const widgetContainer = customViewContainers.find(container =>
-        container.type === 'widget' && container.widgetId === widgetId
-      );
-      
+      const widgetContainer = findWidgetContainerByWidgetId(widgetId);
       // Combine config and styling data
       const combinedConfig = {
         ...currentConfig,
         name: widgetContainer?.name || widget.manifest.name,
         styling: widgetContainer?.styling || {}
       };
-      
-      const modal = createWidgetConfigModal(widget, combinedConfig);
-      document.body.appendChild(modal);
-      
+      // Populate modal fields
+      const modal = document.getElementById('widget-settings-modal');
+      const form = document.getElementById('widget-settings-form');
+      form.reset();
+      form.widgetId.value = widgetId;
+      // General tab: dynamically generate config fields
+      document.getElementById('widget-config-fields').innerHTML = generateConfigFields(widget.manifest.configSchema || {}, combinedConfig);
+      // Style tab: populate style fields
+      form.widgetName.value = combinedConfig.name || widget.manifest.name;
+      form.hideHeader.checked = combinedConfig.styling?.hideHeader || false;
+      form.bgType.value = combinedConfig.styling?.bgType || 'color';
+      form.backgroundColor.value = combinedConfig.styling?.backgroundColor || '#ffffff';
+      form.backgroundGradient.value = combinedConfig.styling?.backgroundGradient || '';
+      form.backgroundCSS.value = combinedConfig.styling?.backgroundCSS || '';
+      form.backgroundOpacity.value = combinedConfig.styling?.backgroundOpacity || 100;
+      document.getElementById('widget-opacity-value').textContent = (combinedConfig.styling?.backgroundOpacity || 100) + '%';
+      form.borderColor.value = combinedConfig.styling?.borderColor || 'transparent';
+      form.borderSize.value = combinedConfig.styling?.borderSize || 1;
+      form.borderStyle.value = combinedConfig.styling?.borderStyle || 'solid';
+      form.borderCSS.value = combinedConfig.styling?.borderCSS || '';
+      form.borderRadius.value = combinedConfig.styling?.borderRadius || 16;
+      form.boxShadow.value = combinedConfig.styling?.boxShadow || '0 4px 10px rgba(0, 0, 0, 0.06)';
+      form.padding.value = combinedConfig.styling?.padding || 11;
+      form.margin.value = combinedConfig.styling?.margin || 5;
+      form.customCSS.value = combinedConfig.styling?.customCSS || '';
+      // Show modal
+      modal.classList.remove('hidden');
       // Set up form submission
-      const form = modalContent.querySelector('#widget-config-form');
       form.onsubmit = (e) => {
         e.preventDefault();
         const configData = collectConfigData(form, widget.manifest.configSchema || {});
         saveWidgetConfig(widgetId, configData);
         closeWidgetConfigModal();
       };
-      
-      // Initialize background options visibility
+      // Set up tab switching
+      switchWidgetTab('general');
+      // Set up background options
       updateWidgetBackgroundOptions();
     } catch (error) {
       console.error('Error loading widget config:', error);
       showReorderFeedback('Failed to load widget configuration', 'error');
     }
   }
-  
-  // Create widget configuration modal with tabs
-  function createWidgetConfigModal(widget, currentConfig) {
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 320px;
-      width: calc(100% - 320px);
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    `;
-    
-    const modalContent = document.createElement('div');
-    modalContent.className = 'modal-content';
-    modalContent.style.cssText = `
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      max-width: 600px;
-      width: 90%;
-      max-height: 80vh;
-      overflow-y: auto;
-    `;
-    
-    modalContent.innerHTML = `
-      <div class="modal-header">
-        <h3>Widget Settings - ${widget.manifest.name}</h3>
-        <button class="close-btn" onclick="closeWidgetConfigModal()">×</button>
-      </div>
-      
-      <form id="widget-config-form">
-        <input type="hidden" name="widgetId" value="${widget.id}" />
-        
-        <!-- Tab Navigation -->
-        <div class="modal-tabs">
-          <button type="button" class="tab-btn active" onclick="switchWidgetTab('general')">General</button>
-          <button type="button" class="tab-btn" onclick="switchWidgetTab('style')">Style</button>
-        </div>
-        
-        <!-- General Tab Content -->
-        <div id="general-tab" class="tab-content active">
-          <div class="style-section">
-            <h4>Widget Configuration</h4>
-            <p>${widget.manifest.description}</p>
-            <div id="widget-config-fields">
-              ${generateConfigFields(widget.manifest.configSchema || {}, currentConfig)}
-            </div>
-          </div>
-        </div>
-        
-        <!-- Style Tab Content -->
-        <div id="style-tab" class="tab-content">
-          <div class="style-section">
-            <h4>Widget Information</h4>
-            <label>Widget Name: <input type="text" name="widgetName" value="${currentConfig.name || widget.manifest.name}" placeholder="Enter widget name" /></label>
-            <label><input type="checkbox" name="hideHeader" ${currentConfig.styling?.hideHeader ? 'checked' : ''} /> Hide widget header</label>
-          </div>
-          
-          <div class="style-section">
-            <h4>Widget Background</h4>
-            <label>Background Type: 
-              <select name="bgType" onchange="updateWidgetBackgroundOptions()">
-                <option value="color" ${currentConfig.styling?.bgType === 'color' ? 'selected' : ''}>Solid Color</option>
-                <option value="gradient" ${currentConfig.styling?.bgType === 'gradient' ? 'selected' : ''}>Gradient</option>
-                <option value="css" ${currentConfig.styling?.bgType === 'css' ? 'selected' : ''}>Custom CSS</option>
-              </select>
-            </label>
-            <div id="widget-bg-color-option">
-              <label>Background Color: <input type="color" name="backgroundColor" value="${currentConfig.styling?.backgroundColor || '#ffffff'}" /></label>
-            </div>
-            <div id="widget-bg-gradient-option" class="hidden">
-              <label>Gradient: <input type="text" name="backgroundGradient" value="${currentConfig.styling?.backgroundGradient || ''}" placeholder="linear-gradient(to right, #ff0000, #00ff00)" /></label>
-            </div>
-            <div id="widget-bg-css-option" class="hidden">
-              <label>Custom CSS: <textarea name="backgroundCSS" placeholder="background: url('image.jpg') center/cover;">${currentConfig.styling?.backgroundCSS || ''}</textarea></label>
-            </div>
-            <label>Background Transparency: 
-              <input type="range" name="backgroundOpacity" min="0" max="100" value="${currentConfig.styling?.backgroundOpacity || 100}" step="5" oninput="updateRangeValue(this)" />
-              <span id="widget-opacity-value">${currentConfig.styling?.backgroundOpacity || 100}%</span>
-            </label>
-          </div>
-          
-          <div class="style-section">
-            <h4>Widget Border</h4>
-            <label>Border Color: <input type="color" name="borderColor" value="${currentConfig.styling?.borderColor || '#e0e0e0'}" /></label>
-            <label>Border Size: <input type="number" name="borderSize" min="0" max="20" value="${currentConfig.styling?.borderSize || 1}" step="1" />px</label>
-            <label>Border Style: 
-              <select name="borderStyle">
-                <option value="solid" ${currentConfig.styling?.borderStyle === 'solid' ? 'selected' : ''}>Solid</option>
-                <option value="dashed" ${currentConfig.styling?.borderStyle === 'dashed' ? 'selected' : ''}>Dashed</option>
-                <option value="dotted" ${currentConfig.styling?.borderStyle === 'dotted' ? 'selected' : ''}>Dotted</option>
-                <option value="double" ${currentConfig.styling?.borderStyle === 'double' ? 'selected' : ''}>Double</option>
-                <option value="groove" ${currentConfig.styling?.borderStyle === 'groove' ? 'selected' : ''}>Groove</option>
-                <option value="ridge" ${currentConfig.styling?.borderStyle === 'ridge' ? 'selected' : ''}>Ridge</option>
-                <option value="inset" ${currentConfig.styling?.borderStyle === 'inset' ? 'selected' : ''}>Inset</option>
-                <option value="outset" ${currentConfig.styling?.borderStyle === 'outset' ? 'selected' : ''}>Outset</option>
-                <option value="none" ${currentConfig.styling?.borderStyle === 'none' ? 'selected' : ''}>None</option>
-              </select>
-            </label>
-            <label>Custom Border CSS: <textarea name="borderCSS" placeholder="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">${currentConfig.styling?.borderCSS || ''}</textarea></label>
-          </div>
-          
-          <div class="style-section">
-            <h4>Additional Styles</h4>
-            <label>Custom CSS: <textarea name="customCSS" placeholder="Add any additional CSS styles here...">${currentConfig.styling?.customCSS || ''}</textarea></label>
-            <label>Border Radius: <input type="number" name="borderRadius" min="0" max="50" value="${currentConfig.styling?.borderRadius || 8}" step="1" />px</label>
-            <label>Box Shadow: <input type="text" name="boxShadow" value="${currentConfig.styling?.boxShadow || '0 2px 4px rgba(0,0,0,0.1)'}" placeholder="0 2px 4px rgba(0,0,0,0.1)" /></label>
-            <label>Padding: <input type="number" name="padding" min="0" max="50" value="${currentConfig.styling?.padding || 10}" step="1" />px</label>
-            <label>Margin: <input type="number" name="margin" min="0" max="50" value="${currentConfig.styling?.margin || 5}" step="1" />px</label>
-          </div>
-        </div>
-        
-        <div class="modal-buttons">
-          <button type="submit">Save Settings</button>
-          <button type="button" onclick="closeWidgetConfigModal()">Cancel</button>
-        </div>
-      </form>
-    `;
-    
-    form.onsubmit = (e) => {
-      e.preventDefault();
-      const config = collectConfigData(form, widget.manifest.configSchema || {});
-      saveWidgetConfig(widget.manifest.id, config);
-      closeWidgetConfigModal();
-    };
-    
-    modalContent.appendChild(form);
-    modal.appendChild(modalContent);
-    
-    // Close modal when clicking outside
-    modal.onclick = (e) => {
-      if (e.target === modal) {
-        closeWidgetConfigModal();
-      }
-    };
-    
-    return modal;
+
+  function closeWidgetConfigModal() {
+    document.getElementById('widget-settings-modal').classList.add('hidden');
   }
-  
-  // Generate configuration fields
-  function generateConfigFields(configSchema, currentConfig) {
-    let fields = '';
-    
-    Object.entries(configSchema).forEach(([key, field]) => {
-      const value = currentConfig[key] !== undefined ? currentConfig[key] : field.default;
-      
-      switch (field.type) {
-        case 'string':
-          fields += `
-            <div class="form-group">
-              <label for="${key}">${field.description || key}:</label>
-              <input type="text" id="${key}" name="${key}" value="${value || ''}" />
-            </div>
-          `;
-          break;
-        case 'number':
-          fields += `
-            <div class="form-group">
-              <label for="${key}">${field.description || key}:</label>
-              <input type="number" id="${key}" name="${key}" value="${value || ''}" />
-            </div>
-          `;
-          break;
-        case 'select':
-          const options = field.options.map(option => 
-            `<option value="${option}" ${value === option ? 'selected' : ''}>${option}</option>`
-          ).join('');
-          fields += `
-            <div class="form-group">
-              <label for="${key}">${field.description || key}:</label>
-              <select id="${key}" name="${key}">${options}</select>
-            </div>
-          `;
-          break;
-        case 'range':
-          fields += `
-            <div class="form-group">
-              <label for="${key}">${field.description || key}:</label>
-              <input type="range" id="${key}" name="${key}" 
-                     min="${field.min}" max="${field.max}" value="${value || field.default}" />
-              <span class="range-value">${value || field.default}</span>
-            </div>
-          `;
-          break;
-        case 'color':
-          fields += `
-            <div class="form-group">
-              <label for="${key}">${field.description || key}:</label>
-              <input type="color" id="${key}" name="${key}" value="${value || field.default}" />
-            </div>
-          `;
-          break;
-        case 'boolean':
-          fields += `
-            <div class="form-group">
-              <label>
-                <input type="checkbox" id="${key}" name="${key}" ${value ? 'checked' : ''} />
-                ${field.description || key}
-              </label>
-            </div>
-          `;
-          break;
-      }
+
+  function switchWidgetTab(tabName) {
+    // Hide all tab contents
+    document.querySelectorAll('#widget-settings-modal .tab-content').forEach(content => {
+      content.classList.remove('active');
     });
-    
-    return fields || '<p>No configuration options available for this widget.</p>';
-  }
-  
-  // Collect configuration data from form
-  function collectConfigData(form, configSchema) {
-    const config = {};
-    
-    Object.entries(configSchema).forEach(([key, field]) => {
-      const element = form.querySelector(`[name="${key}"]`);
-      if (!element) return;
-      
-      switch (field.type) {
-        case 'boolean':
-          config[key] = element.checked;
-          break;
-        case 'number':
-          config[key] = parseFloat(element.value) || field.default;
-          break;
-        case 'range':
-          config[key] = parseInt(element.value) || field.default;
-          break;
-        default:
-          config[key] = element.value || field.default;
-      }
+    // Remove active class from all tab buttons
+    document.querySelectorAll('#widget-settings-modal .tab-btn').forEach(btn => {
+      btn.classList.remove('active');
     });
-    
-    return config;
+    // Show selected tab content
+    const selectedTab = document.getElementById('widget-' + tabName + '-tab');
+    if (selectedTab) {
+      selectedTab.classList.add('active');
+    }
+    // Add active class to selected tab button
+    const selectedBtn = document.querySelector(`#widget-settings-modal .tab-btn[onclick*="${tabName}"]`);
+    if (selectedBtn) {
+      selectedBtn.classList.add('active');
+    }
   }
-  
-    // Save widget configuration and styling
+
+  function updateWidgetBackgroundOptions() {
+    const form = document.getElementById('widget-settings-form');
+    const bgType = form.bgType.value;
+    const colorOption = document.getElementById('widget-bg-color-option');
+    const gradientOption = document.getElementById('widget-bg-gradient-option');
+    const cssOption = document.getElementById('widget-bg-css-option');
+    if (colorOption) colorOption.classList.toggle('hidden', bgType !== 'color');
+    if (gradientOption) gradientOption.classList.toggle('hidden', bgType !== 'gradient');
+    if (cssOption) cssOption.classList.toggle('hidden', bgType !== 'css');
+  }
+
+  // Save widget configuration and styling
   function saveWidgetConfig(widgetId, config) {
     // Find widget container and update config
-    const widgetContainer = customViewContainers.find(container =>
-      container.type === 'widget' && container.widgetId === widgetId
-    );
-    
+    const widgetContainer = findWidgetContainerByWidgetId(widgetId);
     if (widgetContainer) {
       // Update widget configuration
       widgetContainer.config = config;
-      
       // Update widget styling
-      const form = document.getElementById('widget-config-form');
-      if (form) {
-        widgetContainer.name = form.querySelector('input[name="widgetName"]').value;
-        
-        if (!widgetContainer.styling) {
-          widgetContainer.styling = {};
-        }
-        
-        widgetContainer.styling.hideHeader = form.querySelector('input[name="hideHeader"]').checked;
-        widgetContainer.styling.bgType = form.querySelector('select[name="bgType"]').value;
-        widgetContainer.styling.backgroundColor = form.querySelector('input[name="backgroundColor"]').value;
-        widgetContainer.styling.backgroundGradient = form.querySelector('input[name="backgroundGradient"]').value;
-        widgetContainer.styling.backgroundCSS = form.querySelector('textarea[name="backgroundCSS"]').value;
-        widgetContainer.styling.backgroundOpacity = parseInt(form.querySelector('input[name="backgroundOpacity"]').value);
-        widgetContainer.styling.borderColor = form.querySelector('input[name="borderColor"]').value;
-        widgetContainer.styling.borderSize = parseInt(form.querySelector('input[name="borderSize"]').value);
-        widgetContainer.styling.borderStyle = form.querySelector('select[name="borderStyle"]').value;
-        widgetContainer.styling.borderCSS = form.querySelector('textarea[name="borderCSS"]').value;
-        widgetContainer.styling.borderRadius = parseInt(form.querySelector('input[name="borderRadius"]').value);
-        widgetContainer.styling.boxShadow = form.querySelector('input[name="boxShadow"]').value;
-        widgetContainer.styling.padding = parseInt(form.querySelector('input[name="padding"]').value);
-        widgetContainer.styling.margin = parseInt(form.querySelector('input[name="margin"]').value);
-        widgetContainer.styling.customCSS = form.querySelector('textarea[name="customCSS"]').value;
-      }
-      
+      const form = document.getElementById('widget-settings-form');
+      widgetContainer.name = form.widgetName.value;
+      if (!widgetContainer.styling) widgetContainer.styling = {};
+      widgetContainer.styling.hideHeader = form.hideHeader.checked;
+      widgetContainer.styling.bgType = form.bgType.value;
+      widgetContainer.styling.backgroundColor = form.backgroundColor.value;
+      widgetContainer.styling.backgroundGradient = form.backgroundGradient.value;
+      widgetContainer.styling.backgroundCSS = form.backgroundCSS.value;
+      widgetContainer.styling.backgroundOpacity = parseInt(form.backgroundOpacity.value);
+      widgetContainer.styling.borderColor = form.borderColor.value;
+      widgetContainer.styling.borderSize = parseInt(form.borderSize.value);
+      widgetContainer.styling.borderStyle = form.borderStyle.value;
+      widgetContainer.styling.borderCSS = form.borderCSS.value;
+      widgetContainer.styling.borderRadius = parseInt(form.borderRadius.value);
+      widgetContainer.styling.boxShadow = form.boxShadow.value;
+      widgetContainer.styling.padding = parseInt(form.padding.value);
+      widgetContainer.styling.margin = parseInt(form.margin.value);
+      widgetContainer.styling.customCSS = form.customCSS.value;
       saveCustomViewContainersToBackend();
       showReorderFeedback('Widget settings saved! ⚙️', 'success');
-      
-      // Re-render to apply new config and styling
       renderContainers();
-    }
-  }
-  
-  // Close widget configuration modal
-  function closeWidgetConfigModal() {
-    const modal = document.querySelector('.widget-config-modal');
-    if (modal) {
-      modal.remove();
     }
   }
   
@@ -5551,18 +5637,6 @@ let selectedCustomViewContainerId = null; // For styling modal
     }
   }
   
-  // Update widget background options visibility
-  function updateWidgetBackgroundOptions() {
-    const bgType = document.querySelector('select[name="bgType"]').value;
-    const colorOption = document.getElementById('widget-bg-color-option');
-    const gradientOption = document.getElementById('widget-bg-gradient-option');
-    const cssOption = document.getElementById('widget-bg-css-option');
-    
-    if (colorOption) colorOption.classList.toggle('hidden', bgType !== 'color');
-    if (gradientOption) gradientOption.classList.toggle('hidden', bgType !== 'gradient');
-    if (cssOption) cssOption.classList.toggle('hidden', bgType !== 'css');
-  }
-  
   // Test widget drag functionality
   function testWidgetDrag() {
     console.log('Testing widget drag functionality...');
@@ -5639,6 +5713,87 @@ let selectedCustomViewContainerId = null; // For styling modal
       renderContainers();
       showReorderFeedback(`Cleaned up ${cleanedCount} duplicate widgets! 🧹`, 'success');
     }
+  }
+  
+  // Generate widget config fields dynamically from schema
+  function generateConfigFields(schema, config) {
+    let html = '';
+    for (const [key, field] of Object.entries(schema)) {
+      const value = config[key] !== undefined ? config[key] : field.default;
+      html += '<div class="form-group">';
+      html += `<label>${field.description || key}`;
+      if (field.type === 'string') {
+        html += `<input type="text" name="${key}" value="${value || ''}" />`;
+      } else if (field.type === 'select') {
+        html += `<select name="${key}">`;
+        for (const opt of field.options || []) {
+          html += `<option value="${opt}"${value === opt ? ' selected' : ''}>${opt}</option>`;
+        }
+        html += '</select>';
+      } else if (field.type === 'boolean') {
+        html += `<input type="checkbox" name="${key}"${value ? ' checked' : ''} />`;
+      } else if (field.type === 'color') {
+        html += `<input type="color" name="${key}" value="${value || '#000000'}" />`;
+      } else if (field.type === 'range') {
+        html += `<input type="range" name="${key}" min="${field.min || 0}" max="${field.max || 100}" value="${value}" /> <span>${value}</span>`;
+      } else {
+        html += `<input type="text" name="${key}" value="${value || ''}" />`;
+      }
+      html += '</label></div>';
+    }
+    return html;
+  }
+  
+  // Add this after DOMContentLoaded or window.onload
+  window.addEventListener('DOMContentLoaded', () => {
+    // Widget modal tab switching
+    const widgetModal = document.getElementById('widget-settings-modal');
+    if (widgetModal) {
+      widgetModal.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const tabName = this.textContent.trim().toLowerCase();
+          // Remove active from all
+          widgetModal.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          widgetModal.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
+          // Add active to clicked
+          this.classList.add('active');
+          if (tabName === 'general') {
+            document.getElementById('widget-general-tab').classList.add('active');
+          } else if (tabName === 'style') {
+            document.getElementById('widget-style-tab').classList.add('active');
+          }
+        });
+      });
+    }
+  });
+  
+  // Collect config data from the widget config form
+  function collectConfigData(form, schema) {
+    const config = {};
+    for (const [key, field] of Object.entries(schema)) {
+      if (field.type === 'boolean') {
+        config[key] = form.elements[key]?.checked || false;
+      } else if (field.type === 'range' || field.type === 'number') {
+        config[key] = form.elements[key] ? Number(form.elements[key].value) : field.default;
+      } else {
+        config[key] = form.elements[key] ? form.elements[key].value : field.default;
+      }
+    }
+    return config;
+  }
+  
+  // Helper to find a widget container by widgetId in all containers' children
+  function findWidgetContainerByWidgetId(widgetId) {
+    for (const container of customViewContainers) {
+      if (container.children) {
+        for (const child of container.children) {
+          if (child.type === 'widget' && child.widgetId === widgetId) {
+            return child;
+          }
+        }
+      }
+    }
+    return null;
   }
   
   

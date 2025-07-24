@@ -501,6 +501,82 @@ Create a `widget.css` file for your widget styles:
 }
 ```
 
+## Widget Styling Best Practices
+
+Homelab-Visualiser provides a rich set of built-in style configuration options for widgets, including:
+- Widget Name
+- Hide widget header
+- Background Type (color, gradient, CSS)
+- Background Color
+- Background Transparency
+- Border Color, Size, Style, and Custom CSS
+- Additional Styles (Custom CSS, Border Radius, Box Shadow, Padding, Margin)
+
+These are automatically available in the widget configuration modal and are passed to your widget as part of the `config.styling` object.
+
+### How to Use Styling in Your Widget
+
+In your widget's `render` function, you can apply these styles to your root element:
+
+```js
+function render(config) {
+  const el = document.createElement('div');
+  // Apply background
+  if (config.styling) {
+    if (config.styling.bgType === 'color') {
+      el.style.background = config.styling.backgroundColor || '#fff';
+    } else if (config.styling.bgType === 'gradient') {
+      el.style.background = config.styling.backgroundGradient || '';
+    } else if (config.styling.bgType === 'css') {
+      el.style.cssText += config.styling.backgroundCSS || '';
+    }
+    // Transparency
+    if (config.styling.backgroundOpacity !== undefined) {
+      el.style.opacity = config.styling.backgroundOpacity / 100;
+    }
+    // Border
+    el.style.borderColor = config.styling.borderColor || '#e0e0e0';
+    el.style.borderWidth = (config.styling.borderSize || 1) + 'px';
+    el.style.borderStyle = config.styling.borderStyle || 'solid';
+    if (config.styling.borderCSS) {
+      el.style.cssText += config.styling.borderCSS;
+    }
+    // Additional styles
+    el.style.borderRadius = (config.styling.borderRadius || 8) + 'px';
+    el.style.boxShadow = config.styling.boxShadow || '0 2px 4px rgba(0,0,0,0.1)';
+    el.style.padding = (config.styling.padding || 10) + 'px';
+    el.style.margin = (config.styling.margin || 5) + 'px';
+    if (config.styling.customCSS) {
+      el.style.cssText += config.styling.customCSS;
+    }
+  }
+  // ... rest of your widget rendering ...
+  return el;
+}
+```
+
+**Tip:** Always check for the presence of `config.styling` and provide sensible defaults.
+
+### Example: Applying All Styles
+
+```js
+(function() {
+  function render(config) {
+    const el = document.createElement('div');
+    // Apply all built-in styles
+    if (config.styling) {
+      // ... (see above for details) ...
+    }
+    // Widget content here
+    el.textContent = config.name || 'Widget';
+    return el;
+  }
+  window.render = render;
+})();
+```
+
+By following this pattern, your widget will automatically respect all user-configured style options from the dashboard UI.
+
 ## Security Considerations
 
 ### Sandboxing
@@ -913,12 +989,3 @@ console.log(data.result); // "Hello, Alice!"
 - Handle errors gracefully in plugin code.
 - Avoid long-running or blocking operations in plugins.
 
-## Conclusion
-
-The Homelab-Visualiser Widget System provides a powerful and secure way to extend the functionality of your homelab dashboard. By following this guide, you can create custom widgets that integrate seamlessly with the existing system while maintaining security and performance.
-
-For additional support or questions, please refer to the project documentation or create an issue in the project repository.
-
----
-
-**Happy Widget Development! 🚀** 
