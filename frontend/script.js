@@ -816,10 +816,16 @@ let selectedCustomViewContainerId = null; // For styling modal
     const iconPreview = document.getElementById('icon-preview');
     const iconSizeSlider = document.getElementById('icon-size-slider');
     const iconColorPicker = document.getElementById('icon-color-picker');
+    const iconSizeValue = document.getElementById('icon-size-value');
   
     const value = iconInput.value.trim();
     const iconSize = iconSizeSlider ? iconSizeSlider.value : 30;
     const iconColor = iconColorPicker ? iconColorPicker.value : '#000000';
+    
+    // Update the size display value
+    if (iconSizeValue) {
+      iconSizeValue.textContent = iconSize + 'px';
+    }
   
     iconPreview.innerHTML = '';
     if (!value) return;
@@ -860,42 +866,24 @@ let selectedCustomViewContainerId = null; // For styling modal
     const iconPreview = document.getElementById('icon-preview');
     if (!iconPreview) return;
     
-    const placement = document.getElementById('icon-placement').value;
+    // Since we removed the icon-placement dropdown, just apply the offset values
     const offsetTop = document.getElementById('icon-offset-top').value;
     const offsetLeft = document.getElementById('icon-offset-left').value;
     const offsetRight = document.getElementById('icon-offset-right').value;
     const offsetBottom = document.getElementById('icon-offset-bottom').value;
     
-    // Reset positioning
+    // Apply offset values to the preview
     iconPreview.style.position = 'relative';
-    iconPreview.style.top = '';
-    iconPreview.style.left = '';
-    iconPreview.style.right = '';
-    iconPreview.style.bottom = '';
-    
-    // Apply placement and offsets
-    switch(placement) {
-      case 'top-left':
-        iconPreview.style.position = 'absolute';
-        iconPreview.style.top = offsetTop + 'px';
-        iconPreview.style.left = offsetLeft + 'px';
-        break;
-      case 'top-right':
-        iconPreview.style.position = 'absolute';
-        iconPreview.style.top = offsetTop + 'px';
-        iconPreview.style.right = offsetRight + 'px';
-        break;
-      case 'bottom-left':
-        iconPreview.style.position = 'absolute';
-        iconPreview.style.bottom = offsetBottom + 'px';
-        iconPreview.style.left = offsetLeft + 'px';
-        break;
-      case 'bottom-right':
-        iconPreview.style.position = 'absolute';
-        iconPreview.style.bottom = offsetBottom + 'px';
-        iconPreview.style.right = offsetRight + 'px';
-        break;
-    }
+    iconPreview.style.top = offsetTop + 'px';
+    iconPreview.style.left = offsetLeft + 'px';
+    iconPreview.style.right = offsetRight + 'px';
+    iconPreview.style.bottom = offsetBottom + 'px';
+  }
+  
+  function clearTransparentFlag() {
+    const backgroundColorInput = document.getElementById('icon-background-color');
+    backgroundColorInput.removeAttribute('data-transparent');
+    updateIconStylingPreview();
   }
   
   function updateIconStylingPreview() {
@@ -906,7 +894,19 @@ let selectedCustomViewContainerId = null; // For styling modal
     const borderRadius = document.getElementById('icon-border-radius').value;
     const borderStyle = document.getElementById('icon-border-style').value;
     const borderColor = document.getElementById('icon-border-color').value;
-    const backgroundColor = document.getElementById('icon-background-color').value;
+    const backgroundColorInput = document.getElementById('icon-background-color');
+    const backgroundColor = backgroundColorInput.value;
+    const isTransparent = backgroundColorInput.getAttribute('data-transparent') === 'true';
+    
+    // Update background color display value
+    const backgroundColorValue = document.getElementById('icon-background-color-value');
+    if (backgroundColorValue) {
+      if (isTransparent) {
+        backgroundColorValue.textContent = 'No Background';
+      } else {
+        backgroundColorValue.textContent = backgroundColor;
+      }
+    }
     
     // Apply border styling
     if (borderSize > 0 && borderStyle !== 'none') {
@@ -919,13 +919,35 @@ let selectedCustomViewContainerId = null; // For styling modal
     iconPreview.style.borderRadius = borderRadius + 'px';
     
     // Apply background color
-    if (backgroundColor !== 'transparent') {
-      iconPreview.style.backgroundColor = backgroundColor;
-      iconPreview.style.padding = '4px';
-    } else {
+    if (isTransparent) {
       iconPreview.style.backgroundColor = 'transparent';
       iconPreview.style.padding = '0';
+    } else {
+      iconPreview.style.backgroundColor = backgroundColor;
+      iconPreview.style.padding = '4px';
     }
+  }
+  
+  function setIconBackgroundTransparent() {
+    const backgroundColorInput = document.getElementById('icon-background-color');
+    const backgroundColorValue = document.getElementById('icon-background-color-value');
+    
+    // Store a flag that this should be transparent
+    backgroundColorInput.setAttribute('data-transparent', 'true');
+    backgroundColorValue.textContent = 'No Background';
+    
+    updateIconStylingPreview();
+  }
+  
+  function updateIconColorPreview() {
+    const iconColorPicker = document.getElementById('icon-color-picker');
+    const iconColorValue = document.getElementById('icon-color-value');
+    
+    if (iconColorPicker && iconColorValue) {
+      iconColorValue.textContent = iconColorPicker.value;
+    }
+    
+    updateIconPreview();
   }
   
   function getFaviconUrl(url) {
@@ -968,7 +990,8 @@ let selectedCustomViewContainerId = null; // For styling modal
     document.getElementById('icon-border-radius').value = 0;
     document.getElementById('icon-border-style').value = 'solid';
     document.getElementById('icon-border-color').value = '#000000';
-    document.getElementById('icon-background-color').value = 'transparent';
+    document.getElementById('icon-background-color').value = '#ffffff';
+    document.getElementById('icon-background-color').setAttribute('data-transparent', 'true');
     
     // Update background options
     updateBackgroundOptions();
@@ -998,36 +1021,60 @@ let selectedCustomViewContainerId = null; // For styling modal
       document.getElementById('icon-size-slider').value = container.icon.size || 30;
       document.getElementById('icon-color-picker').value = container.icon.color || '#000000';
       
-      // Set icon placement and styling values
-      document.getElementById('icon-placement').value = container.icon.placement || 'top-left';
+      // Set icon styling values (icon placement is now handled in Shape & Size section)
+      // document.getElementById('icon-placement').value = container.icon.placement || 'top-left';
+      
+      // Get icon offset values (no longer need to add hardcoded offset)
+
       document.getElementById('icon-offset-top').value = container.icon.offsetTop || 0;
       document.getElementById('icon-offset-left').value = container.icon.offsetLeft || 0;
       document.getElementById('icon-offset-right').value = container.icon.offsetRight || 0;
       document.getElementById('icon-offset-bottom').value = container.icon.offsetBottom || 0;
       
+      // Set title margin values (use stored values or defaults)
+      document.getElementById('title-margin-top').value = container.icon.titleMarginTop || 60;
+      document.getElementById('title-margin-bottom').value = container.icon.titleMarginBottom || 60;
+      document.getElementById('title-margin-left').value = container.icon.titleMarginLeft || 80;
+      document.getElementById('title-margin-right').value = container.icon.titleMarginRight || 80;
+      
       document.getElementById('icon-border-size').value = container.icon.borderSize || 0;
       document.getElementById('icon-border-radius').value = container.icon.borderRadius || 0;
       document.getElementById('icon-border-style').value = container.icon.borderStyle || 'solid';
       document.getElementById('icon-border-color').value = container.icon.borderColor || '#000000';
-      document.getElementById('icon-background-color').value = container.icon.backgroundColor || 'transparent';
+      const backgroundColorInput = document.getElementById('icon-background-color');
+      if (container.icon.backgroundColor === 'transparent') {
+        backgroundColorInput.value = '#ffffff';
+        backgroundColorInput.setAttribute('data-transparent', 'true');
+      } else {
+        backgroundColorInput.value = container.icon.backgroundColor || '#ffffff';
+        backgroundColorInput.removeAttribute('data-transparent');
+      }
     } else {
       document.getElementById('icon-type').value = 'emoji';
       document.getElementById('icon-input').value = container.icon || '';
       document.getElementById('icon-size-slider').value = 30;
       document.getElementById('icon-color-picker').value = '#000000';
       
-      // Set default values for new fields
-      document.getElementById('icon-placement').value = 'top-left';
+      // Set default values for new fields (icon placement is now handled in Shape & Size section)
+      // document.getElementById('icon-placement').value = 'top-left';
       document.getElementById('icon-offset-top').value = 0;
       document.getElementById('icon-offset-left').value = 0;
       document.getElementById('icon-offset-right').value = 0;
       document.getElementById('icon-offset-bottom').value = 0;
       
+      // Set default title margin values
+      document.getElementById('title-margin-top').value = 60;
+      document.getElementById('title-margin-bottom').value = 60;
+      document.getElementById('title-margin-left').value = 80;
+      document.getElementById('title-margin-right').value = 80;
+      
       document.getElementById('icon-border-size').value = 0;
       document.getElementById('icon-border-radius').value = 0;
       document.getElementById('icon-border-style').value = 'solid';
       document.getElementById('icon-border-color').value = '#000000';
-      document.getElementById('icon-background-color').value = 'transparent';
+      const backgroundColorInput = document.getElementById('icon-background-color');
+      backgroundColorInput.value = '#ffffff';
+      backgroundColorInput.setAttribute('data-transparent', 'true');
     }
   
     updateIconSelector();
@@ -1092,6 +1139,13 @@ let selectedCustomViewContainerId = null; // For styling modal
       form.titleBackgroundImage.value = style.titleBackgroundImage || '';
       form.titleBackgroundOpacity.value = style.titleBackgroundOpacity || '100';
       
+      // Shape fields
+      form.shape.value = style.shape || 'rectangle';
+      form.horizontalSize.value = style.horizontalSize || 280;
+      form.verticalSize.value = style.verticalSize || 200;
+      form.squareSize.value = style.squareSize || 280;
+      form.iconPlacement.value = style.iconPlacement || 'top-left';
+      
       // Additional fields
       form.customCSS.value = style.customCSS || '';
       form.borderRadius.value = style.borderRadius || '0';
@@ -1103,9 +1157,18 @@ let selectedCustomViewContainerId = null; // For styling modal
       updateBackgroundOptions();
       updateTitleBackgroundOptions();
       
+      // Update shape options visibility (preserve saved values)
+      updateShapeOptions(true);
+      
       // Update range value displays
       document.getElementById('opacity-value').textContent = form.backgroundOpacity.value + '%';
       document.getElementById('title-opacity-value').textContent = form.titleBackgroundOpacity.value + '%';
+      
+      // Set hide header checkbox
+      const hideHeaderCheckbox = document.getElementById('hide-header');
+      if (hideHeaderCheckbox) {
+        hideHeaderCheckbox.checked = style.hideHeader || false;
+      }
     } else {
       // Set default values for new containers
       form.bgType.value = 'color';
@@ -1121,8 +1184,16 @@ let selectedCustomViewContainerId = null; // For styling modal
       form.padding.value = '10';
       form.margin.value = '10';
       
+      // Set default shape values
+      form.shape.value = 'rectangle';
+      form.horizontalSize.value = 280;
+      form.verticalSize.value = 200;
+      form.squareSize.value = 280;
+      form.iconPlacement.value = 'top-left';
+      
       updateBackgroundOptions();
       updateTitleBackgroundOptions();
+      updateShapeOptions(true);
     }
     
     document.getElementById('container-modal').classList.remove('hidden');
@@ -1141,18 +1212,28 @@ let selectedCustomViewContainerId = null; // For styling modal
     const iconSize = parseInt(document.getElementById('icon-size-slider').value) || 30;
     const iconColor = document.getElementById('icon-color-picker').value || '#000000';
     
-    // Get icon placement and styling values
-    const iconPlacement = document.getElementById('icon-placement').value;
+    // Get icon styling values (icon placement is now handled in Shape & Size section)
+    // const iconPlacement = document.getElementById('icon-placement').value;
+    
+    // Get icon offset values (no longer need to subtract hardcoded offset)
     const iconOffsetTop = parseInt(document.getElementById('icon-offset-top').value) || 0;
     const iconOffsetLeft = parseInt(document.getElementById('icon-offset-left').value) || 0;
     const iconOffsetRight = parseInt(document.getElementById('icon-offset-right').value) || 0;
     const iconOffsetBottom = parseInt(document.getElementById('icon-offset-bottom').value) || 0;
     
+    // Get title margin values
+    const titleMarginTop = parseInt(document.getElementById('title-margin-top').value) || 60;
+    const titleMarginBottom = parseInt(document.getElementById('title-margin-bottom').value) || 60;
+    const titleMarginLeft = parseInt(document.getElementById('title-margin-left').value) || 80;
+    const titleMarginRight = parseInt(document.getElementById('title-margin-right').value) || 80;
+    
     const iconBorderSize = parseInt(document.getElementById('icon-border-size').value) || 0;
     const iconBorderRadius = parseInt(document.getElementById('icon-border-radius').value) || 0;
     const iconBorderStyle = document.getElementById('icon-border-style').value;
     const iconBorderColor = document.getElementById('icon-border-color').value;
-    const iconBackgroundColor = document.getElementById('icon-background-color').value;
+    const iconBackgroundColorInput = document.getElementById('icon-background-color');
+    const isTransparent = iconBackgroundColorInput.getAttribute('data-transparent') === 'true';
+    const iconBackgroundColor = isTransparent ? 'transparent' : iconBackgroundColorInput.value;
   
     let iconData = null;
     if (iconType !== 'none' && iconValue) {
@@ -1161,11 +1242,15 @@ let selectedCustomViewContainerId = null; // For styling modal
         value: iconValue, 
         size: iconSize, 
         color: iconColor,
-        placement: iconPlacement,
+        // placement: iconPlacement, // Removed - now handled in Shape & Size section
         offsetTop: iconOffsetTop,
         offsetLeft: iconOffsetLeft,
         offsetRight: iconOffsetRight,
         offsetBottom: iconOffsetBottom,
+        titleMarginTop: titleMarginTop,
+        titleMarginBottom: titleMarginBottom,
+        titleMarginLeft: titleMarginLeft,
+        titleMarginRight: titleMarginRight,
         borderSize: iconBorderSize,
         borderRadius: iconBorderRadius,
         borderStyle: iconBorderStyle,
@@ -1196,7 +1281,13 @@ let selectedCustomViewContainerId = null; // For styling modal
       borderRadius: form.borderRadius?.value,
       boxShadow: form.boxShadow?.value,
       padding: form.padding?.value,
-      margin: form.margin?.value
+      margin: form.margin?.value,
+      shape: form.shape?.value,
+      horizontalSize: parseInt(form.horizontalSize?.value),
+      verticalSize: parseInt(form.verticalSize?.value),
+      squareSize: parseInt(form.squareSize?.value),
+      iconPlacement: form.iconPlacement?.value,
+      hideHeader: document.getElementById('hide-header')?.checked || false
     };
   
     // Collect agent configuration if applicable
@@ -1320,6 +1411,10 @@ let selectedCustomViewContainerId = null; // For styling modal
     }
     
     const term = document.getElementById('search').value.toLowerCase();
+
+    // Add view-specific class to container-root (same logic as switchView)
+    root.classList.remove('boxview', 'treeview', 'customview');
+    root.classList.add(currentView + 'view');
 
     if (currentView === 'box') {
       renderBoxView(root, term);
@@ -1652,6 +1747,23 @@ let selectedCustomViewContainerId = null; // For styling modal
     containerBox.className = 'container-box custom-view-card';
     containerBox.setAttribute('data-container-id', container.id);
     
+    // Apply shape-based sizing
+    const shape = container.styling?.shape || 'rectangle';
+    const iconPlacement = container.styling?.iconPlacement || 'top-left';
+    
+    if (shape === 'square') {
+      const size = container.styling?.squareSize || 280;
+      containerBox.style.width = size + 'px';
+      containerBox.style.height = size + 'px';
+      containerBox.classList.add('square-shape');
+    } else {
+      const horizontalSize = container.styling?.horizontalSize || 280;
+      const verticalSize = container.styling?.verticalSize || 200;
+      containerBox.style.width = horizontalSize + 'px';
+      containerBox.style.height = verticalSize + 'px';
+      containerBox.classList.add('rectangle-shape');
+    }
+    
     // Create card structure
     const card = document.createElement('div');
     card.className = 'card';
@@ -1660,16 +1772,17 @@ let selectedCustomViewContainerId = null; // For styling modal
     const cardHeader = document.createElement('div');
     cardHeader.className = 'card-header';
     
+    // Hide header if hideHeader is set to true
+    if (container.styling && container.styling.hideHeader) {
+      cardHeader.style.display = 'none';
+    }
+    
     const title = document.createElement('span');
     title.className = 'title';
     title.textContent = container.name;
     cardHeader.appendChild(title);
     
-    // Create card body
-    const cardBody = document.createElement('div');
-    cardBody.className = 'card-body with-icon';
-    
-    // Add category tags icon if they exist
+    // Add category tags icon inline with title if they exist
     if (container.categories && container.categories.length > 0) {
       const tagsIcon = document.createElement('div');
       tagsIcon.className = 'tags-icon';
@@ -1715,8 +1828,12 @@ let selectedCustomViewContainerId = null; // For styling modal
         }
       });
       
-      cardBody.appendChild(tagsIcon);
+      cardHeader.appendChild(tagsIcon);
     }
+    
+    // Create card body (empty now since tags icon is in header)
+    const cardBody = document.createElement('div');
+    cardBody.className = 'card-body with-icon';
     
     // Add icon with placement
     if (container.icon && container.icon.type !== 'none') {
@@ -1725,40 +1842,118 @@ let selectedCustomViewContainerId = null; // For styling modal
       iconElement.className = 'chart-icon-large';
       iconElement.innerHTML = iconHtml;
       
-      // Apply icon placement
-      const placement = container.icon.placement || 'top-left';
+      // Apply icon placement based on shape and placement setting
+      const placement = iconPlacement;
+      const iconSize = container.icon.size || 30;
       const offsetTop = container.icon.offsetTop || 0;
       const offsetLeft = container.icon.offsetLeft || 0;
       const offsetRight = container.icon.offsetRight || 0;
       const offsetBottom = container.icon.offsetBottom || 0;
       
+
+      
+      // Get configurable title margin values
+      const titleMarginTop = container.icon.titleMarginTop || 60;
+      const titleMarginBottom = container.icon.titleMarginBottom || 60;
+      const titleMarginLeft = container.icon.titleMarginLeft || 80;
+      const titleMarginRight = container.icon.titleMarginRight || 80;
+      
       // Set positioning based on placement
       iconElement.style.position = 'absolute';
       iconElement.style.zIndex = '5';
       
-      switch(placement) {
-        case 'top-left':
-          iconElement.style.top = offsetTop + 'px';
-          iconElement.style.left = offsetLeft + 'px';
-          // Adjust title position to avoid collision
-          if (offsetLeft < 50) {
-            title.style.marginLeft = (50 - offsetLeft) + 'px';
-          }
-          break;
-        case 'top-right':
-          iconElement.style.top = offsetTop + 'px';
-          iconElement.style.right = offsetRight + 'px';
-          // Ensure hamburger menu appears above icon
-          hamburgerMenu.style.zIndex = '10';
-          break;
-        case 'bottom-left':
-          iconElement.style.bottom = offsetBottom + 'px';
-          iconElement.style.left = offsetLeft + 'px';
-          break;
-        case 'bottom-right':
-          iconElement.style.bottom = offsetBottom + 'px';
-          iconElement.style.right = offsetRight + 'px';
-          break;
+      if (shape === 'square') {
+        // Square shape icon placement
+        switch(placement) {
+          case 'top':
+            iconElement.style.top = offsetTop + 'px';
+            iconElement.style.left = '50%';
+            iconElement.style.transform = 'translateX(-50%)';
+            // Center title below icon
+            title.style.textAlign = 'center';
+            title.style.marginTop = titleMarginTop + 'px';
+            break;
+          case 'bottom':
+            iconElement.style.bottom = offsetBottom + 'px';
+            iconElement.style.left = '50%';
+            iconElement.style.transform = 'translateX(-50%)';
+            // Center title above icon
+            title.style.textAlign = 'center';
+            title.style.marginBottom = titleMarginBottom + 'px';
+            break;
+          case 'left':
+            iconElement.style.top = '50%';
+            iconElement.style.left = offsetLeft + 'px';
+            iconElement.style.transform = 'translateY(-50%)';
+            // Position title to the right of icon
+            title.style.marginLeft = titleMarginLeft + 'px';
+            break;
+          case 'right':
+            iconElement.style.top = '50%';
+            iconElement.style.right = offsetRight + 'px';
+            iconElement.style.transform = 'translateY(-50%)';
+            // Position title to the left of icon
+            title.style.textAlign = 'right';
+            title.style.marginRight = titleMarginRight + 'px';
+            break;
+        }
+      } else {
+        // Rectangle shape icon placement
+        switch(placement) {
+          case 'top-left':
+            iconElement.style.top = offsetTop + 'px';
+            iconElement.style.left = offsetLeft + 'px';
+            // Adjust title position to avoid collision
+            if (offsetLeft < 50) {
+              title.style.marginLeft = (50 - offsetLeft) + 'px';
+            }
+            break;
+          case 'top-right':
+            iconElement.style.top = offsetTop + 'px';
+            iconElement.style.right = offsetRight + 'px';
+            // Ensure hamburger menu appears above icon
+            hamburgerMenu.style.zIndex = '10';
+            break;
+          case 'bottom-left':
+            iconElement.style.bottom = offsetBottom + 'px';
+            iconElement.style.left = offsetLeft + 'px';
+            break;
+          case 'bottom-right':
+            iconElement.style.bottom = offsetBottom + 'px';
+            iconElement.style.right = offsetRight + 'px';
+            break;
+          case 'top':
+            iconElement.style.top = offsetTop + 'px';
+            iconElement.style.left = '50%';
+            iconElement.style.transform = 'translateX(-50%)';
+            // Center title below icon
+            title.style.textAlign = 'center';
+            title.style.marginTop = titleMarginTop + 'px';
+            break;
+          case 'bottom':
+            iconElement.style.bottom = offsetBottom + 'px';
+            iconElement.style.left = '50%';
+            iconElement.style.transform = 'translateX(-50%)';
+            // Center title above icon
+            title.style.textAlign = 'center';
+            title.style.marginBottom = titleMarginBottom + 'px';
+            break;
+          case 'left':
+            iconElement.style.top = '50%';
+            iconElement.style.left = offsetLeft + 'px';
+            iconElement.style.transform = 'translateY(-50%)';
+            // Position title to the right of icon
+            title.style.marginLeft = titleMarginLeft + 'px';
+            break;
+          case 'right':
+            iconElement.style.top = '50%';
+            iconElement.style.right = offsetRight + 'px';
+            iconElement.style.transform = 'translateY(-50%)';
+            // Position title to the left of icon
+            title.style.textAlign = 'right';
+            title.style.marginRight = titleMarginRight + 'px';
+            break;
+        }
       }
       
       card.appendChild(iconElement);
@@ -1770,22 +1965,62 @@ let selectedCustomViewContainerId = null; // For styling modal
       card.onclick = () => window.open(container.url, '_blank');
     }
     
-    // Add hamburger menu for container actions (positioned absolutely)
-    const hamburgerMenu = document.createElement('div');
-    hamburgerMenu.className = 'hamburger-menu card-hamburger-menu';
-    hamburgerMenu.innerHTML = `
-      <div class="hamburger-actions">
-        <button onclick="showCreateModal('${container.id}')" title="Add Child Container">➕ Add</button>
-        <button onclick="showEditModal('${container.id}')" title="Edit Container">✏️ Edit</button>
-        <button onclick="showContainerStyleModal('${container.id}')" title="Style Container">🎨 Style</button>
-      </div>
-      <button class="hamburger-btn" onclick="toggleHamburgerMenu(this, event)">☰</button>
+    // Add context menu for container actions (hidden by default)
+    const contextMenu = document.createElement('div');
+    contextMenu.className = 'context-menu';
+    contextMenu.innerHTML = `
+      <button onclick="showCreateModal('${container.id}')" title="Add Child Container">➕ Add</button>
+      <button onclick="showEditModal('${container.id}')" title="Edit Container">✏️ Edit</button>
+      <button onclick="showContainerStyleModal('${container.id}')" title="Style Container">🎨 Style</button>
     `;
+    
+    // Add right-click event listener to the container box
+    containerBox.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Close any other open context menus
+      document.querySelectorAll('.context-menu').forEach(menu => {
+        menu.classList.remove('show');
+      });
+      
+      // Position and show the context menu
+      // Use pageX/pageY (document-relative coordinates) so menu stays with element when scrolling
+      let left = e.pageX;
+      let top = e.pageY;
+      
+      // Ensure menu doesn't go off-screen
+      const menuWidth = 150; // min-width from CSS
+      const menuHeight = 120; // approximate height
+      
+      // Check right edge
+      if (left + menuWidth > window.innerWidth + window.scrollX) {
+        left = window.innerWidth + window.scrollX - menuWidth - 10;
+      }
+      
+      // Check bottom edge
+      if (top + menuHeight > window.innerHeight + window.scrollY) {
+        top = window.innerHeight + window.scrollY - menuHeight - 10;
+      }
+      
+      // Ensure menu doesn't go off left/top edges
+      if (left < window.scrollX) {
+        left = window.scrollX + 10;
+      }
+      
+      if (top < window.scrollY) {
+        top = window.scrollY + 10;
+      }
+      
+      contextMenu.style.left = left + 'px';
+      contextMenu.style.top = top + 'px';
+      contextMenu.classList.add('show');
+    });
     
     // Assemble the card
     card.appendChild(cardHeader);
     card.appendChild(cardBody);
-    card.appendChild(hamburgerMenu);
+    document.body.appendChild(contextMenu);
     containerBox.appendChild(card);
 
     // Only render children for containers that can have them
@@ -2622,32 +2857,37 @@ let selectedCustomViewContainerId = null; // For styling modal
     // Check if this is a root-level container (depth 0)
     const isRootLevel = depth === 0;
     
-    // Apply width logic based on hierarchy and type
-    if (isRootLevel) {
-      // Root level containers get 100% width
-      const widthSlider = document.getElementById('width-slider');
-      if (widthSlider) {
-        box.style.width = widthSlider.value + '%';
-        box.style.display = 'inline-block';
-        box.style.verticalAlign = 'top';
+    // Apply shape-based sizing if specified
+    if (container.styling?.shape) {
+      const shape = container.styling.shape;
+      const iconPlacement = container.styling.iconPlacement || 'top-left';
+      
+      if (shape === 'square') {
+        const size = container.styling.squareSize || 280;
+        box.style.width = size + 'px';
+        box.style.height = size + 'px';
+        box.classList.add('square-shape');
+      } else {
+        const horizontalSize = container.styling.horizontalSize || 280;
+        const verticalSize = container.styling.verticalSize || 200;
+        box.style.width = horizontalSize + 'px';
+        box.style.height = verticalSize + 'px';
+        box.classList.add('rectangle-shape');
       }
     } else {
-      // Child containers only get width if they are specific types
-      if (['Application', 'LXC Container', 'Docker Container'].includes(container.type)) {
-        // Only apply fixed dimensions if they don't have children
-        if (!hasChildren) {
-          box.style.height = '76px';
-          box.style.width = '290px';
-          box.style.minHeight = '76px';
-          box.style.minWidth = '290px';
-          box.style.maxHeight = '76px';
-          box.style.maxWidth = '290px';
+      // Apply width logic based on hierarchy and type (original logic)
+      if (isRootLevel) {
+        // Root level containers get 100% width
+        const widthSlider = document.getElementById('width-slider');
+        if (widthSlider) {
+          box.style.width = widthSlider.value + '%';
           box.style.display = 'inline-block';
           box.style.verticalAlign = 'top';
         }
-        // If they have children, don't apply any fixed dimensions
+      } else {
+        // Child containers - let them size naturally based on content and styling
+        // No hardcoded dimensions applied
       }
-      // For other child container types, don't set any width (let them size naturally)
     }
 
     const header = document.createElement('div');
@@ -2682,9 +2922,6 @@ let selectedCustomViewContainerId = null; // For styling modal
     const rightSide = document.createElement('div');
     rightSide.className = 'header-right';
     
-    // Check if this is a fixed-size container (only show for containers that can have children)
-    const isFixedSize = ['Application', 'LXC Container', 'Docker Container'].includes(container.type) && !hasChildren;
-    
     // Create hamburger menu for container actions
     const hamburgerMenu = document.createElement('div');
     hamburgerMenu.className = 'hamburger-menu';
@@ -2692,19 +2929,73 @@ let selectedCustomViewContainerId = null; // For styling modal
       <div class="hamburger-actions">
         <button onclick="showCreateModal('${container.id}')" title="Add Child Container">➕ Add</button>
         <button onclick="showEditModal('${container.id}')" title="Edit Container">✏️ Edit</button>
-        ${!isFixedSize ? `<button onclick="toggleChildren(this)" title="Toggle Children">🔽 Toggle</button>` : ''}
+        ${hasChildren ? `<button onclick="toggleChildren(this)" title="Toggle Children">🔽 Toggle</button>` : ''}
       </div>
       <button class="hamburger-btn" onclick="toggleHamburgerMenu(this, event)">☰</button>
     `;
     
     rightSide.appendChild(hamburgerMenu);
+    
+    // Add context menu for container actions (hidden by default)
+    const contextMenu = document.createElement('div');
+    contextMenu.className = 'context-menu';
+    contextMenu.innerHTML = `
+      <button onclick="showCreateModal('${container.id}')" title="Add Child Container">➕ Add</button>
+      <button onclick="showEditModal('${container.id}')" title="Edit Container">✏️ Edit</button>
+      ${hasChildren ? `<button onclick="toggleChildren(this)" title="Toggle Children">🔽 Toggle</button>` : ''}
+    `;
+    
+    // Add right-click event listener to the container box
+    box.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Close any other open context menus
+      document.querySelectorAll('.context-menu').forEach(menu => {
+        menu.classList.remove('show');
+      });
+      
+      // Position and show the context menu
+      // Use pageX/pageY (document-relative coordinates) so menu stays with element when scrolling
+      let left = e.pageX;
+      let top = e.pageY;
+      
+      // Ensure menu doesn't go off-screen
+      const menuWidth = 150; // min-width from CSS
+      const menuHeight = 120; // approximate height
+      
+      // Check right edge
+      if (left + menuWidth > window.innerWidth + window.scrollX) {
+        left = window.innerWidth + window.scrollX - menuWidth - 10;
+      }
+      
+      // Check bottom edge
+      if (top + menuHeight > window.innerHeight + window.scrollY) {
+        top = window.innerHeight + window.scrollY - menuHeight - 10;
+      }
+      
+      // Ensure menu doesn't go off left/top edges
+      if (left < window.scrollX) {
+        left = window.scrollX + 10;
+      }
+      
+      if (top < window.scrollY) {
+        top = window.scrollY + 10;
+      }
+      
+      contextMenu.style.left = left + 'px';
+      contextMenu.style.top = top + 'px';
+      contextMenu.classList.add('show');
+    });
+    
+    document.body.appendChild(contextMenu);
 
     header.appendChild(leftSide);
     header.appendChild(rightSide);
     box.appendChild(header);
 
-    // Only render children for non-fixed-size containers
-    if (!isFixedSize) {
+    // Render children if they exist
+    if (hasChildren) {
       const childBox = document.createElement('div');
       childBox.className = 'container-children';
 
@@ -2913,6 +3204,9 @@ let selectedCustomViewContainerId = null; // For styling modal
     // Apply background color
     if (iconData.backgroundColor && iconData.backgroundColor !== 'transparent') {
       baseStyle += `background-color:${iconData.backgroundColor};padding:4px;`;
+    } else {
+      // No background - ensure transparent
+      baseStyle += `background-color:transparent;padding:0;`;
     }
   
     switch (iconData.type) {
@@ -2983,6 +3277,11 @@ let selectedCustomViewContainerId = null; // For styling modal
     document.getElementById('box-view-btn').classList.toggle('active', view === 'box');
     document.getElementById('tree-view-btn').classList.toggle('active', view === 'tree');
     document.getElementById('custom-view-btn').classList.toggle('active', view === 'custom');
+    
+    // Add view-specific class to container-root
+    const containerRoot = document.getElementById('container-root');
+    containerRoot.classList.remove('boxview', 'treeview', 'customview');
+    containerRoot.classList.add(view + 'view');
     
     // Show/hide custom view toolbar
     const customToolbar = document.getElementById('custom-view-toolbar');
@@ -3430,7 +3729,7 @@ let selectedCustomViewContainerId = null; // For styling modal
     }
   }
   
-  // Close hamburger menus when clicking outside
+  // Close hamburger menus and context menus when clicking outside
   document.addEventListener('click', function(event) {
     // Close container hamburger menus
     if (!event.target.closest('.hamburger-menu')) {
@@ -3447,6 +3746,13 @@ let selectedCustomViewContainerId = null; // For styling modal
     // Close column hamburger menus
     if (!event.target.closest('.column-hamburger-menu')) {
       document.querySelectorAll('.column-hamburger-menu').forEach(menu => {
+        menu.classList.remove('show');
+      });
+    }
+    
+    // Close context menus
+    if (!event.target.closest('.context-menu')) {
+      document.querySelectorAll('.context-menu').forEach(menu => {
         menu.classList.remove('show');
       });
     }
@@ -3653,6 +3959,13 @@ let selectedCustomViewContainerId = null; // For styling modal
     container.styling.boxShadow = form.querySelector('input[name="boxShadow"]').value;
     container.styling.padding = parseInt(form.querySelector('input[name="padding"]').value);
     container.styling.margin = parseInt(form.querySelector('input[name="margin"]').value);
+    
+    // Save shape fields
+    container.styling.shape = form.querySelector('select[name="shape"]').value;
+    container.styling.horizontalSize = parseInt(form.querySelector('input[name="horizontalSize"]').value);
+    container.styling.verticalSize = parseInt(form.querySelector('input[name="verticalSize"]').value);
+    container.styling.squareSize = parseInt(form.querySelector('input[name="squareSize"]').value);
+    container.styling.iconPlacement = form.querySelector('select[name="iconPlacement"]').value;
     
     // Save to backend
     saveCustomViewContainersToBackend()
@@ -4440,6 +4753,16 @@ let selectedCustomViewContainerId = null; // For styling modal
     form.querySelector('input[name="boxShadow"]').value = container.styling?.boxShadow || '0 4px 10px rgba(0, 0, 0, 0.06)';
     form.querySelector('input[name="padding"]').value = container.styling?.padding || 11;
     form.querySelector('input[name="margin"]').value = container.styling?.margin || 10;
+    
+    // Populate shape fields
+    form.querySelector('select[name="shape"]').value = container.styling?.shape || 'rectangle';
+    form.querySelector('input[name="horizontalSize"]').value = container.styling?.horizontalSize || 280;
+    form.querySelector('input[name="verticalSize"]').value = container.styling?.verticalSize || 200;
+    form.querySelector('input[name="squareSize"]').value = container.styling?.squareSize || 280;
+    form.querySelector('select[name="iconPlacement"]').value = container.styling?.iconPlacement || 'top-left';
+    
+    // Update shape options visibility (preserve saved values)
+    updateShapeOptions(true);
     
     // Update background options visibility
     updateContainerBackgroundOptions();
@@ -5794,6 +6117,119 @@ let selectedCustomViewContainerId = null; // For styling modal
       }
     }
     return null;
+  }
+  
+  // Update shape options based on selected shape
+  function updateShapeOptions(preserveValues = false) {
+    const shape = document.querySelector('select[name="shape"]').value;
+    const rectangleOptions = document.getElementById('rectangle-size-options');
+    const squareOptions = document.getElementById('square-size-options');
+    const iconPlacementSelect = document.querySelector('select[name="iconPlacement"]');
+    
+    if (shape === 'square') {
+      rectangleOptions.classList.add('hidden');
+      squareOptions.classList.remove('hidden');
+      
+      if (!preserveValues) {
+        // Sync square size with current horizontal/vertical values
+        const horizontalSize = document.querySelector('input[name="horizontalSize"]').value;
+        const verticalSize = document.querySelector('input[name="verticalSize"]').value;
+        const squareSize = document.querySelector('input[name="squareSize"]');
+        
+        // Use the larger of the two dimensions for square
+        const maxSize = Math.max(parseInt(horizontalSize), parseInt(verticalSize));
+        squareSize.value = maxSize;
+      }
+      
+      // Update icon placement options for square
+      const currentIconPlacement = iconPlacementSelect.value;
+      iconPlacementSelect.innerHTML = `
+        <option value="top">Top (Centered)</option>
+        <option value="bottom">Bottom (Centered)</option>
+        <option value="left">Left</option>
+        <option value="right">Right</option>
+      `;
+      
+      // Restore the selected value if it's valid for square
+      if (['top', 'bottom', 'left', 'right'].includes(currentIconPlacement)) {
+        iconPlacementSelect.value = currentIconPlacement;
+      } else {
+        iconPlacementSelect.value = 'top'; // Default for square
+      }
+    } else {
+      rectangleOptions.classList.remove('hidden');
+      squareOptions.classList.add('hidden');
+      
+      if (!preserveValues) {
+        // Sync horizontal/vertical with square size
+        const squareSize = document.querySelector('input[name="squareSize"]').value;
+        const horizontalSize = document.querySelector('input[name="horizontalSize"]');
+        const verticalSize = document.querySelector('input[name="verticalSize"]');
+        
+        // Use square size for both dimensions
+        horizontalSize.value = squareSize;
+        verticalSize.value = squareSize;
+      }
+      
+      // Update icon placement options for rectangle
+      const currentIconPlacement = iconPlacementSelect.value;
+      iconPlacementSelect.innerHTML = `
+        <option value="top-left">Top Left</option>
+        <option value="top-right">Top Right</option>
+        <option value="bottom-left">Bottom Left</option>
+        <option value="bottom-right">Bottom Right</option>
+        <option value="top">Top (Centered)</option>
+        <option value="bottom">Bottom (Centered)</option>
+        <option value="left">Left</option>
+        <option value="right">Right</option>
+      `;
+      
+      // Restore the selected value if it's valid for rectangle
+      if (['top-left', 'top-right', 'bottom-left', 'bottom-right', 'top', 'bottom', 'left', 'right'].includes(currentIconPlacement)) {
+        iconPlacementSelect.value = currentIconPlacement;
+      } else {
+        iconPlacementSelect.value = 'top-left'; // Default for rectangle
+      }
+    }
+  }
+
+  // Update icon placement options based on shape
+  function updateIconPlacementOptions() {
+    const shape = document.querySelector('select[name="shape"]').value;
+    const iconPlacement = document.querySelector('select[name="iconPlacement"]').value;
+    
+    // This function can be used for additional validation or UI updates
+    // when icon placement changes
+  }
+
+  // Sync square size with horizontal/vertical inputs
+  function syncSquareSize() {
+    const squareSizeInput = document.querySelector('input[name="squareSize"]');
+    const horizontalSizeInput = document.querySelector('input[name="horizontalSize"]');
+    const verticalSizeInput = document.querySelector('input[name="verticalSize"]');
+    
+    if (squareSizeInput && horizontalSizeInput && verticalSizeInput) {
+      const squareSize = parseInt(squareSizeInput.value);
+      horizontalSizeInput.value = squareSize;
+      verticalSizeInput.value = squareSize;
+    }
+  }
+
+  // Sync horizontal/vertical inputs with square size
+  function syncHorizontalVerticalSize() {
+    const horizontalSizeInput = document.querySelector('input[name="horizontalSize"]');
+    const verticalSizeInput = document.querySelector('input[name="verticalSize"]');
+    const squareSizeInput = document.querySelector('input[name="squareSize"]');
+    
+    if (horizontalSizeInput && verticalSizeInput && squareSizeInput) {
+      const horizontalSize = parseInt(horizontalSizeInput.value);
+      const verticalSize = parseInt(verticalSizeInput.value);
+      
+      // If both are the same, update square size
+      if (horizontalSize === verticalSize) {
+        squareSizeInput.value = horizontalSize;
+      }
+    }
   }
   
   

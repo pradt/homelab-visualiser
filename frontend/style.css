@@ -60,6 +60,54 @@ body {
     cursor: pointer;
   }
   
+  /* Icon placement row styling */
+  .icon-placement-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .icon-placement-row label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 0;
+  }
+  
+  .icon-placement-row input[type="number"] {
+    width: 60px;
+  }
+  
+  .icon-placement-row select {
+    width: 120px;
+  }
+  
+  /* Icon border row styling */
+  .icon-border-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .icon-border-row label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 0;
+  }
+  
+  .icon-border-row input[type="number"] {
+    width: 60px;
+  }
+  
+  .icon-border-row select {
+    width: 100px;
+  }
+  
   .icon-color-control span {
     font-size: 14px;
     font-family: monospace;
@@ -102,120 +150,41 @@ body {
     max-width: calc(100% - 20px); /* Ensure it doesn't exceed parent width */
   }
   
-  /* Fixed-size containers for Application, LXC Container, and Docker Container types */
-  /* Only apply when they have the specific fixed dimensions */
-  .container-box[style*="width: 290px"] {
-    display: inline-block;
-    vertical-align: top;
-    overflow: hidden;
-    word-wrap: break-word;
-    white-space: normal;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: all 0.2s ease;
-    box-sizing: border-box;
-  }
-  
-  .container-box[style*="width: 290px"]:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    transform: translateY(-1px);
-  }
-  
-  .container-box[style*="width: 290px"] .container-header {
-    padding: 8px;
-    min-height: 0;
-    overflow: hidden;
-    width: 100%;
-    box-sizing: border-box;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .container-box[style*="width: 290px"] .header-left {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-  }
-  
-  .container-box[style*="width: 290px"] .header-left strong {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: block;
-    width: 100%;
-    min-width: 0;
-    font-size: 14px;
-  }
-  
-  /* When hamburger menu is active, reduce the space for header-left */
-  .container-box[style*="width: 290px"].hamburger-active .header-left {
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .container-box[style*="width: 290px"].hamburger-active .header-left strong {
-    max-width: none; /* Remove max-width constraint, let ellipsis handle it */
-  }
-  
-  .container-box[style*="width: 290px"] .header-right {
-    flex-shrink: 0;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-  }
-  
-  /* When hamburger menu is active, give more space to header-right */
-  .container-box[style*="width: 290px"].hamburger-active .header-right {
-    flex-shrink: 0;
-  }
-  
-  .container-box[style*="width: 290px"] .hamburger-menu {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-  }
-  
-  /* When hamburger menu is active, it should expand to fill the header-right */
-  .container-box[style*="width: 290px"].hamburger-active .hamburger-menu {
-    flex-shrink: 0;
-  }
-  
-  /* Make hamburger actions smaller to fit within the container */
-  .container-box[style*="width: 290px"] .hamburger-actions {
-    gap: 2px;
-    margin-right: 4px;
-    position: absolute;
-    right: 100%;
-    top: 50%;
-    transform: translateY(-50%) translateX(20px);
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 4px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    z-index: 10;
-  }
-  
-  .container-box[style*="width: 290px"] .hamburger-menu.show .hamburger-actions {
-    transform: translateY(-50%) translateX(0);
-  }
-  
-  .container-box[style*="width: 290px"] .container-children {
-    display: none;
-  }
-  
-  /* Style for child containers that don't have fixed dimensions */
-  .container-box:not([style*="width: 290px"]) {
+  /* Box View specific container styles */
+  .boxview .container-box {
     min-width: 200px;
     max-width: none;
     min-height: auto;
     max-height: none;
   }
   
+  /* Tree View specific container styles */
+  .treeview .container-box {
+    min-width: 200px;
+    max-width: none;
+    min-height: auto;
+    max-height: none;
+  }
+  
+  /* Custom View specific container styles */
+
+  
   /* Ensure root-level containers can be inline-block for proper layout */
-  #container-root > .container-box {
+  .boxview #container-root > .container-box {
+    display: inline-block;
+    vertical-align: top;
+    width: calc(100% - 20px); /* Account for margins */
+    max-width: calc(100% - 20px);
+  }
+  
+  .treeview #container-root > .container-box {
+    display: inline-block;
+    vertical-align: top;
+    width: calc(100% - 20px); /* Account for margins */
+    max-width: calc(100% - 20px);
+  }
+  
+  .customview #container-root > .container-box {
     display: inline-block;
     vertical-align: top;
     width: calc(100% - 20px); /* Account for margins */
@@ -223,7 +192,21 @@ body {
   }
   
   /* Ensure child containers are properly contained */
-  .container-children .container-box {
+  .boxview .container-children .container-box {
+    display: block;
+    width: calc(100% - 20px); /* Account for margins */
+    max-width: calc(100% - 20px);
+    margin: 5px 0;
+  }
+  
+  .treeview .container-children .container-box {
+    display: block;
+    width: calc(100% - 20px); /* Account for margins */
+    max-width: calc(100% - 20px);
+    margin: 5px 0;
+  }
+  
+  .customview .container-children .container-box {
     display: block;
     width: calc(100% - 20px); /* Account for margins */
     max-width: calc(100% - 20px);
@@ -231,14 +214,26 @@ body {
   }
   
   /* Ensure nested containers don't overflow their parents */
-  .container-box .container-box {
+  .boxview .container-box .container-box {
+    max-width: calc(100% - 20px); /* Account for margins */
+    width: calc(100% - 20px);
+    box-sizing: border-box;
+  }
+  
+  .treeview .container-box .container-box {
+    max-width: calc(100% - 20px); /* Account for margins */
+    width: calc(100% - 20px);
+    box-sizing: border-box;
+  }
+  
+  .customview .container-box .container-box {
     max-width: calc(100% - 20px); /* Account for margins */
     width: calc(100% - 20px);
     box-sizing: border-box;
   }
   
   /* Prevent horizontal overflow in container hierarchy */
-  .container-children {
+  .boxview .container-children {
     margin-top: 10px;
     padding-left: 20px;
     width: calc(100% - 20px); /* Account for padding-left */
@@ -248,7 +243,27 @@ body {
     overflow-x: hidden;
   }
   
-  .container-header {
+  .treeview .container-children {
+    margin-top: 10px;
+    padding-left: 20px;
+    width: calc(100% - 20px); /* Account for padding-left */
+    box-sizing: border-box;
+    overflow: hidden;
+    max-width: calc(100% - 20px);
+    overflow-x: hidden;
+  }
+  
+  .customview .container-children {
+    margin-top: 10px;
+    padding-left: 20px;
+    width: calc(100% - 20px); /* Account for padding-left */
+    box-sizing: border-box;
+    overflow: hidden;
+    max-width: calc(100% - 20px);
+    overflow-x: hidden;
+  }
+  
+  .boxview .container-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -256,7 +271,23 @@ body {
     min-height: 0;
   }
   
-  .header-left {
+  .treeview .container-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    min-height: 0;
+  }
+  
+  .customview .container-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    min-height: 0;
+  }
+  
+  .boxview .header-left {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -265,7 +296,25 @@ body {
     overflow: hidden;
   }
   
-  .header-left strong {
+  .treeview .header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  .customview .header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  
+  .boxview .header-left strong {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -274,7 +323,25 @@ body {
     min-width: 0;
   }
   
-  .header-right {
+  .treeview .header-left strong {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  
+  .customview .header-left strong {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  
+  .boxview .header-right {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -282,14 +349,44 @@ body {
     min-width: 0;
   }
   
-  .hamburger-menu {
+  .treeview .header-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    min-width: 0;
+  }
+  
+  .customview .header-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    min-width: 0;
+  }
+  
+  .boxview .hamburger-menu {
     position: relative;
     display: flex;
     align-items: center;
     flex-shrink: 0;
   }
   
-  .hamburger-btn {
+  .treeview .hamburger-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  
+  .customview .hamburger-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  
+  .boxview .hamburger-btn {
     background: none;
     border: none;
     cursor: pointer;
@@ -299,17 +396,72 @@ body {
     transition: background-color 0.2s;
     z-index: 1;
     flex-shrink: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s, background-color 0.2s;
   }
   
-  .container-box:hover .hamburger-btn {
+  .treeview .hamburger-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    z-index: 1;
+    flex-shrink: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s, background-color 0.2s;
+  }
+  
+  .customview .hamburger-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    z-index: 1;
+    flex-shrink: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s, background-color 0.2s;
+  }
+  
+  .boxview .container-box:hover .hamburger-btn {
     background-color: rgba(0,0,0,0.1);
+    opacity: 1;
+    visibility: visible;
   }
   
-  .hamburger-btn:hover {
+  .treeview .container-box:hover .hamburger-btn {
+    background-color: rgba(0,0,0,0.1);
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .customview .container-box:hover .hamburger-btn {
+    background-color: rgba(0,0,0,0.1);
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  .boxview .hamburger-btn:hover {
     background-color: rgba(0,0,0,0.2);
   }
   
-  .hamburger-actions {
+  .treeview .hamburger-btn:hover {
+    background-color: rgba(0,0,0,0.2);
+  }
+  
+  .customview .hamburger-btn:hover {
+    background-color: rgba(0,0,0,0.2);
+  }
+  
+  .boxview .hamburger-actions {
     display: flex;
     align-items: center;
     gap: 4px;
@@ -330,7 +482,61 @@ body {
     z-index: 10;
   }
   
-  .hamburger-menu.show .hamburger-actions {
+  .treeview .hamburger-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(20px);
+    transition: all 0.3s ease;
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%) translateX(20px);
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 10;
+  }
+  
+  .customview .hamburger-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 8px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(20px);
+    transition: all 0.3s ease;
+    position: absolute;
+    right: 100%;
+    top: 50%;
+    transform: translateY(-50%) translateX(20px);
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 10;
+  }
+  
+  .boxview .hamburger-menu.show .hamburger-actions {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(0);
+  }
+  
+  .treeview .hamburger-menu.show .hamburger-actions {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(0);
+  }
+  
+  .customview .hamburger-menu.show .hamburger-actions {
     opacity: 1;
     visibility: visible;
     transform: translateY(-50%) translateX(0);
@@ -782,20 +988,7 @@ body {
     content: "";
   }
   
-  .container-box[style*="width: 290px"] .hamburger-menu.show .hamburger-actions {
-    transform: translateY(-50%) translateX(0);
-  }
-  
-  .container-box[style*="width: 290px"] .hamburger-actions button {
-    background: none;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 12px;
-    padding: 2px 6px;
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
+
   
   /* Agent Configuration Styles */
   .help-text {
@@ -1558,8 +1751,6 @@ body {
 /* Ensure container boxes in row layouts don't interfere with flex */
 .container.container-row .category-containers .container-box {
   flex: 0 0 auto !important;
-  width: 250px !important;
-  max-width: 250px !important;
   display: block !important;
   margin: 0 !important;
 }
@@ -2042,6 +2233,16 @@ body {
     border-bottom: 1px solid #ddd;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border-radius: 8px 8px 0 0;
+  }
+  
+  /* Hide category headers by default */
+  .category-header {
+    display: none;
+  }
+  
+  /* Show category headers only in edit mode */
+  .edit-mode-active .category-header {
+    display: flex;
   }
   
   .category-title {
@@ -2868,7 +3069,6 @@ body {
     display: inline-block;
     vertical-align: top;
     margin: 10px;
-    width: 280px;
   }
   
   .custom-view-card .card {
@@ -2907,11 +3107,7 @@ body {
     /* User has set padding, don't override */
   }
   
-  .custom-view-card .card:hover {
-    /* Only apply default hover effects if user hasn't set custom box-shadow */
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
-  }
+
   
   /* Override hover effects when user has custom styling */
   .custom-view-card .card[style*="box-shadow"]:hover {
@@ -2919,10 +3115,17 @@ body {
     transform: translateY(-2px);
   }
   
+  .custom-view-card .card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
   .custom-view-card .card-header .title {
     color: #1a202c;
     font-weight: 600;
     font-size: 18px;
+    flex: 1;
   }
   
   .custom-view-card .card-body.with-icon {
@@ -2937,6 +3140,7 @@ body {
     font-size: 16px;
     opacity: 0.7;
     transition: opacity 0.2s ease;
+    flex-shrink: 0;
   }
   
   .custom-view-card .tags-icon:hover {
@@ -3105,5 +3309,100 @@ body {
   .custom-view-card .container-children .custom-view-card .card {
     width: 100%;
     max-width: none;
+  }
+  
+  /* Shape-based layout styles */
+  .custom-view-card[style*="height"] {
+    display: inline-block;
+    vertical-align: top;
+    margin: 10px;
+    box-sizing: border-box;
+  }
+  
+  /* Square shape specific styles */
+  .custom-view-card.square-shape .card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    position: relative;
+  }
+  
+  .custom-view-card.square-shape .card-header {
+    position: relative;
+    z-index: 6;
+  }
+  
+  .custom-view-card.square-shape .card-header .title {
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+  }
+  
+  /* Rectangle shape specific styles */
+  .custom-view-card.rectangle-shape .card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+  }
+  
+  .custom-view-card.rectangle-shape .card-header {
+    position: relative;
+    z-index: 6;
+  }
+  
+  /* Icon positioning adjustments for different shapes */
+  .custom-view-card .chart-icon-large {
+    position: absolute;
+    z-index: 5;
+  }
+  
+  /* Ensure hamburger menu stays on top */
+  .custom-view-card .card-hamburger-menu {
+    z-index: 10;
+  }
+  
+  /* Context Menu Styles */
+  .context-menu {
+    position: absolute;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 5px 0;
+    z-index: 1000;
+    display: none;
+    min-width: 150px;
+  }
+  
+  .context-menu.show {
+    display: block;
+  }
+  
+  .context-menu button {
+    display: block;
+    width: 100%;
+    padding: 8px 15px;
+    border: none;
+    background: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 14px;
+    color: #333;
+    transition: background-color 0.2s;
+  }
+  
+  .context-menu button:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .context-menu button:first-child {
+    border-radius: 4px 4px 0 0;
+  }
+  
+  .context-menu button:last-child {
+    border-radius: 0 0 4px 4px;
   }
   

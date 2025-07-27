@@ -161,7 +161,7 @@
           <label>Icon Size: 
             <div class="icon-size-control">
               <span id="icon-size-value">30px</span>
-              <input type="range" id="icon-size-slider" min="12" max="60" value="30" step="2" oninput="updateIconSizePreview()" />
+              <input type="range" id="icon-size-slider" min="12" max="60" value="30" step="2" oninput="updateIconPreview()" />
             </div>
           </label>
           <label>Icon Color: 
@@ -170,39 +170,47 @@
               <span id="icon-color-value">#000000</span>
             </div>
           </label>
-          <label>Icon Placement: 
-            <select id="icon-placement" onchange="updateIconPlacementPreview()">
-              <option value="top-left">Top Left</option>
-              <option value="top-right">Top Right</option>
-              <option value="bottom-left">Bottom Left</option>
-              <option value="bottom-right">Bottom Right</option>
-            </select>
-          </label>
-          <label>Icon Offset Top: <input type="number" id="icon-offset-top" value="0" min="-50" max="50" step="1" onchange="updateIconPlacementPreview()" />px</label>
-          <label>Icon Offset Left: <input type="number" id="icon-offset-left" value="0" min="-50" max="50" step="1" onchange="updateIconPlacementPreview()" />px</label>
-          <label>Icon Offset Right: <input type="number" id="icon-offset-right" value="0" min="-50" max="50" step="1" onchange="updateIconPlacementPreview()" />px</label>
-          <label>Icon Offset Bottom: <input type="number" id="icon-offset-bottom" value="0" min="-50" max="50" step="1" onchange="updateIconPlacementPreview()" />px</label>
-        </div>
+          <label>Icon Background Color: 
+            <div class="icon-color-control">
+              <input type="color" id="icon-background-color" value="#ffffff" onchange="clearTransparentFlag()" />
+              <span id="icon-background-color-value">No Background</span>
+              <button type="button" onclick="setIconBackgroundTransparent()" style="margin-left: 8px; padding: 2px 6px; font-size: 12px;">No Background</button>
+            </div>
+                    </label>
+          <div class="icon-placement-row">
+            <label>Top: <input type="number" id="icon-offset-top" value="0" min="-100" max="100" step="5" onchange="updateIconPlacementPreview()" />px</label>
+            <label>Left: <input type="number" id="icon-offset-left" value="0" min="-100" max="100" step="5" onchange="updateIconPlacementPreview()" />px</label>
+            <label>Right: <input type="number" id="icon-offset-right" value="0" min="-100" max="100" step="5" onchange="updateIconPlacementPreview()" />px</label>
+            <label>Bottom: <input type="number" id="icon-offset-bottom" value="0" min="-100" max="100" step="5" onchange="updateIconPlacementPreview()" />px</label>
+          </div>
+          <div class="icon-placement-row">
+            <label>Title Margin Top: <input type="number" id="title-margin-top" value="60" min="0" max="200" step="5" onchange="updateIconPlacementPreview()" />px</label>
+            <label>Title Margin Bottom: <input type="number" id="title-margin-bottom" value="60" min="0" max="200" step="5" onchange="updateIconPlacementPreview()" />px</label>
+            <label>Title Margin Left: <input type="number" id="title-margin-left" value="80" min="0" max="200" step="5" onchange="updateIconPlacementPreview()" />px</label>
+            <label>Title Margin Right: <input type="number" id="title-margin-right" value="80" min="0" max="200" step="5" onchange="updateIconPlacementPreview()" />px</label>
+          </div>
+          </div>
         
         <div class="style-section">
           <h4>Icon Specific Styling</h4>
-          <label>Icon Border Size: <input type="number" id="icon-border-size" value="0" min="0" max="10" step="1" onchange="updateIconStylingPreview()" />px</label>
-          <label>Icon Border Radius: <input type="number" id="icon-border-radius" value="0" min="0" max="20" step="1" onchange="updateIconStylingPreview()" />px</label>
-          <label>Icon Border Style: 
-            <select id="icon-border-style" onchange="updateIconStylingPreview()">
-              <option value="solid">Solid</option>
-              <option value="dashed">Dashed</option>
-              <option value="dotted">Dotted</option>
-              <option value="double">Double</option>
-              <option value="groove">Groove</option>
-              <option value="ridge">Ridge</option>
-              <option value="inset">Inset</option>
-              <option value="outset">Outset</option>
-              <option value="none">None</option>
-            </select>
-          </label>
+          <div class="icon-border-row">
+            <label>Border Size: <input type="number" id="icon-border-size" value="0" min="0" max="10" step="1" onchange="updateIconStylingPreview()" />px</label>
+            <label>Border Radius: <input type="number" id="icon-border-radius" value="0" min="0" max="20" step="1" onchange="updateIconStylingPreview()" />px</label>
+            <label>Border Style: 
+              <select id="icon-border-style" onchange="updateIconStylingPreview()">
+                <option value="solid">Solid</option>
+                <option value="dashed">Dashed</option>
+                <option value="dotted">Dotted</option>
+                <option value="double">Double</option>
+                <option value="groove">Groove</option>
+                <option value="ridge">Ridge</option>
+                <option value="inset">Inset</option>
+                <option value="outset">Outset</option>
+                <option value="none">None</option>
+              </select>
+            </label>
+          </div>
           <label>Icon Border Color: <input type="color" id="icon-border-color" value="#000000" onchange="updateIconStylingPreview()" /></label>
-          <label>Icon Background Color: <input type="color" id="icon-background-color" value="transparent" onchange="updateIconStylingPreview()" /></label>
         </div>
       </div>
       
@@ -275,6 +283,36 @@
             <input type="range" name="titleBackgroundOpacity" min="0" max="100" value="100" step="5" />
             <span id="title-opacity-value">100%</span>
           </label>
+        </div>
+        
+        <div class="style-section">
+          <h4>Shape & Size</h4>
+          <label>Shape: 
+            <select name="shape" onchange="updateShapeOptions()">
+              <option value="rectangle">Rectangle</option>
+              <option value="square">Square</option>
+            </select>
+          </label>
+          <div id="rectangle-size-options">
+            <label>Horizontal Size: <input type="number" name="horizontalSize" min="1" max="800" value="1" step="1" onchange="syncHorizontalVerticalSize()" />px</label>
+            <label>Vertical Size: <input type="number" name="verticalSize" min="1" max="600" value="1" step="1" onchange="syncHorizontalVerticalSize()" />px</label>
+          </div>
+          <div id="square-size-options" class="hidden">
+            <label>Size: <input type="number" name="squareSize" min="1" max="600" value="1" step="1" onchange="syncSquareSize()" />px</label>
+          </div>
+          <label>Icon Placement: 
+            <select name="iconPlacement" onchange="updateIconPlacementOptions()">
+              <option value="top-left">Top Left</option>
+              <option value="top-right">Top Right</option>
+              <option value="bottom-left">Bottom Left</option>
+              <option value="bottom-right">Bottom Right</option>
+              <option value="top">Top (Centered)</option>
+              <option value="bottom">Bottom (Centered)</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+            </select>
+          </label>
+          <label><input type="checkbox" id="hide-header" name="hideHeader" /> Hide Header</label>
         </div>
         
         <div class="style-section">
@@ -492,6 +530,35 @@
             </select>
           </label>
           <label>Custom Border CSS: <textarea name="borderCSS" placeholder="border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);"></textarea></label>
+        </div>
+        
+        <div class="style-section">
+          <h4>Shape & Size</h4>
+          <label>Shape: 
+            <select name="shape" onchange="updateShapeOptions()">
+              <option value="rectangle">Rectangle</option>
+              <option value="square">Square</option>
+            </select>
+          </label>
+          <div id="rectangle-size-options">
+            <label>Horizontal Size: <input type="number" name="horizontalSize" min="1" max="800" value="1" step="1" onchange="syncHorizontalVerticalSize()" />px</label>
+            <label>Vertical Size: <input type="number" name="verticalSize" min="1" max="600" value="1" step="1" onchange="syncHorizontalVerticalSize()" />px</label>
+          </div>
+          <div id="square-size-options" class="hidden">
+            <label>Size: <input type="number" name="squareSize" min="1" max="600" value="1" step="1" onchange="syncSquareSize()" />px</label>
+          </div>
+          <label>Icon Placement: 
+            <select name="iconPlacement" onchange="updateIconPlacementOptions()">
+              <option value="top-left">Top Left</option>
+              <option value="top-right">Top Right</option>
+              <option value="bottom-left">Bottom Left</option>
+              <option value="bottom-right">Bottom Right</option>
+              <option value="top">Top (Centered)</option>
+              <option value="bottom">Bottom (Centered)</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+            </select>
+          </label>
         </div>
         
         <div class="style-section">

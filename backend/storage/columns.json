@@ -18,8 +18,8 @@
       "customCSS": "",
       "borderRadius": 8,
       "boxShadow": "0 2px 4px rgba(0,0,0,0.1)",
-      "padding": 15,
-      "margin": 10
+      "padding": 0,
+      "margin": 0
     },
     "categories": [
       "cat3",
