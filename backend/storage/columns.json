@@ -1,7 +1,7 @@
 [
   {
     "id": "24c476-9181-4ad9",
-    "name": "Column 2",
+    "name": "Row",
     "order": 1,
     "styling": {
       "hideHeader": true,
@@ -22,13 +22,15 @@
       "margin": 0
     },
     "categories": [
-      "cat3",
       "cat6",
+      "cat3",
       "new category"
     ],
     "role": "row",
     "children": [
-      "701584-897f-40d3"
+      "701584-897f-40d3",
+      "243135-df78-4ac0",
+      "ef4f81-5b0b-49dc"
     ]
   },
   {
@@ -202,6 +204,58 @@
     "categories": [
       "Meeker Maker"
     ],
+    "children": []
+  },
+  {
+    "id": "243135-df78-4ac0",
+    "name": "Column 7",
+    "role": "column",
+    "order": 6,
+    "styling": {
+      "hideHeader": false,
+      "bgType": "color",
+      "backgroundColor": "#ffffff",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": 100,
+      "borderColor": "transparent",
+      "borderSize": 1,
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "borderRadius": 16,
+      "boxShadow": "0 4px 10px rgba(0, 0, 0, 0.06)",
+      "padding": 11,
+      "margin": 10,
+      "customCSS": ""
+    },
+    "categories": [],
+    "children": []
+  },
+  {
+    "id": "ef4f81-5b0b-49dc",
+    "name": "Column 8",
+    "role": "column",
+    "order": 7,
+    "styling": {
+      "hideHeader": false,
+      "bgType": "color",
+      "backgroundColor": "#ffffff",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": 100,
+      "borderColor": "transparent",
+      "borderSize": 1,
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "borderRadius": 16,
+      "boxShadow": "0 4px 10px rgba(0, 0, 0, 0.06)",
+      "padding": 11,
+      "margin": 10,
+      "customCSS": ""
+    },
+    "categories": [],
     "children": []
   }
 ]

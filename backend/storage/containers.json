@@ -152,7 +152,8 @@
                   "horizontalSize": 50,
                   "verticalSize": 50,
                   "squareSize": 50,
-                  "iconPlacement": "left"
+                  "iconPlacement": "left",
+                  "hideHeader": true
                 },
                 "agent": null,
                 "categories": [
@@ -269,7 +270,7 @@
                       "value": "Example 3",
                       "size": 20,
                       "color": "#000000",
-                      "offsetTop": 0,
+                      "offsetTop": -10,
                       "offsetLeft": 0,
                       "offsetRight": 0,
                       "offsetBottom": 0,
@@ -320,7 +321,8 @@
                     "agent": null,
                     "categories": [
                       "cat2",
-                      "cat3"
+                      "cat3",
+                      "cat6"
                     ],
                     "children": []
                   }

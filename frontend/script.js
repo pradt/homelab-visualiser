@@ -1969,9 +1969,7 @@ let selectedCustomViewContainerId = null; // For styling modal
     const contextMenu = document.createElement('div');
     contextMenu.className = 'context-menu';
     contextMenu.innerHTML = `
-      <button onclick="showCreateModal('${container.id}')" title="Add Child Container">➕ Add</button>
       <button onclick="showEditModal('${container.id}')" title="Edit Container">✏️ Edit</button>
-      <button onclick="showContainerStyleModal('${container.id}')" title="Style Container">🎨 Style</button>
     `;
     
     // Add right-click event listener to the container box
