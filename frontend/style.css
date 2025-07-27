@@ -3406,3 +3406,209 @@ body {
     border-radius: 0 0 4px 4px;
   }
   
+  /* Custom View Outline Panel Styles */
+  .outline-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 350px;
+    height: 100vh;
+    background: white;
+    border-left: 2px solid #e0e0e0;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease;
+  }
+  
+  .outline-panel.hidden {
+    transform: translateX(100%);
+  }
+  
+  .outline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background: #f8f9fa;
+  }
+  
+  .outline-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .outline-close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+  }
+  
+  .outline-close-btn:hover {
+    background: #e9ecef;
+    color: #333;
+  }
+  
+  .outline-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+  }
+  
+  .outline-tree {
+    padding: 10px 0;
+  }
+  
+  /* Outline Tree Node Styles */
+  .outline-node {
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .outline-node:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .outline-node.selected {
+    background-color: #e3f2fd;
+  }
+  
+  .outline-node-content {
+    display: flex;
+    align-items: center;
+    padding: 8px 20px;
+    min-height: 32px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .outline-node-icon {
+    margin-right: 8px;
+    font-size: 14px;
+    width: 16px;
+    text-align: center;
+  }
+  
+  .outline-node-label {
+    flex: 1;
+    font-size: 14px;
+    color: #333;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .outline-node-actions {
+    display: none;
+    margin-left: 8px;
+  }
+  
+  .outline-node:hover .outline-node-actions {
+    display: flex;
+    gap: 4px;
+  }
+  
+  .outline-node-action-btn {
+    background: none;
+    border: none;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 3px;
+    color: #666;
+    transition: all 0.2s;
+  }
+  
+  .outline-node-action-btn:hover {
+    background: #e9ecef;
+    color: #333;
+  }
+  
+  .outline-node-children {
+    margin-left: 20px;
+    border-left: 1px solid #e0e0e0;
+  }
+  
+  .outline-node-children .outline-node-content {
+    padding-left: 15px;
+  }
+  
+  .outline-node-children .outline-node-children .outline-node-content {
+    padding-left: 30px;
+  }
+  
+  .outline-node-children .outline-node-children .outline-node-children .outline-node-content {
+    padding-left: 45px;
+  }
+  
+  /* Outline node type specific styles */
+  .outline-node.type-container .outline-node-icon {
+    color: #007bff;
+  }
+  
+  .outline-node.type-row .outline-node-icon {
+    color: #28a745;
+  }
+  
+  .outline-node.type-column .outline-node-icon {
+    color: #17a2b8;
+  }
+  
+  .outline-node.type-category .outline-node-icon {
+    color: #ffc107;
+  }
+  
+  .outline-node.type-widget .outline-node-icon {
+    color: #6f42c1;
+  }
+  
+  /* Drag and drop styles for outline */
+  .outline-node.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .outline-node.drag-over {
+    background-color: #e3f2fd;
+    border: 2px dashed #2196f3;
+    border-radius: 4px;
+  }
+  
+  .outline-node-drag-handle {
+    cursor: grab !important;
+  }
+  
+  .outline-node-drag-handle:active {
+    cursor: grabbing !important;
+  }
+  
+  .outline-placeholder {
+    height: 32px;
+    background: #f8f9fa;
+    border: 2px dashed #dee2e6;
+    margin: 4px 20px;
+    border-radius: 4px;
+  }
+  
+  /* Responsive design for outline */
+  @media (max-width: 768px) {
+    .outline-panel {
+      width: 100vw;
+    }
+  }
+  

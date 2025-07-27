@@ -2555,6 +2555,9 @@ let selectedCustomViewContainerId = null; // For styling modal
         // Update available categories zone
         updateAvailableCategoriesZone();
         
+        // Update outline to show drag handles
+        updateOutlineOnEditModeChange();
+        
         // Show immediate feedback
         showReorderFeedback('Edit mode activated - drag categories between containers!', 'success');
         
@@ -2607,6 +2610,9 @@ let selectedCustomViewContainerId = null; // For styling modal
       // Re-render to hide drop zones and edit controls
       if (currentView === 'custom') {
         renderContainers();
+        
+        // Update outline to hide drag handles
+        updateOutlineOnEditModeChange();
       }
       
       // Save containers to backend when exiting edit mode
@@ -4032,6 +4038,10 @@ let selectedCustomViewContainerId = null; // For styling modal
       .then(() => {
         hideContainerStyleModal();
         renderContainers();
+        
+        // Update outline if visible
+        updateOutlineOnChange();
+        
         showReorderFeedback(`Container "${container.name}" settings saved successfully! ✏️`, 'success');
       })
       .catch((error) => {
@@ -4069,6 +4079,9 @@ let selectedCustomViewContainerId = null; // For styling modal
     
     // Re-render to show new container and maintain edit mode
     renderContainers();
+    
+    // Update outline if visible
+    updateOutlineOnChange();
     
     // Ensure edit mode styling is maintained after render
     if (isEditMode && currentView === 'custom') {
@@ -4754,6 +4767,9 @@ let selectedCustomViewContainerId = null; // For styling modal
         renderContainers();
         updateAvailableCategoriesZone();
         
+        // Update outline if visible
+        updateOutlineOnChange();
+        
         // Save changes
         saveCustomViewContainersToBackend();
       }
@@ -4906,6 +4922,9 @@ let selectedCustomViewContainerId = null; // For styling modal
     showReorderFeedback(`Empty container "${container.name}" deleted successfully! 🗑️`, 'success');
     renderContainers(); // Re-render to reflect changes
     
+    // Update outline if visible
+    updateOutlineOnChange();
+    
     // Maintain edit mode after deletion
     if (isEditMode && currentView === 'custom') {
       requestAnimationFrame(() => {
@@ -4936,6 +4955,9 @@ let selectedCustomViewContainerId = null; // For styling modal
     
     showReorderFeedback('Custom View reset successfully! All categories moved to available list. 🔄', 'success');
     renderContainers();
+    
+    // Update outline if visible
+    updateOutlineOnChange();
     
     // Maintain edit mode after reset
     if (isEditMode && currentView === 'custom') {
@@ -6292,4 +6314,470 @@ let selectedCustomViewContainerId = null; // For styling modal
     }
   }
   
-  
+  // Custom View Outline Functions
+  let isOutlineVisible = false;
+
+  function toggleCustomViewOutline() {
+    const outlinePanel = document.getElementById('custom-view-outline');
+    if (!outlinePanel) return;
+
+    isOutlineVisible = !isOutlineVisible;
+    
+    if (isOutlineVisible) {
+      outlinePanel.classList.remove('hidden');
+      updateCustomViewOutline();
+    } else {
+      outlinePanel.classList.add('hidden');
+    }
+  }
+
+  function updateCustomViewOutline() {
+    console.log('updateCustomViewOutline called - isOutlineVisible:', isOutlineVisible, 'currentView:', currentView);
+    if (!isOutlineVisible || currentView !== 'custom') {
+      console.log('Early return - outline not visible or wrong view');
+      return;
+    }
+
+    const outlineTree = document.getElementById('outline-tree');
+    if (!outlineTree) {
+      console.log('Outline tree element not found');
+      return;
+    }
+
+    console.log('Building outline tree from', customViewContainers.length, 'containers');
+    outlineTree.innerHTML = '';
+    
+    // Build outline tree from customViewContainers
+    customViewContainers.forEach((container, index) => {
+      console.log(`Creating outline node for container ${index}:`, container.name, container);
+      try {
+        const containerNode = createOutlineNode(container, 'container');
+        outlineTree.appendChild(containerNode);
+        console.log(`Successfully created and appended outline node for container ${index}:`, container.name);
+      } catch (error) {
+        console.error(`Error creating outline node for container ${index}:`, container.name, error);
+      }
+    });
+
+    // Add drop zone functionality for edit mode
+    if (isEditMode) {
+      setupOutlineDropZones();
+    }
+    
+    console.log('Outline update complete');
+  }
+
+  function setupOutlineDropZones() {
+    const outlineTree = document.getElementById('outline-tree');
+    if (!outlineTree) return;
+
+    // Add drop event listeners to all outline nodes
+    const outlineNodes = outlineTree.querySelectorAll('.outline-node');
+    
+    outlineNodes.forEach(node => {
+      // Remove existing listeners
+      node.removeEventListener('dragover', handleOutlineDragOver);
+      node.removeEventListener('drop', handleOutlineDrop);
+      node.removeEventListener('dragenter', handleOutlineDragEnter);
+      node.removeEventListener('dragleave', handleOutlineDragLeave);
+      
+      // Add new listeners
+      node.addEventListener('dragover', handleOutlineDragOver);
+      node.addEventListener('drop', handleOutlineDrop);
+      node.addEventListener('dragenter', handleOutlineDragEnter);
+      node.addEventListener('dragleave', handleOutlineDragLeave);
+    });
+  }
+
+  function handleOutlineDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  }
+
+  function handleOutlineDragEnter(e) {
+    e.preventDefault();
+    const node = e.currentTarget;
+    if (!node.classList.contains('dragging')) {
+      node.classList.add('drag-over');
+    }
+  }
+
+  function handleOutlineDragLeave(e) {
+    e.preventDefault();
+    const node = e.currentTarget;
+    // Only remove drag-over if we're leaving the node entirely
+    if (!node.contains(e.relatedTarget)) {
+      node.classList.remove('drag-over');
+    }
+  }
+
+  function handleOutlineDrop(e) {
+    e.preventDefault();
+    const targetNode = e.currentTarget;
+    targetNode.classList.remove('drag-over');
+    
+    try {
+      const dragData = JSON.parse(e.dataTransfer.getData('text/plain'));
+      const draggedId = dragData.id;
+      const draggedType = dragData.type;
+      const draggedParentId = dragData.parentId;
+      
+      const targetId = targetNode.getAttribute('data-id');
+      const targetType = targetNode.getAttribute('data-type');
+      
+      console.log('Outline drop:', { draggedId, draggedType, targetId, targetType });
+      
+      // Handle different drop scenarios
+      if (draggedType === 'widget' && targetType === 'container') {
+        // Move widget to container
+        const widgetContainer = findWidgetContainerById(draggedId);
+        if (widgetContainer) {
+          moveWidgetToContainer(widgetContainer, targetId);
+        }
+      } else if (draggedType === 'category' && targetType === 'container') {
+        // Move category to container
+        const categoryName = draggedId; // For categories, the ID is the name
+        moveCategoryToContainer(categoryName, draggedParentId, targetId);
+      } else if (draggedType === 'container' && targetType === 'container') {
+        // Move container to be child of another container
+        const container = getContainerById(draggedId);
+        const targetContainer = getContainerById(targetId);
+        if (container && targetContainer) {
+          // Remove from current parent
+          if (draggedParentId) {
+            const parentContainer = getContainerById(draggedParentId);
+            if (parentContainer && parentContainer.children) {
+              parentContainer.children = parentContainer.children.filter(child => child.id !== draggedId);
+            }
+          }
+          
+          // Add to new parent
+          if (!targetContainer.children) {
+            targetContainer.children = [];
+          }
+          targetContainer.children.push(container);
+          
+          // Update the outline
+          updateOutlineOnChange();
+          renderContainers();
+          saveCustomViewContainersToBackend();
+        }
+      }
+    } catch (error) {
+      console.error('Error handling outline drop:', error);
+    }
+  }
+
+  function findWidgetContainerById(widgetId) {
+    // Search through all containers to find the widget
+    for (const container of customViewContainers) {
+      if (container.children) {
+        const widget = container.children.find(child => 
+          child.id === widgetId && (child.type === 'widget' || child.widgetId)
+        );
+        if (widget) {
+          return widget;
+        }
+      }
+    }
+    return null;
+  }
+
+  function createOutlineNode(item, type) {
+    console.log(`createOutlineNode called for:`, item.name || item, 'type:', type, 'item:', item);
+    const node = document.createElement('div');
+    node.className = `outline-node type-${type}`;
+    node.setAttribute('data-id', item.id);
+    node.setAttribute('data-type', type);
+
+    const content = document.createElement('div');
+    content.className = 'outline-node-content';
+
+    const icon = document.createElement('span');
+    icon.className = 'outline-node-icon';
+    
+    const label = document.createElement('span');
+    label.className = 'outline-node-label';
+
+    // Set icon and label based on type
+    switch (type) {
+      case 'container':
+        icon.textContent = item.role === 'column' ? '📁' : '➡️';
+        label.textContent = `${item.role === 'column' ? 'Column' : 'Row'}: ${item.name}`;
+        break;
+      case 'category':
+        icon.textContent = '🏷️';
+        label.textContent = `Category: ${item}`;
+        break;
+      case 'widget':
+        icon.textContent = '🔧';
+        label.textContent = `Widget: ${item.name || item.widgetId || item.id}`;
+        break;
+    }
+
+    content.appendChild(icon);
+    content.appendChild(label);
+
+    // Add drag handle for edit mode
+    if (isEditMode) {
+      const dragHandle = document.createElement('span');
+      dragHandle.className = 'outline-node-drag-handle';
+      dragHandle.innerHTML = '⋮⋮';
+      dragHandle.title = 'Drag to reorder';
+      dragHandle.style.cssText = `
+        cursor: grab;
+        color: #999;
+        font-size: 12px;
+        margin-left: 8px;
+        user-select: none;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+      `;
+      
+      // Show drag handle on hover
+      content.addEventListener('mouseenter', () => {
+        dragHandle.style.opacity = '1';
+      });
+      
+      content.addEventListener('mouseleave', () => {
+        dragHandle.style.opacity = '0.6';
+      });
+      
+      // Add drag functionality
+      dragHandle.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        node.setAttribute('draggable', 'true');
+        node.classList.add('dragging');
+      });
+      
+      node.addEventListener('dragstart', (e) => {
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+          id: item.id,
+          type: type,
+          parentId: item.parentContainerId || null
+        }));
+        node.classList.add('dragging');
+      });
+      
+      node.addEventListener('dragend', () => {
+        node.setAttribute('draggable', 'false');
+        node.classList.remove('dragging');
+      });
+      
+      content.appendChild(dragHandle);
+    }
+
+    // Add context menu
+    content.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      showOutlineContextMenu(e, item, type);
+    });
+
+    // Add click handler for selection
+    content.addEventListener('click', function(e) {
+      e.stopPropagation();
+      selectOutlineNode(node, item, type);
+    });
+
+    node.appendChild(content);
+
+    // Add children if they exist
+    if (type === 'container') {
+      const childrenContainer = document.createElement('div');
+      childrenContainer.className = 'outline-node-children';
+      
+      // Add categories if they exist
+      if (item.categories && item.categories.length > 0) {
+        item.categories.forEach(category => {
+          const categoryNode = createOutlineNode(category, 'category');
+          childrenContainer.appendChild(categoryNode);
+        });
+      }
+
+      // Add child containers and widgets
+      console.log(`Checking children for container "${item.name}" (${item.id}):`, item.children);
+      if (item.children && item.children.length > 0) {
+        console.log(`Container "${item.name}" has ${item.children.length} children:`, item.children);
+        item.children.forEach((child, childIndex) => {
+          console.log(`Processing child ${childIndex}:`, child);
+          // Check if it's a widget container (has widgetId property)
+          if (child.type === 'widget' || child.widgetId) {
+            console.log('Found widget child:', child);
+            const widgetNode = createOutlineNode(child, 'widget');
+            childrenContainer.appendChild(widgetNode);
+          } else {
+            // It's a child container
+            const childContainer = getContainerById(child.id || child);
+            if (childContainer) {
+              console.log('Found container child:', childContainer);
+              const childNode = createOutlineNode(childContainer, 'container');
+              childrenContainer.appendChild(childNode);
+            } else {
+              console.log('Could not find container for child:', child);
+            }
+          }
+        });
+      } else {
+        console.log(`Container "${item.name}" has no children`);
+      }
+
+      // Only append children container if it has content
+      if (childrenContainer.children.length > 0) {
+        node.appendChild(childrenContainer);
+      }
+    }
+
+    return node;
+  }
+
+  function showOutlineContextMenu(e, item, type) {
+    // Close any existing context menus
+    document.querySelectorAll('.context-menu').forEach(menu => {
+      menu.classList.remove('show');
+    });
+
+    const contextMenu = document.createElement('div');
+    contextMenu.className = 'context-menu';
+    
+    let menuHTML = '';
+    
+    switch (type) {
+      case 'container':
+        const oppositeRole = item.role === 'column' ? 'row' : 'column';
+        const oppositeRoleName = item.role === 'column' ? 'Row' : 'Column';
+        const oppositeRoleIcon = item.role === 'column' ? '➡️' : '📁';
+        
+        menuHTML = `
+          <button onclick="showContainerStyleModal('${item.id}')" title="Edit Container">✏️ Edit</button>
+          <button onclick="addNewContainer('${oppositeRole}', '${item.id}')" title="Add ${oppositeRoleName}">${oppositeRoleIcon} Add ${oppositeRoleName}</button>
+          <button onclick="deleteContainer('${item.id}')" title="Delete Container">🗑️ Delete</button>
+        `;
+        break;
+      case 'category':
+        menuHTML = `
+          <button onclick="moveCategoryToAvailable('${item}')" title="Remove Category">🗑️ Remove</button>
+        `;
+        break;
+      case 'widget':
+        menuHTML = `
+          <button class="widget-settings-btn" title="Widget Settings">⚙️ Settings</button>
+          <button class="widget-delete-btn" title="Delete Widget">🗑️ Delete</button>
+        `;
+        break;
+    }
+    
+    contextMenu.innerHTML = menuHTML;
+    
+    // Add event listeners for widget buttons
+    if (type === 'widget') {
+      const settingsBtn = contextMenu.querySelector('.widget-settings-btn');
+      const deleteBtn = contextMenu.querySelector('.widget-delete-btn');
+      
+      if (settingsBtn) {
+        settingsBtn.addEventListener('click', () => {
+          showWidgetConfigModal(item.widgetId, item.config || {});
+          contextMenu.remove();
+        });
+      }
+      
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', () => {
+          deleteWidgetContainer(item.id);
+          contextMenu.remove();
+        });
+      }
+    }
+    
+    // Position the context menu
+    contextMenu.style.left = e.pageX + 'px';
+    contextMenu.style.top = e.pageY + 'px';
+    contextMenu.classList.add('show');
+    
+    document.body.appendChild(contextMenu);
+    
+    // Remove context menu when clicking outside
+    setTimeout(() => {
+      document.addEventListener('click', function removeMenu() {
+        contextMenu.remove();
+        document.removeEventListener('click', removeMenu);
+      }, 0);
+    });
+  }
+
+  function selectOutlineNode(node, item, type) {
+    // Remove previous selection
+    document.querySelectorAll('.outline-node.selected').forEach(n => {
+      n.classList.remove('selected');
+    });
+    
+    // Add selection to current node
+    node.classList.add('selected');
+    
+    // Scroll to the corresponding element in the main view
+    if (type === 'container') {
+      const containerElement = document.querySelector(`[data-container-id="${item.id}"]`);
+      if (containerElement) {
+        containerElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }
+
+  // Keyboard shortcut handler
+  document.addEventListener('keydown', function(e) {
+    // Ctrl + Shift + K to toggle outline
+    if (e.ctrlKey && e.shiftKey && e.key === 'K') {
+      e.preventDefault();
+      if (currentView === 'custom') {
+        toggleCustomViewOutline();
+      }
+    }
+  });
+
+      // Update outline when containers change
+    function updateOutlineOnChange() {
+      if (isOutlineVisible && currentView === 'custom') {
+        updateCustomViewOutline();
+      }
+    }
+
+    // Update outline when edit mode changes
+    function updateOutlineOnEditModeChange() {
+      if (isOutlineVisible && currentView === 'custom') {
+        updateCustomViewOutline();
+      }
+    }
+
+    // Debug function to check container contents
+    function debugContainerContents(containerId) {
+      const container = getContainerById(containerId);
+      if (!container) {
+        console.log('Container not found:', containerId);
+        return;
+      }
+      
+      console.log('Container:', container.name, container);
+      console.log('Categories:', container.categories);
+      console.log('Children:', container.children);
+      
+      if (container.children && container.children.length > 0) {
+        container.children.forEach((child, index) => {
+          console.log(`Child ${index}:`, child);
+          if (child.type === 'widget' || child.widgetId) {
+            console.log(`  -> This is a widget: ${child.name || child.widgetId}`);
+          } else {
+            console.log(`  -> This is a container: ${child.name || child.id}`);
+          }
+        });
+      }
+    }
+
+    // Debug function to check all containers
+    function debugAllContainers() {
+      console.log('All custom view containers:');
+      customViewContainers.forEach((container, index) => {
+        console.log(`${index}: ${container.name} (${container.id})`);
+        console.log('  Categories:', container.categories);
+        console.log('  Children:', container.children);
+      });
+    }

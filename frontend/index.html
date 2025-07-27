@@ -39,6 +39,7 @@
     <button id="edit-mode-btn" onclick="toggleEditMode()">✏️ Edit Mode</button>
     <button id="add-column-btn" onclick="addNewContainer('column')">➕ Add Column</button>
     <button id="add-row-btn" onclick="addNewContainer('row')">➡️ Add Row</button>
+    <button id="outline-toggle-btn" onclick="toggleCustomViewOutline()" title="Toggle Structure Outline (Ctrl+Shift+K)">📋 Outline</button>
     <button id="reset-view-btn" onclick="resetCustomView()">🔄 Reset View</button>
     <span id="edit-mode-status">Drag categories to reorder</span>
   </div>
@@ -52,6 +53,19 @@
     </div>
     <div id="available-categories-list" class="available-categories-list">
       <!-- Available categories will be populated here -->
+    </div>
+  </div>
+
+  <!-- Custom View Outline Panel -->
+  <div id="custom-view-outline" class="outline-panel hidden">
+    <div class="outline-header">
+      <h3>📋 Structure Outline</h3>
+      <button class="outline-close-btn" onclick="toggleCustomViewOutline()">×</button>
+    </div>
+    <div class="outline-content">
+      <div id="outline-tree" class="outline-tree">
+        <!-- Outline tree will be populated here -->
+      </div>
     </div>
   </div>
 
