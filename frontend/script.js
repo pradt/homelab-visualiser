@@ -1669,7 +1669,7 @@ let selectedCustomViewContainerId = null; // For styling modal
       categoriesContainer.appendChild(dropZone);
     }
     
-    // Render widgets in this container
+    // Render widgets and child containers in this container
     if (container.children && container.children.length > 0) {
       console.log(`Container "${container.name}" has ${container.children.length} children:`, container.children);
       container.children.forEach(child => {
@@ -1682,6 +1682,15 @@ let selectedCustomViewContainerId = null; // For styling modal
           } catch (error) {
             console.error('Error creating widget element:', error);
           }
+        } else {
+          // Handle child containers (rows/columns)
+          const childContainer = getContainerById(child);
+          if (childContainer) {
+            console.log('Creating child container element for:', childContainer.name);
+            const childElement = createContainerElement(childContainer, categoryGroups, term);
+            categoriesContainer.appendChild(childElement);
+            console.log('Child container element created and added:', childElement);
+          }
         }
       });
     }
@@ -1689,10 +1698,63 @@ let selectedCustomViewContainerId = null; // For styling modal
     containerElement.appendChild(containerHeader);
     containerElement.appendChild(categoriesContainer);
     
+    // Add context menu for container actions (right-click menu)
+    const contextMenu = document.createElement('div');
+    contextMenu.className = 'context-menu';
+    
+    contextMenu.innerHTML = `
+      <button onclick="showContainerStyleModal('${container.id}')" title="Edit Container">✏️ Edit</button>
+      <button onclick="addNewContainer('${oppositeRole}', '${container.id}')" title="Add ${oppositeRoleName}">${oppositeRoleIcon} Add ${oppositeRoleName}</button>
+      <button onclick="deleteContainer('${container.id}')" title="Delete Container">🗑️ Delete</button>
+    `;
+    
+    // Add right-click event listener to the container element
+    containerElement.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // Close any other open context menus
+      document.querySelectorAll('.context-menu').forEach(menu => {
+        menu.classList.remove('show');
+      });
+      
+      // Position and show the context menu
+      let left = e.pageX;
+      let top = e.pageY;
+      
+      // Ensure menu doesn't go off-screen
+      const menuWidth = 150; // min-width from CSS
+      const menuHeight = 120; // approximate height
+      
+      // Check right edge
+      if (left + menuWidth > window.innerWidth + window.scrollX) {
+        left = window.innerWidth + window.scrollX - menuWidth - 10;
+      }
+      
+      // Check bottom edge
+      if (top + menuHeight > window.innerHeight + window.scrollY) {
+        top = window.innerHeight + window.scrollY - menuHeight - 10;
+      }
+      
+      // Ensure menu doesn't go off left/top edges
+      if (left < window.scrollX) {
+        left = window.scrollX + 10;
+      }
+      
+      if (top < window.scrollY) {
+        top = window.scrollY + 10;
+      }
+      
+      contextMenu.style.left = left + 'px';
+      contextMenu.style.top = top + 'px';
+      contextMenu.classList.add('show');
+    });
+    
+    // Add context menu to document body
+    document.body.appendChild(contextMenu);
+    
     // Apply container styling AFTER all elements are created and added to the DOM
     applyContainerStyling(containerElement, container);
-    
-
     
     return containerElement;
   }

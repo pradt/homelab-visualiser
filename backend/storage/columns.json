@@ -22,7 +22,6 @@
       "margin": 0
     },
     "categories": [
-      "cat6",
       "cat3",
       "new category"
     ],
@@ -30,7 +29,8 @@
     "children": [
       "701584-897f-40d3",
       "243135-df78-4ac0",
-      "ef4f81-5b0b-49dc"
+      "ef4f81-5b0b-49dc",
+      "4b155e-9c70-4754"
     ]
   },
   {
@@ -230,7 +230,9 @@
       "customCSS": ""
     },
     "categories": [],
-    "children": []
+    "children": [
+      "a110aa-b226-40b3"
+    ]
   },
   {
     "id": "ef4f81-5b0b-49dc",
@@ -256,6 +258,60 @@
       "customCSS": ""
     },
     "categories": [],
+    "children": []
+  },
+  {
+    "id": "4b155e-9c70-4754",
+    "name": "Column 9",
+    "role": "column",
+    "order": 8,
+    "styling": {
+      "hideHeader": false,
+      "bgType": "color",
+      "backgroundColor": "#ffffff",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": 100,
+      "borderColor": "transparent",
+      "borderSize": 1,
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "borderRadius": 16,
+      "boxShadow": "0 4px 10px rgba(0, 0, 0, 0.06)",
+      "padding": 11,
+      "margin": 10,
+      "customCSS": ""
+    },
+    "categories": [],
+    "children": []
+  },
+  {
+    "id": "a110aa-b226-40b3",
+    "name": "Row 10",
+    "role": "row",
+    "order": 9,
+    "styling": {
+      "hideHeader": false,
+      "bgType": "color",
+      "backgroundColor": "#ffffff",
+      "backgroundGradient": "",
+      "backgroundCSS": "",
+      "backgroundImage": "",
+      "backgroundOpacity": 100,
+      "borderColor": "transparent",
+      "borderSize": 1,
+      "borderStyle": "solid",
+      "borderCSS": "",
+      "borderRadius": 16,
+      "boxShadow": "0 4px 10px rgba(0, 0, 0, 0.06)",
+      "padding": 11,
+      "margin": 10,
+      "customCSS": ""
+    },
+    "categories": [
+      "cat6"
+    ],
     "children": []
   }
 ]
